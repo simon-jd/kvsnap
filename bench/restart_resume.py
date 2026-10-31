@@ -11,7 +11,7 @@
    appends 64 tokens. Half the sessions are first evicted from the page cache.
 
 TTFT is client-side. The recompute reference is the same prompt sent to
-engine B directly. An offload tier that lives in host memory (vLLM's own CPU
+engine B directly, once the resumed turn's own durable save has finished. An offload tier that lives in host memory (vLLM's own CPU
 offloading, or this project's volatile tier) starts empty after step 2.
 """
 from __future__ import annotations
@@ -88,6 +88,9 @@ async def run(args) -> dict:
             async for token in handle:
                 first = first or time.perf_counter()
                 tokens.append(token.token_id)
+            # Turn 2 saves durably when it ends. Wait for that, as restore_ttft
+            # does, so the recompute does not share the GPU and the disk with it.
+            await gateway.pause(session.session_id, expected_generation=session.generation)
             params = SamplingParams(max_tokens=OUTPUT, temperature=0.0, ignore_eos=True, detokenize=False)
             began, reference_first, reference = time.perf_counter(), None, None
             async for out in runtime.generate({"prompt_token_ids": list(manifest["token_ids"]) + suffix},
