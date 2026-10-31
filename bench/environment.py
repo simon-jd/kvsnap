@@ -2,7 +2,9 @@
 
 Every benchmark stores ``environment()`` in its output. ``gpu_state()`` is
 also taken again right before measuring, because an idle GPU reports low
-clocks and a PCIe link that has stepped down.
+clocks and a PCIe link that has stepped down. The host's load average is
+recorded too: the benchmarks share one machine with other work, and the
+engine's scheduler and the gateway are sensitive to CPU contention.
 """
 from __future__ import annotations
 
@@ -26,12 +28,14 @@ def _run(*command: str) -> str | None:
 
 
 def gpu_state() -> dict:
-    """nvidia-smi's view of the first visible GPU (CUDA_VISIBLE_DEVICES respected)."""
+    """nvidia-smi's view of the first visible GPU (CUDA_VISIBLE_DEVICES respected), and the host load."""
     index = os.environ.get("CUDA_VISIBLE_DEVICES", "0").split(",")[0] or "0"
     out = _run("nvidia-smi", f"--id={index}", "--query-gpu=" + ",".join(GPU_FIELDS), "--format=csv,noheader")
     if not out:
         return {"error": "nvidia-smi unavailable"}
-    return dict(zip(GPU_FIELDS, (value.strip() for value in out.splitlines()[0].split(","))))
+    state = dict(zip(GPU_FIELDS, (value.strip() for value in out.splitlines()[0].split(","))))
+    state["host_load_average_1_5_15"] = [round(value, 2) for value in os.getloadavg()]
+    return state
 
 
 def git_state() -> dict:
@@ -66,7 +70,8 @@ def host() -> dict:
         memory = round(int(match.group(1)) / 1024**2, 1) if match else None
     except OSError:
         pass
-    return {"cpu": cpu, "cpus": os.cpu_count(), "memory_gib": memory, "kernel": platform.release()}
+    return {"cpu": cpu, "cpus": os.cpu_count(), "memory_gib": memory, "kernel": platform.release(),
+            "load_average_1_5_15": [round(value, 2) for value in os.getloadavg()]}
 
 
 def software() -> dict:
