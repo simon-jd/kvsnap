@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path
 import tempfile
+import threading
 import unittest
 from unittest.mock import patch
 
@@ -257,6 +258,34 @@ class StoreTests(unittest.TestCase):
         self.store.commit(manifest(), [b"prefix", b"tail"])
         self.assertEqual(seen, ["missing"])
         self.assertEqual(reader.get_manifest("snapshot")["state"], "Durable")
+
+    def test_readers_on_other_threads_do_not_wait_for_a_writer(self):
+        self.store.commit(manifest("v", "v", "volatile"), [b"x", b"y"])
+        inside, release, results = threading.Event(), threading.Event(), []
+
+        def writer():
+            with self.store._lock, self.store._transaction("volatile"):
+                self.store.db.execute("INSERT INTO failed_saves VALUES('w','held',0)")
+                inside.set()
+                release.wait(10)
+
+        def reader():
+            results.append((self.store.get_manifest("v")["snapshot_id"], self.store.volatile_bytes(),
+                            self.store.get_generation("v"), self.store.save_failure("w")))
+
+        holder = threading.Thread(target=writer)
+        holder.start()
+        try:
+            self.assertTrue(inside.wait(10))
+            lookup = threading.Thread(target=reader)
+            lookup.start()
+            lookup.join(5)
+            self.assertFalse(lookup.is_alive(), "a read waited for the writer's transaction")
+            self.assertEqual(results, [("v", 2, 0, None)])   # the uncommitted row is not visible
+        finally:
+            release.set()
+            holder.join()
+        self.assertEqual(self.store.save_failure("w"), "held")
 
     def test_callback_after_commit_does_not_retract_committed_manifest(self):
         def fail(name):

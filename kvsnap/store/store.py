@@ -56,12 +56,14 @@ class _ProcessLock:
         self.stream = stream
         self.thread_lock = threading.RLock()
         self.depth = 0
+        self.owner = None
 
     def __enter__(self):
         self.thread_lock.acquire()
         try:
             if self.depth == 0:
                 fcntl.flock(self.stream, fcntl.LOCK_EX)
+                self.owner = threading.get_ident()
             self.depth += 1
         except BaseException:
             self.thread_lock.release()
@@ -70,9 +72,14 @@ class _ProcessLock:
 
     def __exit__(self, *_):
         self.depth -= 1
-        if self.depth == 0 and not self.stream.closed:
-            fcntl.flock(self.stream, fcntl.LOCK_UN)
+        if self.depth == 0:
+            self.owner = None
+            if not self.stream.closed:
+                fcntl.flock(self.stream, fcntl.LOCK_UN)
         self.thread_lock.release()
+
+    def held_here(self):
+        return self.owner == threading.get_ident()
 
 
 def _dict(value):
@@ -130,6 +137,9 @@ class SnapshotStore:
         self._lock = _ProcessLock(self._lock_file)
         self._blob_file = (self.root / ".blob.lock").open("a+b")
         self._blob_lock = _ProcessLock(self._blob_file)
+        self._read_local = threading.local()
+        self._read_connections: list[sqlite3.Connection] = []
+        self._read_connections_lock = threading.Lock()
         self._lock.__enter__()
         try:
             self.db = sqlite3.connect(self.root / "manifests.sqlite3", isolation_level=None,
@@ -196,13 +206,28 @@ class SnapshotStore:
 
     @contextmanager
     def _reader(self):
-        # A read needs only this process's connection lock. In WAL mode each
-        # statement sees one committed state, so a reader never has to wait
-        # for another process's commit, fsync included, as it did when every
-        # read took the cross-process writer lock.
-        with self._lock.thread_lock:
-            self._check_owner()
-            yield
+        """A connection for one read, without waiting for any writer.
+
+        In WAL mode each statement sees one committed state, so a reader needs
+        no writer lock. Each thread reads through its own connection: sharing
+        the writer's connection made the scheduler's lookups and the host-tier
+        size check wait for whatever the commit thread was publishing. A
+        thread that holds the writer lock reads through the writer's
+        connection, so it sees its own transaction.
+        """
+        self._check_owner()
+        if self._lock.held_here():
+            yield self.db
+            return
+        db = getattr(self._read_local, "db", None)
+        if db is None:
+            db = sqlite3.connect(self.root / "manifests.sqlite3", isolation_level=None, check_same_thread=False)
+            db.row_factory = sqlite3.Row
+            db.execute("PRAGMA query_only=ON")
+            with self._read_connections_lock:
+                self._read_connections.append(db)
+            self._read_local.db = db
+        yield db
 
     @contextmanager
     def _transaction(self, durability="durable"):
@@ -259,12 +284,12 @@ class SnapshotStore:
             return generation
 
     def is_session_closed(self, session_id):
-        with self._reader():
-            return self.db.execute("SELECT 1 FROM closed_sessions WHERE session_id=?", (session_id,)).fetchone() is not None
+        with self._reader() as db:
+            return db.execute("SELECT 1 FROM closed_sessions WHERE session_id=?", (session_id,)).fetchone() is not None
 
     def get_generation(self, session_id):
-        with self._reader():
-            row = self.db.execute("SELECT generation FROM sessions WHERE session_id=?", (session_id,)).fetchone()
+        with self._reader() as db:
+            row = db.execute("SELECT generation FROM sessions WHERE session_id=?", (session_id,)).fetchone()
             return None if row is None else row[0]
 
     def _validate_manifest(self, manifest):
@@ -490,8 +515,8 @@ class SnapshotStore:
                 self._invalidate(snapshot_id, str(exc))
             raise
 
-    def _get_manifest(self, snapshot_id, include_invalid=False):
-        row = self.db.execute("SELECT * FROM snapshots WHERE snapshot_id=?", (snapshot_id,)).fetchone()
+    def _get_manifest(self, snapshot_id, include_invalid=False, db=None):
+        row = (db or self.db).execute("SELECT * FROM snapshots WHERE snapshot_id=?", (snapshot_id,)).fetchone()
         if row is None:
             raise KeyError(snapshot_id)
         body = json.loads(row["manifest_json"])
@@ -506,8 +531,8 @@ class SnapshotStore:
         return body
 
     def get_manifest(self, snapshot_id, *, include_invalid=False):
-        with self._reader():
-            return self._get_manifest(snapshot_id, include_invalid)
+        with self._reader() as db:
+            return self._get_manifest(snapshot_id, include_invalid, db)
 
     def list_manifests(self, *, include_invalid=False):
         with self._lock:
@@ -634,15 +659,15 @@ class SnapshotStore:
     def volatile_locations(self, manifest):
         """Opaque worker handles; no process-local pointer is exposed."""
         keys = sorted({segment["blob_id"] for segment in manifest["segments"]})
-        with self._reader():
-            result = self._committed_volatile_locations(keys)
+        with self._reader() as db:
+            result = self._committed_volatile_locations(keys, db)
         if len(result) != len(keys):
             raise CorruptSnapshotError("volatile snapshot has no worker-owned allocation")
         return result
 
-    def _committed_volatile_locations(self, keys):
+    def _committed_volatile_locations(self, keys, db=None):
         # One statement for any number of keys: a snapshot has one row per block.
-        rows = self.db.execute("SELECT blob_id,location_json FROM volatile_locations "
+        rows = (db or self.db).execute("SELECT blob_id,location_json FROM volatile_locations "
                                "WHERE blob_id IN (SELECT value FROM json_each(?))", (json.dumps(keys),))
         return {row[0]: json.loads(row[1]) for row in rows}
 
@@ -805,14 +830,14 @@ class SnapshotStore:
             self.db.execute("INSERT OR REPLACE INTO failed_saves VALUES(?,?,?)", (snapshot_id, reason, time.time()))
 
     def save_failure(self, snapshot_id):
-        with self._reader():
-            row = self.db.execute("SELECT reason FROM failed_saves WHERE snapshot_id=?", (snapshot_id,)).fetchone()
+        with self._reader() as db:
+            row = db.execute("SELECT reason FROM failed_saves WHERE snapshot_id=?", (snapshot_id,)).fetchone()
             return None if row is None else row[0]
 
     def volatile_bytes(self):
         """Bytes of distinct blobs referenced by committed host-memory snapshots."""
-        with self._reader():
-            return self.db.execute(
+        with self._reader() as db:
+            return db.execute(
                 "SELECT COALESCE(SUM(length),0) FROM blobs WHERE blob_id IN (SELECT sb.blob_id FROM snapshot_blobs sb "
                 "JOIN snapshots s ON s.snapshot_id=sb.snapshot_id WHERE s.durability='volatile' AND s.state='HostValid')"
             ).fetchone()[0]
@@ -1073,6 +1098,10 @@ class SnapshotStore:
             return
         with self._lock:
             self._check_owner()
+            with self._read_connections_lock:
+                for db in self._read_connections:
+                    db.close()
+                self._read_connections.clear()
             self.db.close()
             self._host.clear()
             self._blob_file.close()
