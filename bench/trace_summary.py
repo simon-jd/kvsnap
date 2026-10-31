@@ -109,7 +109,11 @@ def main() -> None:
     traces = []
     for item in args.trace:
         label, directory = item.split("=", 1)
-        traces.append({"label": label, "code": code.get(label), "engines": summarize(Path(directory))})
+        entry = {"label": label, "code": code.get(label), "engines": summarize(Path(directory))}
+        run = Path(directory) / "result.json"            # the benchmark's own output, when kept there
+        if run.exists() and "environment" in (measured := json.loads(run.read_text())):
+            entry["environment"] = measured["environment"]
+        traces.append(entry)
     result = {
         "benchmark": "bench/restore_under_load.py --engines async --trace-dir DIR, other options at their "
                      "defaults: Qwen3-1.7B, 16 greedy decode streams, six 8k-token host-memory sessions "
