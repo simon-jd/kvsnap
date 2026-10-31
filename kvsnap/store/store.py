@@ -150,6 +150,7 @@ class SnapshotStore:
                 CREATE TABLE IF NOT EXISTS snapshot_blobs(
                   snapshot_id TEXT NOT NULL,blob_id TEXT NOT NULL,
                   PRIMARY KEY(snapshot_id,blob_id));
+                CREATE INDEX IF NOT EXISTS snapshot_blobs_by_blob ON snapshot_blobs(blob_id);
                 CREATE TABLE IF NOT EXISTS leases(
                   lease_id TEXT PRIMARY KEY,snapshot_id TEXT NOT NULL,expires_at REAL NOT NULL);
                 CREATE TABLE IF NOT EXISTS lease_blobs(
@@ -852,13 +853,26 @@ class SnapshotStore:
             self._invalidate(snapshot_id, reason)
 
     def _invalidate(self, snapshot_id, reason):
-        with self._transaction():
+        row = self.db.execute("SELECT durability FROM snapshots WHERE snapshot_id=?", (snapshot_id,)).fetchone()
+        # A host-memory snapshot cannot outlive the process, and recovery
+        # invalidates every one of them, so its invalidation needs no fsync.
+        with self._transaction("volatile" if row and row[0] == "volatile" else "durable"):
             body = self._get_manifest(snapshot_id, True)
             body["state"] = "Invalid"
             self.db.execute("UPDATE snapshots SET state='Invalid',manifest_json=?,error=? WHERE snapshot_id=?",
                             (_json(body), reason, snapshot_id))
-            self.db.execute("DELETE FROM snapshot_blobs WHERE snapshot_id=?", (snapshot_id,))
-            self._rebuild_references()
+            self._release_references(snapshot_id)
+
+    def _release_references(self, snapshot_id):
+        """Drop one snapshot's blob references: O(its blocks), not O(every snapshot).
+
+        Every reference count equals the number of ``snapshot_blobs`` rows for
+        its blob; ``_rebuild_references`` restores that from the manifests at
+        recovery and in garbage collection.
+        """
+        self.db.execute("UPDATE blobs SET refcount=MAX(refcount-1,0) WHERE blob_id IN "
+                        "(SELECT blob_id FROM snapshot_blobs WHERE snapshot_id=?)", (snapshot_id,))
+        self.db.execute("DELETE FROM snapshot_blobs WHERE snapshot_id=?", (snapshot_id,))
 
     def _rebuild_references(self):
         self.db.execute("DELETE FROM snapshot_blobs")
@@ -973,9 +987,8 @@ class SnapshotStore:
             for row in self.db.execute("SELECT manifest_json FROM snapshots").fetchall():
                 if json.loads(row[0]).get("parent_id") == snapshot_id:
                     raise StoreError("delete child snapshots before their parent")
-            self.db.execute("DELETE FROM snapshot_blobs WHERE snapshot_id=?", (snapshot_id,))
+            self._release_references(snapshot_id)
             self.db.execute("DELETE FROM snapshots WHERE snapshot_id=?", (snapshot_id,))
-            self._rebuild_references()
 
     def retire_snapshot(self, snapshot_id):
         """Logically delete one owner while retaining immutable DAG metadata.

@@ -119,6 +119,43 @@ class StoreTests(unittest.TestCase):
         self.assertEqual(self.store.stats()["unique_blobs"], 2)
         self.assertEqual(self.store.load("snapshot"), [b"prefix", b"tail"])
 
+    def test_invalidation_and_deletion_keep_counts_equal_to_a_rebuild(self):
+        def counts():
+            return {row["blob_id"]: row["refcount"] for row in self.store.export()["blobs"]}
+
+        self.store.commit(manifest("a", "a"), [b"shared", b"a-tail"])
+        self.store.fork("a", "a-fork", "fork")
+        child = manifest("a-child", "a", generation=0)
+        child["parent_id"] = "a"
+        self.store.commit(child, [b"shared", b"child-tail"])
+        self.store.commit(manifest("b", "b", "volatile"), [b"shared", b"b-tail"])
+        self.store.commit(manifest("c", "c"), [b"c-head", b"c-tail"])
+        self.store.invalidate_snapshot("a", "test")
+        self.store.invalidate_snapshot("b", "test")
+        self.store.invalidate_snapshot("b", "again")      # already invalid: no change
+        self.store.delete_snapshot("c")
+        incremental = counts()
+        with self.store._lock, self.store._transaction():
+            self.store._rebuild_references()
+        self.assertEqual(incremental, counts())
+        shared = self.store.commit(manifest("d", "d"), [b"shared", b"d"])["segments"][0]["blob_id"]
+        self.assertEqual(counts()[shared], 3)              # a-fork, a-child, d
+
+    def test_a_host_memory_invalidation_skips_the_fsync(self):
+        self.store.commit(manifest("v", "v", "volatile"), [b"x", b"y"])
+        self.store.commit(manifest("d", "d"), [b"x", b"z"])
+        levels = []
+        original = self.store._transaction
+
+        def recording(durability="durable"):
+            levels.append(durability)
+            return original(durability)
+
+        with patch.object(self.store, "_transaction", recording):
+            self.store.invalidate_snapshot("v", "test")
+            self.store.invalidate_snapshot("d", "test")
+        self.assertEqual(levels, ["volatile", "durable"])
+
     def test_repeated_block_counts_one_snapshot_reference(self):
         self.store.commit(manifest(), [b"same", b"same"])
         self.assertEqual(self.store.stats()["unique_blobs"], 1)
