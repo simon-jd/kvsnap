@@ -27,6 +27,7 @@ from .crc32c import crc32c
 
 HEADER = struct.Struct("<8sIQI8s")
 MAGIC = b"KVSBLOB1"
+DISK_USAGE = ".disk_usage"
 COMMITTED = ("HostValid", "Durable")
 FAILPOINTS = ("after_d2h", "during_blob_write", "before_fdatasync",
               "after_rename", "before_manifest_commit", "after_manifest_commit",
@@ -417,15 +418,58 @@ class SnapshotStore:
         self.io.pwrite_all(fd, data, offset)
 
     def _admit(self, payloads, durability):
+        """Check capacity and, on disk, reserve it. The caller holds the exclusive blob lock."""
         if durability == "volatile":
             extra = sum(len(data) for key, data in payloads.items() if key not in self._host)
             if sum(map(len, self._host.values())) + extra > self.host_capacity_bytes:
                 raise CapacityError("host capacity exhausted; request process/durable spill explicitly")
         else:
-            used = sum(p.stat().st_size for p in self.blob_dir.iterdir() if p.is_file())
+            used = self._disk_usage()
             extra = sum(HEADER.size + len(data) for key, data in payloads.items() if not self._path(key).exists())
             if used + extra > self.disk_capacity_bytes:
                 raise CapacityError("disk capacity exhausted; committed snapshots are never silently evicted")
+            self._record_disk_usage(used + extra)
+
+    def _disk_usage(self):
+        """Bytes of blob files plus admitted blobs not yet written. The caller holds the blob lock.
+
+        Admission adds a new blob's bytes before it is written, instead of
+        stat-ing every blob file on every save; garbage collection and
+        recovery recount from the directory. A failed write leaves its
+        reservation until the next recount, which errs towards refusing a
+        save. The file is only a cache: missing or unreadable, it is recounted.
+        """
+        try:
+            return int((self.root / DISK_USAGE).read_text())
+        except (OSError, ValueError):
+            return self._recount_disk_usage()
+
+    def _recount_disk_usage(self):
+        used = 0
+        with os.scandir(self.blob_dir) as entries:
+            for entry in entries:
+                if entry.is_file():
+                    used += entry.stat().st_size
+        for path in self.prepared_dir.glob("*.json"):      # live intents not written yet
+            try:
+                record = json.loads(path.read_text())
+            except (OSError, ValueError):
+                continue
+            if record.get("durability") == "volatile" or record.get("expires_at", 0) <= time.time():
+                continue
+            for segment in record.get("segments", []):
+                try:
+                    if not self._path(segment["blob_id"]).exists():
+                        used += HEADER.size + segment["length"]
+                except (CorruptSnapshotError, KeyError, TypeError):
+                    continue
+        self._record_disk_usage(used)
+        return used
+
+    def _record_disk_usage(self, value):
+        temporary = self.root / (DISK_USAGE + ".tmp")
+        temporary.write_text(str(value))
+        os.replace(temporary, self.root / DISK_USAGE)
 
     def commit(self, manifest, blocks: Iterable[bytes]):
         """Commit complete KV blocks, deduplicated by immutable byte content.
@@ -958,6 +1002,7 @@ class SnapshotStore:
                 path.unlink()
             if report["temporary_files"]:
                 self._sync_directory(self.blob_dir)
+            self._recount_disk_usage()
             return report
 
     def _intent_blobs(self):
@@ -1065,6 +1110,7 @@ class SnapshotStore:
                     del self._host[key]
             if removed:
                 self._sync_directory(self.blob_dir)
+            self._recount_disk_usage()
             return removed
 
     def export(self, path=None):
@@ -1153,6 +1199,9 @@ class BlobWriter:
     _sync_directory = staticmethod(SnapshotStore._sync_directory)
     _hit = SnapshotStore._hit
     _admit = SnapshotStore._admit
+    _disk_usage = SnapshotStore._disk_usage
+    _recount_disk_usage = SnapshotStore._recount_disk_usage
+    _record_disk_usage = SnapshotStore._record_disk_usage
     _blob_header = SnapshotStore._blob_header
 
     def __init__(self, root, *, disk_capacity_bytes=200 * 1024**3, failpoint=None, io_backend=None):

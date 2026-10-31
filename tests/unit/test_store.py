@@ -194,6 +194,36 @@ class StoreTests(unittest.TestCase):
         with self.assertRaises(CapacityError):
             self.store.commit(manifest("full", "full"), [b"another", b"tail"])
 
+    def test_disk_admission_keeps_a_running_total_instead_of_scanning(self):
+        def on_disk():
+            return sum(p.stat().st_size for p in self.store.blob_dir.iterdir() if p.is_file())
+
+        usage = Path(self.temp.name) / ".disk_usage"
+        self.store.commit(manifest("a", "a"), [b"a-head", b"a-tail"])
+        scans = []
+        recount = SnapshotStore._recount_disk_usage
+
+        def counted(store):
+            scans.append(store)
+            return recount(store)
+
+        with patch.object(SnapshotStore, "_recount_disk_usage", counted), \
+                patch.object(BlobWriter, "_recount_disk_usage", counted):
+            self.store.commit(manifest("b", "b", "process"), [b"a-head", b"b-tail"])   # one blob is shared
+            writer = BlobWriter(self.temp.name)
+            record = writer.prepare_blocks([b"c-head", b"c-tail"], "durable")
+            self.store.commit_prepared(manifest("c", "c"), record)
+        self.assertEqual(scans, [])
+        self.assertEqual(int(usage.read_text()), on_disk())
+        self.store.delete_snapshot("c")
+        self.store.collect_garbage()                      # recounts after removing c's blobs
+        self.assertEqual(int(usage.read_text()), on_disk())
+        usage.write_text("garbage")                       # an unreadable total is recounted
+        self.store.disk_capacity_bytes = on_disk() + HEADER.size + 1
+        with self.assertRaises(CapacityError):
+            self.store.commit(manifest("d", "d"), [b"d-head", b"d-tail"])
+        self.assertEqual(int(usage.read_text()), on_disk())
+
     def test_fencing_cas_between_store_instances(self):
         self.store.claim_generation("session", 0, 1)
         with SnapshotStore(self.temp.name, recover_on_open=False) as second:
