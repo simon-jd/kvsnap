@@ -137,13 +137,16 @@ def create_async_llm(store_path, *, model="Qwen/Qwen3-1.7B", revision="70d244cc"
                      max_model_len=32768, block_size=16, kv_cache_memory_bytes=8 * 1024**3,
                      pinned_pool_bytes=4 * 1024**3, disk_capacity_bytes=200 * 1024**3,
                      max_num_batched_tokens=16384, cudagraph_mode=None, connector=True,
-                     async_load=True, host_tier_bytes=None, enable_prefix_caching=False):
+                     async_load=True, host_tier_bytes=None, enable_prefix_caching=False, engine_args=None):
     """Build the in-process engine the gateway drives.
 
     ``connector=False`` builds the identical engine without the kvsnap connector,
     the baseline for "recompute the whole prompt". ``cudagraph_mode=None``
     keeps vLLM's default CUDA graphs. Set ``VLLM_BATCH_INVARIANT=1`` before
-    calling this for bit-exact comparisons against recompute.
+    calling this for bit-exact comparisons against recompute. ``engine_args``
+    adds or overrides vLLM engine arguments, for example vLLM's own CPU
+    offloading (``kv_offloading_size``) on an engine built with
+    ``connector=False``.
     """
     os.environ.setdefault("KVSNAP_IO_BACKEND", "native")
     from vllm.engine.arg_utils import AsyncEngineArgs
@@ -160,17 +163,18 @@ def create_async_llm(store_path, *, model="Qwen/Qwen3-1.7B", revision="70d244cc"
                                    **({"host_tier_bytes": host_tier_bytes} if host_tier_bytes else {})},
         # A block that fails to load is recomputed rather than failing the request.
         kv_load_failure_policy="recompute")
-    args = AsyncEngineArgs(model=model, revision=revision, tokenizer_revision=tokenizer_revision or revision,
-                           dtype="bfloat16", tensor_parallel_size=1,
-                           max_model_len=max_model_len, block_size=block_size,
-                           kv_cache_memory_bytes=kv_cache_memory_bytes, async_scheduling=False,
-                           # vLLM checks this before honouring the explicit KV size;
-                           # leave room for desktop processes on the same GPU.
-                           gpu_memory_utilization=0.80,
-                           enable_prefix_caching=enable_prefix_caching,
-                           max_num_batched_tokens=max_num_batched_tokens,
-                           compilation_config={"cudagraph_mode": cudagraph_mode} if cudagraph_mode else {},
-                           kv_transfer_config=transfer if connector else None)
-    engine = AsyncLLM.from_engine_args(args)
+    settings = dict(model=model, revision=revision, tokenizer_revision=tokenizer_revision or revision,
+                dtype="bfloat16", tensor_parallel_size=1,
+                max_model_len=max_model_len, block_size=block_size,
+                kv_cache_memory_bytes=kv_cache_memory_bytes, async_scheduling=False,
+                # vLLM checks this before honouring the explicit KV size;
+                # leave room for desktop processes on the same GPU.
+                gpu_memory_utilization=0.80,
+                enable_prefix_caching=enable_prefix_caching,
+                max_num_batched_tokens=max_num_batched_tokens,
+                compilation_config={"cudagraph_mode": cudagraph_mode} if cudagraph_mode else {},
+                kv_transfer_config=transfer if connector else None)
+    settings.update(engine_args or {})
+    engine = AsyncLLM.from_engine_args(AsyncEngineArgs(**settings))
     engine.kvsnap_runtime_id = runtime_id
     return engine
