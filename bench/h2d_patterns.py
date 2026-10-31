@@ -24,6 +24,7 @@ import time
 
 import torch
 
+from bench.environment import environment, gpu_state
 from kvsnap.connector.dataplane import TorchBlockDataPlane
 
 LAYERS, BLOCKS, CACHE_BLOCKS, BLOCK_SIZE = 36, 512, 1024, 16
@@ -45,6 +46,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
+    measured = environment()
     device = torch.device("cuda:0")
     # [blocks, heads, tokens, dim] per layer, 32 x 16 x 64 bf16 = 64 KiB per block.
     caches = {f"layer.{i:02d}": torch.zeros((CACHE_BLOCKS, 32, BLOCK_SIZE, 64), dtype=torch.bfloat16, device=device)
@@ -79,6 +81,7 @@ def main():
         pinned = torch.empty(nbytes, dtype=torch.uint8, pin_memory=True)
         result = {"bytes": nbytes, "blocks": BLOCKS, "layers": LAYERS, "layer_block_bytes": 64 * 1024,
                   "peak": nbytes / measure(lambda: dense.copy_(pinned, non_blocking=True)) / 1e9}
+        measured["gpu_at_measurement"] = gpu_state()
         for name, ids in orders.items():
             patterns = {
                 "2d": lambda: plane.load_staged(ids, staged),
@@ -94,7 +97,9 @@ def main():
                 print(f"{pattern:>18} {name:<12} {nbytes / seconds / 1e9:6.2f} GB/s  {seconds * 1e3:6.1f} ms", flush=True)
         for allocation in singles:
             allocation.close()
-    args.out.write_text(json.dumps({k: round(v, 2) if isinstance(v, float) else v for k, v in result.items()}, indent=2))
+    result["environment"] = measured
+    args.out.write_text(json.dumps({k: round(v, 2) if isinstance(v, float) else v for k, v in result.items()}, indent=2)
+                        + "\n")
     print(f"peak {result['peak']:.2f} GB/s -> {args.out}")
 
 

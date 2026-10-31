@@ -36,6 +36,7 @@ import tempfile
 import time
 import uuid
 
+from bench.environment import environment, gpu_state, model_label
 from bench.restore_ttft import drop_session
 
 SUFFIX, OUTPUT, DECODE_PROMPT = 64, 16, 128
@@ -140,6 +141,7 @@ async def run_engine(args, async_load: bool) -> dict:
             streams = [[] for _ in range(args.streams)]
             decoders = [asyncio.create_task(decode(i, streams[i])) for i in range(args.streams)]
             await asyncio.sleep(args.interval)            # decodes reach steady state
+            results.setdefault("gpu_at_measurement", gpu_state())
             windows = []
             for session in sessions:
                 windows.append(await resume(session, arm == "recompute"))
@@ -204,8 +206,9 @@ def main() -> None:
     parser.add_argument("--trace-dir", type=Path, default=None,
                         help="keep connector events and every decode gap over 20 ms, with timestamps")
     args = parser.parse_args()
-    result = {"model": args.model, "length": args.length, "sessions": args.sessions, "streams": args.streams,
-              "max_num_batched_tokens": args.max_num_batched_tokens}
+    result = {"model": model_label(args.model), "revision": args.revision, "length": args.length,
+              "sessions": args.sessions, "streams": args.streams,
+              "max_num_batched_tokens": args.max_num_batched_tokens, "environment": environment(args.store_dir)}
     for async_load in (False, True) if args.engines == "both" else (True,):
         result["async" if async_load else "sync"] = asyncio.run(run_engine(args, async_load))
     args.output.parent.mkdir(parents=True, exist_ok=True)

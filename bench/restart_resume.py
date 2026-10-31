@@ -28,6 +28,7 @@ import tempfile
 import time
 import uuid
 
+from bench.environment import environment, gpu_state, model_label
 from bench.restore_ttft import evict_from_page_cache
 
 SUFFIX, OUTPUT = 64, 16
@@ -48,6 +49,7 @@ async def engine(args, root):
 
 
 async def run(args) -> dict:
+    measured = environment(args.store_dir)
     root = Path(tempfile.mkdtemp(prefix="kvsnap-restart-", dir=args.store_dir))
     from vllm import SamplingParams
     from kvsnap.models import SamplingConfig
@@ -71,6 +73,7 @@ async def run(args) -> dict:
 
         runtime, store, identity, gateway = await engine(args, root)
         restart_s = time.perf_counter() - stopped
+        measured["gpu_at_measurement"] = gpu_state()
         rows = []
         for length, rep, snapshot_id in saved:
             cold = rep % 2 == 1
@@ -106,7 +109,8 @@ async def run(args) -> dict:
                                     "tokens_match": sum(r["match"] for r in picked)})
         runtime.shutdown()
         store.close()
-        return {"model": args.model, "engine_restart_s": restart_s, "rows": rows, "summary": summary}
+        return {"model": model_label(args.model), "revision": args.revision, "engine_restart_s": restart_s,
+                "rows": rows, "summary": summary, "environment": measured}
     finally:
         shutil.rmtree(root, ignore_errors=True)
 

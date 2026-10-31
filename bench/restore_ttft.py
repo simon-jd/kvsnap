@@ -41,6 +41,8 @@ import tempfile
 import time
 import uuid
 
+from bench.environment import environment, gpu_state, model_label
+
 SUFFIX, OUTPUT = 64, 16
 ARMS = ("recompute", "restore-host", "restore-disk", "restore-cold")
 
@@ -107,6 +109,7 @@ def h2d_breakdown(event_dir: Path, since_ns: int, first_token_ns: int) -> dict |
 
 
 async def run(args) -> dict:
+    measured = environment(args.store_dir)
     root = Path(tempfile.mkdtemp(prefix="kvsnap-bench-", dir=args.store_dir))
     event_dir = root / "events"
     event_dir.mkdir()
@@ -190,6 +193,7 @@ async def run(args) -> dict:
             # and the page cache for this length.
             for durability in ("volatile", "durable"):
                 await restore(length, durability, False)
+            measured.setdefault("gpu_at_measurement", gpu_state())
             for rep in range(args.reps):
                 for arm, durability, cold in (("restore-host", "volatile", False),
                                               ("restore-disk", "durable", False),
@@ -204,7 +208,7 @@ async def run(args) -> dict:
                           f"copies {result.get('copies')} match={result['match']} "
                           f"logprobs_equal={result['logprobs_equal']} max_delta={result['max_logprob_delta']:.2e}",
                           flush=True)
-        return summarise(samples, args)
+        return {**summarise(samples, args), "environment": measured}
     finally:
         runtime.shutdown()
         store.close()
@@ -228,7 +232,7 @@ def summarise(samples, args) -> dict:
             row["logprobs_equal"] = sum(v["logprobs_equal"] for v in values)
             row["max_logprob_delta"] = max(v["max_logprob_delta"] for v in values)
         rows.append(row)
-    return {"model": args.model, "revision": args.revision, "batch_invariant": args.batch_invariant,
+    return {"model": model_label(args.model), "revision": args.revision, "batch_invariant": args.batch_invariant,
             "cudagraph_mode": args.cudagraph_mode, "async_load": args.async_load, "perturb": args.perturb,
             "max_num_batched_tokens": args.max_num_batched_tokens,
             "suffix_tokens": SUFFIX, "output_tokens": OUTPUT, "rows": rows}
