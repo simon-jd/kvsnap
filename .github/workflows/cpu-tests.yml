@@ -1,0 +1,23 @@
+name: CPU tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install the package and the native file I/O
+        run: python -m pip install -e '.[test]'
+      - name: Build and test the native library without CUDA
+        run: |
+          cmake -S csrc/dataplane -B build/dataplane -DKVSNAP_CUDA=OFF
+          cmake --build build/dataplane -j2
+          ctest --test-dir build/dataplane --output-on-failure
+      - name: Run the CPU tests
+        run: python -m pytest -q
