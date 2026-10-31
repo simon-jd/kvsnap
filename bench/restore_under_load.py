@@ -24,7 +24,9 @@ Each stream timestamps every output it receives. A gap between two outputs of
 one request counts as "during" if it overlaps a measured resume's window
 (submit to first token) and "outside" otherwise; gaps that overlap a warm-up
 window are dropped. p99 is reported only where there are at least 100
-values; otherwise the maximum stands alone.
+values; otherwise the maximum stands alone. One process is one run;
+``--combine`` merges separate runs, pooling the resumed turns' TTFT and
+keeping each run's decode-gap statistics.
 """
 from __future__ import annotations
 
@@ -239,6 +241,31 @@ async def run_engine(args, async_load: bool) -> dict:
         shutil.rmtree(root, ignore_errors=True)
 
 
+def combine(runs: list[dict]) -> dict:
+    """Pool TTFT over separate runs of one configuration; keep decode gaps per run."""
+    keep = {k: v for k, v in runs[0].items() if k not in ("seed", "environment", "sync", "async")}
+    for other in runs[1:]:
+        if {k: v for k, v in other.items() if k in keep} != keep:
+            raise ValueError("runs differ in configuration")
+    summary = {}
+    for engine in ("sync", "async"):
+        if engine not in runs[0]:
+            continue
+        summary[engine] = {}
+        for arm in ("recompute", engine):
+            per_run = [run[engine][arm] for run in runs]
+            ttft = [value for result in per_run for value in result["ttft_ms"]]
+            entry = {"ttft_ms": {**describe(ttft), "median": statistics.median(ttft)},
+                     "ttft_ms_median_by_run": [result["ttft_ms_median"] for result in per_run]}
+            for window in ("during_resume", "outside"):
+                entry[window] = {f"{stat}_by_run": [result["decode_gap_ms"][window][stat] for result in per_run]
+                                 for stat in ("n", "p50", "p99", "max")}
+            summary[engine][arm] = entry
+    return {**keep, "runs": len(runs), "seeds": [run["seed"] for run in runs], "summary": summary,
+            "per_run": [{k: run[k] for k in ("sync", "async") if k in run} for run in runs],
+            "environment_by_run": [run["environment"] for run in runs]}
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--model", default="Qwen/Qwen3-1.7B")
@@ -260,10 +287,19 @@ def main() -> None:
                         help="async skips the engine that loads inside start_load_kv")
     parser.add_argument("--trace-dir", type=Path, default=None,
                         help="keep connector events and every decode gap over 20 ms, with timestamps")
+    parser.add_argument("--combine", type=Path, nargs="+", metavar="RUN_JSON",
+                        help="merge these per-run outputs into --output instead of running")
     args = parser.parse_args()
+    if args.combine:
+        result = combine([json.loads(path.read_text()) for path in args.combine])
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(json.dumps(result, indent=1) + "\n")
+        print(args.output)
+        return
     result = {"model": model_label(args.model), "revision": args.revision, "length": args.length,
               "sessions": args.sessions, "streams": args.streams, "resumes": args.resumes,
               "warmup": args.warmup, "interval_s": args.interval, "decode_tokens": args.decode_tokens,
+              "kv_cache_gib": args.kv_cache_gib, "seed": args.seed,
               "max_num_batched_tokens": args.max_num_batched_tokens, "environment": environment(args.store_dir)}
     for async_load in (False, True) if args.engines == "both" else (True,):
         result["async" if async_load else "sync"] = asyncio.run(run_engine(args, async_load))

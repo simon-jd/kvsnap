@@ -10,6 +10,8 @@
 3. ``gateway.recover`` re-registers each session from its manifest and turn 2
    appends 64 tokens. Half the sessions are first evicted from the page cache.
 
+One process is one run; ``--combine`` merges separate runs into one file.
+
 TTFT is client-side. The recompute reference is the same prompt sent to
 engine B directly, once the resumed turn's own durable save has finished. An offload tier that lives in host memory (vLLM's own CPU
 offloading, or this project's volatile tier) starts empty after step 2.
@@ -101,21 +103,44 @@ async def run(args) -> dict:
                 rows.append({"context_tokens": length, "cold": cold, "ttft_ms": (first - start) * 1e3,
                              "recompute_ttft_ms": (reference_first - began) * 1e3, "match": tokens == reference})
                 print(json.dumps(rows[-1]), flush=True)
-        summary = []
-        for length in args.lengths:
-            for cold in (False, True):
-                picked = [r for r in rows if r["context_tokens"] == length and r["cold"] == cold]
-                if picked:
-                    summary.append({"context_tokens": length, "cold": cold, "n": len(picked),
-                                    "ttft_ms_median": statistics.median(r["ttft_ms"] for r in picked),
-                                    "recompute_ttft_ms_median": statistics.median(r["recompute_ttft_ms"] for r in picked),
-                                    "tokens_match": sum(r["match"] for r in picked)})
         runtime.shutdown()
         store.close()
-        return {"model": model_label(args.model), "revision": args.revision, "engine_restart_s": restart_s,
-                "rows": rows, "summary": summary, "environment": measured}
+        return {"model": model_label(args.model), "revision": args.revision, "lengths": args.lengths,
+                "kv_cache_gib": args.kv_cache_gib, "max_num_batched_tokens": args.max_num_batched_tokens,
+                "seed": args.seed, "engine_restart_s": restart_s, "rows": rows, "summary": summarise(rows),
+                "environment": measured}
     finally:
         shutil.rmtree(root, ignore_errors=True)
+
+
+def summarise(rows) -> list[dict]:
+    summary = []
+    for length in sorted({r["context_tokens"] for r in rows}):
+        for cold in (False, True):
+            picked = [r for r in rows if r["context_tokens"] == length and r["cold"] == cold]
+            if not picked:
+                continue
+            ttft = [r["ttft_ms"] for r in picked]
+            recompute = [r["recompute_ttft_ms"] for r in picked]
+            summary.append({"context_tokens": length, "cold": cold, "n": len(picked),
+                            "ttft_ms_median": statistics.median(ttft), "ttft_ms_min": min(ttft),
+                            "ttft_ms_max": max(ttft), "recompute_ttft_ms_median": statistics.median(recompute),
+                            "recompute_ttft_ms_min": min(recompute), "recompute_ttft_ms_max": max(recompute),
+                            "tokens_match": sum(r["match"] for r in picked)})
+    return summary
+
+
+def combine(runs: list[dict]) -> dict:
+    """Pool the sessions of separate runs of one configuration."""
+    keep = {k: v for k, v in runs[0].items()
+            if k not in ("seed", "engine_restart_s", "rows", "summary", "environment")}
+    for other in runs[1:]:
+        if {k: v for k, v in other.items() if k in keep} != keep:
+            raise ValueError("runs differ in configuration")
+    rows = [{**row, "run": index} for index, run in enumerate(runs) for row in run["rows"]]
+    return {**keep, "runs": len(runs), "seeds": [run["seed"] for run in runs],
+            "engine_restart_s_by_run": [run["engine_restart_s"] for run in runs],
+            "rows": rows, "summary": summarise(rows), "environment_by_run": [run["environment"] for run in runs]}
 
 
 def main() -> None:
@@ -129,10 +154,15 @@ def main() -> None:
     parser.add_argument("--max-num-batched-tokens", type=int, default=16384)
     parser.add_argument("--store-dir", default=None)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--combine", type=Path, nargs="+", metavar="RUN_JSON",
+                        help="merge these per-run outputs into --output instead of running")
     args = parser.parse_args()
     if args.revision.lower() == "none":
         args.revision = None
-    result = asyncio.run(run(args))
+    if args.combine:
+        result = combine([json.loads(path.read_text()) for path in args.combine])
+    else:
+        result = asyncio.run(run(args))
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, indent=1) + "\n")
     print(args.output)

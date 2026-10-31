@@ -18,6 +18,10 @@ arms include the gateway's manifest checks, SQLite lease, reading and
 CRC-checking every block, the H2D copy and the 64-token suffix prefill. Each
 length gets one discarded warm-up sample of every arm first.
 
+One process is one run. ``--combine`` merges the outputs of separate runs
+(fresh engines, different seeds) into one file whose rows pool every sample
+and keep each run's median.
+
 The 16 greedy tokens and their log-probabilities are compared with the
 recompute's. With ``--batch-invariant`` they must be bit-identical; with
 vLLM's default kernels the prefill of a 64-token suffix and of the whole
@@ -208,7 +212,7 @@ async def run(args) -> dict:
                           f"copies {result.get('copies')} match={result['match']} "
                           f"logprobs_equal={result['logprobs_equal']} max_delta={result['max_logprob_delta']:.2e}",
                           flush=True)
-        return {**summarise(samples, args), "environment": measured}
+        return {**config(args), "seed": args.seed, "rows": summarise(samples), "environment": measured}
     finally:
         runtime.shutdown()
         store.close()
@@ -216,13 +220,22 @@ async def run(args) -> dict:
             shutil.rmtree(root, ignore_errors=True)
 
 
-def summarise(samples, args) -> dict:
+def config(args) -> dict:
+    return {"model": model_label(args.model), "revision": args.revision, "batch_invariant": args.batch_invariant,
+            "cudagraph_mode": args.cudagraph_mode, "async_load": args.async_load, "perturb": args.perturb,
+            "max_num_batched_tokens": args.max_num_batched_tokens, "kv_cache_gib": args.kv_cache_gib,
+            "suffix_tokens": SUFFIX, "output_tokens": OUTPUT}
+
+
+def summarise(samples, run_medians=None) -> list[dict]:
     rows = []
     for (length, arm), values in sorted(samples.items()):
         ttft = [v["ttft_ms"] for v in values]
         row = {"context_tokens": length, "arm": arm, "n": len(values),
                "ttft_ms_median": statistics.median(ttft), "ttft_ms_min": min(ttft), "ttft_ms_max": max(ttft),
                "ttft_ms": ttft}
+        if run_medians is not None:
+            row["ttft_ms_median_by_run"] = run_medians[(length, arm)]
         for key in ("save_ms", "admit_ms", "read_ms", "h2d_ms", "after_ms", "bytes", "copies"):
             present = [v[key] for v in values if v.get(key) is not None]
             if present:
@@ -231,11 +244,25 @@ def summarise(samples, args) -> dict:
             row["tokens_match"] = sum(v["match"] for v in values)
             row["logprobs_equal"] = sum(v["logprobs_equal"] for v in values)
             row["max_logprob_delta"] = max(v["max_logprob_delta"] for v in values)
+        row["samples"] = values
         rows.append(row)
-    return {"model": model_label(args.model), "revision": args.revision, "batch_invariant": args.batch_invariant,
-            "cudagraph_mode": args.cudagraph_mode, "async_load": args.async_load, "perturb": args.perturb,
-            "max_num_batched_tokens": args.max_num_batched_tokens,
-            "suffix_tokens": SUFFIX, "output_tokens": OUTPUT, "rows": rows}
+    return rows
+
+
+def combine(runs: list[dict]) -> dict:
+    """Pool the samples of separate runs of one configuration."""
+    keep = {k: v for k, v in runs[0].items() if k not in ("seed", "rows", "environment")}
+    for other in runs[1:]:
+        if {k: v for k, v in other.items() if k in keep} != keep:
+            raise ValueError("runs differ in configuration")
+    samples, medians = defaultdict(list), defaultdict(list)
+    for run in runs:
+        for row in run["rows"]:
+            key = (row["context_tokens"], row["arm"])
+            samples[key].extend(row["samples"])
+            medians[key].append(row["ttft_ms_median"])
+    return {**keep, "runs": len(runs), "seeds": [run["seed"] for run in runs],
+            "rows": summarise(samples, medians), "environment_by_run": [run["environment"] for run in runs]}
 
 
 def main() -> None:
@@ -256,8 +283,13 @@ def main() -> None:
     parser.add_argument("--store-dir", default=None, help="parent directory for the snapshot store (an SSD)")
     parser.add_argument("--keep-store", action="store_true")
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--combine", type=Path, nargs="+", metavar="RUN_JSON",
+                        help="merge these per-run outputs into --output instead of running")
     args = parser.parse_args()
-    result = asyncio.run(run(args))
+    if args.combine:
+        result = combine([json.loads(path.read_text()) for path in args.combine])
+    else:
+        result = asyncio.run(run(args))
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, indent=1) + "\n")
     print(args.output)
