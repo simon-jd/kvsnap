@@ -5,7 +5,9 @@
 36 layers, 64 KiB per (layer, block), 512 blocks (8k tokens, 1.2 GB). Each
 pattern runs through the connector's own data plane and is checked by reading
 the blocks back. Block ids are either one consecutive run (a fresh engine) or
-shuffled (a long-running engine's free list).
+shuffled (a long-running engine's free list). Every pattern is timed as the
+median of 5 copies in each of ``--rounds`` rounds; the file reports the median
+round and every round.
 
     peak            one contiguous 1.2 GB pinned -> device copy
     2d              staging buffer, one cudaMemcpy2DAsync per (layer, run)
@@ -45,6 +47,7 @@ def measure(fn, repeat=5):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--rounds", type=int, default=3, help="independent rounds of every pattern; medians reported")
     args = parser.parse_args()
     measured = environment()
     device = torch.device("cuda:0")
@@ -79,22 +82,27 @@ def main():
 
         dense = torch.empty(nbytes, dtype=torch.uint8, device=device)
         pinned = torch.empty(nbytes, dtype=torch.uint8, pin_memory=True)
-        result = {"bytes": nbytes, "blocks": BLOCKS, "layers": LAYERS, "layer_block_bytes": 64 * 1024,
-                  "peak": nbytes / measure(lambda: dense.copy_(pinned, non_blocking=True)) / 1e9}
         measured["gpu_at_measurement"] = gpu_state()
-        for name, ids in orders.items():
-            patterns = {
-                "2d": lambda: plane.load_staged(ids, staged),
-                "per_block": lambda: plane.load_pinned(ids, singles),
-                "scatter": lambda: plane.load_scatter(ids, [(staged, i * plane.block_bytes) for i in range(BLOCKS)]),
-                "per_block_scatter": lambda: plane.load_scatter(ids, [(a, 0) for a in singles]),
-            }
-            for pattern, fn in patterns.items():
-                seconds = measure(fn)
-                fn()
-                check(ids)
-                result[f"{pattern}/{name}"] = nbytes / seconds / 1e9
-                print(f"{pattern:>18} {name:<12} {nbytes / seconds / 1e9:6.2f} GB/s  {seconds * 1e3:6.1f} ms", flush=True)
+        by_round = {}
+        for _ in range(args.rounds):
+            by_round.setdefault("peak", []).append(nbytes / measure(lambda: dense.copy_(pinned, non_blocking=True)) / 1e9)
+            for name, ids in orders.items():
+                patterns = {
+                    "2d": lambda: plane.load_staged(ids, staged),
+                    "per_block": lambda: plane.load_pinned(ids, singles),
+                    "scatter": lambda: plane.load_scatter(ids, [(staged, i * plane.block_bytes) for i in range(BLOCKS)]),
+                    "per_block_scatter": lambda: plane.load_scatter(ids, [(a, 0) for a in singles]),
+                }
+                for pattern, fn in patterns.items():
+                    seconds = measure(fn)
+                    fn()
+                    check(ids)
+                    by_round.setdefault(f"{pattern}/{name}", []).append(nbytes / seconds / 1e9)
+                    print(f"{pattern:>18} {name:<12} {nbytes / seconds / 1e9:6.2f} GB/s  {seconds * 1e3:6.1f} ms",
+                          flush=True)
+        result = {"bytes": nbytes, "blocks": BLOCKS, "layers": LAYERS, "layer_block_bytes": 64 * 1024,
+                  "rounds": args.rounds, **{key: statistics.median(values) for key, values in by_round.items()},
+                  "gb_per_s_by_round": {key: [round(v, 2) for v in values] for key, values in by_round.items()}}
         for allocation in singles:
             allocation.close()
     result["environment"] = measured
