@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kvsnap"
+version = "0.2.0"
+description = "Session KV-cache snapshots for vLLM"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+kvsnap = "kvsnap.gateway.cli:main"
+
+[project.optional-dependencies]
+gpu = ["vllm==0.31.0", "torch==2.13.0"]
+test = ["pytest>=8,<10"]
+
+[tool.setuptools.packages.find]
+include = ["kvsnap*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+

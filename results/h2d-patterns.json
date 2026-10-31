@@ -1,0 +1,15 @@
+{
+  "bytes": 1207959552,
+  "blocks": 512,
+  "layers": 36,
+  "layer_block_bytes": 65536,
+  "peak": 19.41,
+  "2d/consecutive": 17.88,
+  "per_block/consecutive": 13.78,
+  "scatter/consecutive": 17.29,
+  "per_block_scatter/consecutive": 17.1,
+  "2d/shuffled": 13.0,
+  "per_block/shuffled": 13.76,
+  "scatter/shuffled": 17.29,
+  "per_block_scatter/shuffled": 17.11
+}

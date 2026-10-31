@@ -1,0 +1,96 @@
+{
+ "model": "~/.cache/huggingface/hub/models--Qwen--Qwen3-8B/snapshots/b968826d9c46dd6066d109eabc6255188de91218",
+ "engine_restart_s": 20.648522512055933,
+ "rows": [
+  {
+   "context_tokens": 2048,
+   "cold": true,
+   "ttft_ms": 180.00166001729667,
+   "recompute_ttft_ms": 215.7196660991758,
+   "match": true
+  },
+  {
+   "context_tokens": 2048,
+   "cold": false,
+   "ttft_ms": 97.9268851224333,
+   "recompute_ttft_ms": 215.59314196929336,
+   "match": true
+  },
+  {
+   "context_tokens": 2048,
+   "cold": true,
+   "ttft_ms": 182.54424817860126,
+   "recompute_ttft_ms": 210.21630708128214,
+   "match": true
+  },
+  {
+   "context_tokens": 2048,
+   "cold": false,
+   "ttft_ms": 95.8982789888978,
+   "recompute_ttft_ms": 212.89381315000355,
+   "match": true
+  },
+  {
+   "context_tokens": 8192,
+   "cold": true,
+   "ttft_ms": 636.803254019469,
+   "recompute_ttft_ms": 1053.950450848788,
+   "match": true
+  },
+  {
+   "context_tokens": 8192,
+   "cold": false,
+   "ttft_ms": 242.11660400032997,
+   "recompute_ttft_ms": 970.4091870225966,
+   "match": true
+  },
+  {
+   "context_tokens": 8192,
+   "cold": true,
+   "ttft_ms": 596.2480760645121,
+   "recompute_ttft_ms": 970.2598860021681,
+   "match": true
+  },
+  {
+   "context_tokens": 8192,
+   "cold": false,
+   "ttft_ms": 245.13027793727815,
+   "recompute_ttft_ms": 985.3900210000575,
+   "match": true
+  }
+ ],
+ "summary": [
+  {
+   "context_tokens": 2048,
+   "cold": false,
+   "n": 2,
+   "ttft_ms_median": 96.91258205566555,
+   "recompute_ttft_ms_median": 214.24347755964845,
+   "tokens_match": 2
+  },
+  {
+   "context_tokens": 2048,
+   "cold": true,
+   "n": 2,
+   "ttft_ms_median": 181.27295409794897,
+   "recompute_ttft_ms_median": 212.96798659022897,
+   "tokens_match": 2
+  },
+  {
+   "context_tokens": 8192,
+   "cold": false,
+   "n": 2,
+   "ttft_ms_median": 243.62344096880406,
+   "recompute_ttft_ms_median": 977.899604011327,
+   "tokens_match": 2
+  },
+  {
+   "context_tokens": 8192,
+   "cold": true,
+   "n": 2,
+   "ttft_ms_median": 616.5256650419906,
+   "recompute_ttft_ms_median": 1012.105168425478,
+   "tokens_match": 2
+  }
+ ]
+}

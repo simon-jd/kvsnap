@@ -1,0 +1,24 @@
+__pycache__/
+*.py[cod]
+.venv*/
+.pytest_cache/
+build/
+*.egg-info/
+*.so
+.local-data/
+.env
+.env.*
+*.pem
+*.key
+*.safetensors
+*.pt
+*.pth
+*.bin
+*.blob
+*.sqlite3*
+*.f32le
+dist/
+*.log
+
+# Raw benchmark output stays on disk; results/*.json are committed.
+/results/raw/
