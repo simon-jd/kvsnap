@@ -37,7 +37,7 @@ import tempfile
 import threading
 import time
 
-from bench.environment import environment
+from bench.environment import ROOT, environment
 
 BLOCK_TOKENS = 16
 
@@ -145,7 +145,10 @@ def run(args) -> dict:
     for path in sorted(root.rglob("*"), reverse=True):
         path.unlink() if path.is_file() or path.is_socket() else path.rmdir()
     root.rmdir()
-    return {"kvsnap": str(Path(kvsnap.__file__).parent), "code_commit": args.code_commit,
+    package = Path(kvsnap.__file__).resolve().parent
+    if package.is_relative_to(ROOT):
+        package = package.relative_to(ROOT)
+    return {"kvsnap": str(package), "code_commit": args.code_commit,
             "sessions": args.sessions, "blocks": args.blocks, "block_bytes": args.block_bytes,
             "repeat": args.repeat, "fill_s": round(fill_s, 2), "operations": result,
             "environment": environment(args.store_dir)}
