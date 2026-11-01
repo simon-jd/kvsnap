@@ -11,7 +11,8 @@ start and when measuring began, the host's load average, and the git commit
 that added the last change to the store and the benchmarks, and report
 `dirty: true` only because the suite rewrites tracked results files as it
 goes; no source file differed from that commit. Later commits change only
-`bench/environment.py` (the dirty flag now ignores `results/`) and the docs.
+how `bench/environment.py` sets that flag (it now ignores `results/`), how
+`bench/store_stress.py` records its package path, and the docs.
 
 | File | What it holds | Runs |
 |---|---|---|

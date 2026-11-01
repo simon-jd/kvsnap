@@ -74,8 +74,9 @@ to save at.
    tokens, KV boundary, sampling state and outputs. It returns `True` so vLLM
    keeps the blocks. For a host-memory save it first evicts least recently
    used host snapshots until the new one fits. This runs on the scheduler
-   thread, inside the engine step, and each eviction is a full invalidation
-   (see [Known gaps](#known-gaps)). Saving only happens at a turn boundary.
+   thread, inside the engine step; an eviction releases only the evicted
+   snapshot's blob references, without an fsync. Saving only happens at a
+   turn boundary.
 2. `wait_for_save` (worker) records an event on the engine's stream and
    hands the save to a job on the save executor. The job:
    1. reserves pinned memory;
@@ -96,10 +97,11 @@ to save at.
    (host). It never reads the payloads. The request stays pending push work
    until its commit finishes, so vLLM keeps stepping, and an unexpected
    commit failure stops the engine at the next step. The commit holds the
-   store's lock throughout, and the scheduler's own store calls during a
-   step wait for it: the manifest lookup in `get_num_new_matched_tokens`,
-   the lease in `update_state_after_alloc` and host-tier eviction in
-   `request_finished`.
+   store's writer lock throughout. The scheduler's reads during a step (the
+   manifest lookup in `get_num_new_matched_tokens`, the host-tier size check
+   in `request_finished`) go through their own connection and do not wait
+   for it; its writes do: the lease in `update_state_after_alloc`, and an
+   eviction when the host tier is full.
 
 **Failure policy.** The rule is whether a DMA was issued.
 - **Before any copy:**
@@ -124,7 +126,7 @@ to save at.
 - `manifests.sqlite3` (WAL mode) holds:
   - sessions and their generations;
   - snapshots and their states;
-  - blob reference counts and leases;
+  - blob reference counts (one per snapshot that holds the blob) and leases;
   - closed sessions;
   - failed saves;
   - snapshot access times (host-tier LRU order).
@@ -159,15 +161,28 @@ can wait behind a durable commit's SQLite transactions. Host-memory commits
 take the lock too; host-memory restores do not need it.
 
 **Readers do not take the writer lock.** Every write, from any process,
-takes `.writer.lock` and `BEGIN IMMEDIATE`. A read takes only its own
-connection's lock: in WAL mode each statement sees one committed state.
-That leaves one visible intermediate state, a durable snapshot between its
-`Writing` insert and its publish, which readers treat as not there yet.
+takes `.writer.lock` and `BEGIN IMMEDIATE`. Each thread reads through its
+own query-only connection, and in WAL mode each statement sees one committed
+state, so a read never waits for a writer in this process or another. (A
+thread that holds the writer lock reads through the writer's connection and
+sees its own transaction.) That leaves one visible intermediate state, a
+durable snapshot between its `Writing` insert and its publish, which readers
+treat as not there yet.
+
+**Costs that do not grow with the store.** Invalidating or deleting a
+snapshot decrements the reference counts of its own blobs, found through an
+index on `snapshot_blobs(blob_id)`; host-memory invalidations skip the fsync,
+since recovery invalidates every host snapshot anyway. Disk admission keeps
+a running total of blob bytes in `.disk_usage`: a save reserves its new
+blobs' bytes under the blob lock, and garbage collection and recovery
+recount the directory. `bench/store_stress.py` times each operation with
+500 sessions in the store (`results/store-stress.json`).
 
 `recover()` runs at startup:
 - it invalidates every snapshot that is not in a committed state;
 - it re-validates the payloads of committed ones;
-- it rebuilds reference counts.
+- it rebuilds reference counts from the committed manifests, as garbage
+  collection also does.
 
 `tests/crash` SIGKILLs a writer at eight points of `SnapshotStore.commit` and
 checks that recovery keeps exactly the committed snapshots. The connector's
@@ -201,15 +216,15 @@ regions on the GPU.
 
 `bench/h2d_patterns.py` measures each way of copying 512 such blocks
 (1.2 GB, shaped like Qwen3-8B) through this data plane, and reads them back
-to check them (`results/h2d-patterns.json`):
+to check them (`results/h2d-patterns.json`, median of 3 rounds):
 
 | Pattern | Consecutive block ids | Shuffled block ids |
 |---|---|---|
-| One contiguous copy (peak) | 19.4 GB/s | |
-| One `cudaMemcpy2DAsync` per (layer, run of consecutive ids) | 17.9 GB/s | 13.0 GB/s |
-| One copy per (layer, block) from per-block allocations | 13.8 GB/s | 13.8 GB/s |
-| **Contiguous H2D in 64 MiB chunks + GPU scatter** | **17.3 GB/s** | **17.3 GB/s** |
-| Per-block allocations, one 2.25 MiB copy each + GPU scatter | 17.1 GB/s | 17.1 GB/s |
+| One contiguous copy (peak) | 19.1 GB/s | |
+| One `cudaMemcpy2DAsync` per (layer, run of consecutive ids) | 17.5 GB/s | 12.9 GB/s |
+| One copy per (layer, block) from per-block allocations | 13.7 GB/s | 13.7 GB/s |
+| **Contiguous H2D in 64 MiB chunks + GPU scatter** | **17.1 GB/s** | **17.1 GB/s** |
+| Per-block allocations, one 2.25 MiB copy each + GPU scatter | 16.9 GB/s | 16.9 GB/s |
 
 The copy engine is efficient only for large copies. vLLM's free list
 scatters block ids in a long-running engine, and the host tier keeps one
@@ -223,7 +238,7 @@ the KV cache with one `index_copy_`, on the same copy stream, through an
 int64 view of that layer's storage. A save is the mirror image:
 `index_select` per layer into staging, then large D2H copies. The scatter
 costs an extra pass over device memory. That is why it trails the 2D copy on
-consecutive ids (17.3 vs 17.9 GB/s), but the scatter does not depend on
+consecutive ids (17.1 vs 17.5 GB/s), but the scatter does not depend on
 block order.
 
 The C++ pool (`csrc/dataplane/cuda_pool.cpp`) owns a `cudaHostAlloc` arena, a
@@ -241,24 +256,35 @@ event-record, wait and close failures.
 
 ## Known gaps
 
-* **Saves still cost the batch a little.** In the last two traced runs
-  (`results/turn-end-traces.json`), up to three engine steps at a turn end
-  took 20–27 ms instead of about 8–9 ms. The save thread's gather and D2H
+* **Saves still cost the batch a little.** In a trace of this code under
+  load (`results/turn-end-trace.json`), 6 of 54 turn ends had engine steps
+  of 22–44 ms instead of about 7 ms. The save thread's gather and D2H
   share the GPU with the decode kernels, and its hashing and bookkeeping
   share the GIL with the engine thread. A native gather that releases the
   GIL, and hashing only the blocks a turn changed, are next.
-* **Some scheduler-side work is in the engine step, and some store paths
-  grow with the store.** Matching, leasing and host-tier eviction run on the
-  scheduler thread and can wait for an in-flight commit (see Save, step 3).
-  Every invalidation, an eviction included, is a `synchronous=FULL`
-  transaction that rebuilds every blob reference count: with six 8k-token
-  sessions stored, the under-load benchmark's own invalidations stalled its
-  event loop for 212–297 ms. A disk save's capacity check stats every blob
-  file under the exclusive blob lock.
-* **Admission and reporting.** Admission takes 3–15 ms per restore: the
-  generation claim, a manifest lookup in the gateway and in the scheduler,
-  and the lease. The async load then costs one engine step to be reported,
-  about 20 ms under load, which is now the larger fixed cost.
+* **Some scheduler-side work is in the engine step.** Matching, leasing and
+  host-tier eviction run on the scheduler thread. Reads no longer wait for
+  the commit thread, but the lease and an eviction are writes, and the
+  commit thread holds the writer lock for the whole of `commit_prepared`,
+  owner round trips and blob-header checks included, not only for its
+  transactions. An eviction also measures the host tier, which walks every
+  host block's reference: 0.7 s with 128k host blocks in the store stress
+  test, though pinned memory keeps a real tier to a few thousand blocks.
+* **Garbage collection and recovery still scale with the store.** Both
+  rebuild every reference count from the committed manifests and recount
+  the blob directory. Recovery runs when a store opens; `collect_garbage()`
+  runs only when called, and nothing on the serving path calls it, so
+  unreferenced blob files stay on disk until something does (the benchmarks
+  call it between sessions).
+* **Admission and reporting.** Admission takes 3–17 ms per host restore
+  and 14–35 ms per disk restore: the generation claim (fsync'd for disk
+  turns), a manifest lookup in the gateway and in the scheduler, and the
+  lease. The async load then costs one engine step to be reported, 22 ms of
+  TTFT under load, which is now the larger fixed cost.
+* **Slower than LMCache from host memory.** Restoring an evicted 8k-token
+  Qwen3-8B session took 121 ms from kvsnap's host tier against 75 ms with
+  LMCache's CPU backend (README). kvsnap's copy is a 73 ms H2D that nothing
+  overlaps.
 * **Read and copy are not pipelined.** A disk restore reads every block
   before the first H2D. Chunked overlap would hide the shorter of the two.
 * **Synchronous scheduling only.** `request_finished` needs settled tokens;
@@ -266,6 +292,6 @@ event-record, wait and close failures.
 * **Exactness needs batch-invariant kernels.** With vLLM's default kernels,
   prefilling a 64-token suffix and prefilling the whole prompt are different
   floating-point computations. Logprobs then differ from recompute by up to
-  a few nats, and greedy tokens sometimes diverge. vLLM's own prefix cache
-  is not bit-exact without batch-invariant kernels either, for the same
-  reason.
+  3.5 nats, and greedy tokens diverged in 37 of 405 restores. vLLM's own
+  prefix cache is not bit-exact without batch-invariant kernels either, for
+  the same reason.
