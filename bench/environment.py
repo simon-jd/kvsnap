@@ -39,8 +39,13 @@ def gpu_state() -> dict:
 
 
 def git_state() -> dict:
+    """The commit, and whether tracked files other than results differ from it.
+
+    results/ is left out: the suite rewrites tracked results files as it runs.
+    """
     commit = _run("git", "-C", str(ROOT), "rev-parse", "HEAD")
-    status = _run("git", "-C", str(ROOT), "status", "--porcelain", "--untracked-files=no")
+    status = _run("git", "-C", str(ROOT), "status", "--porcelain", "--untracked-files=no", "--",
+                  ".", ":(exclude)results")
     return {"commit": commit, "dirty": bool(status) if status is not None else None}
 
 
