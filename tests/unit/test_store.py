@@ -387,6 +387,25 @@ class HostTierAndWriterTests(unittest.TestCase):
             self.store.get_manifest("b")
         self.assertEqual(self.store.load("c"), [b"c" * 8, b"C" * 8])
 
+    def test_making_room_measures_the_host_tier_only_when_a_bound_does_not_fit(self):
+        measured = []
+        real = SnapshotStore.volatile_bytes
+
+        def counted(store):
+            measured.append(1)
+            return real(store)
+
+        with patch.object(SnapshotStore, "volatile_bytes", counted):
+            self.store.commit(manifest("a", "a", "volatile"), [b"a" * 8, b"A" * 8])
+            self.assertEqual(self.store.make_room_volatile(16, 64), [])     # measured once: 16 bytes
+            self.assertEqual(len(measured), 1)
+            self.store.commit(manifest("b", "b", "volatile"), [b"b" * 8, b"B" * 8])
+            self.assertEqual(self.store.make_room_volatile(16, 64), [])     # bound 32 + 16 fits
+            self.assertEqual(len(measured), 1)
+            self.assertEqual(self.store.make_room_volatile(40, 64), ["a"])  # bound too high: measure, evict
+            self.assertGreater(len(measured), 1)
+        self.assertEqual(self.store.volatile_bytes(), 16)
+
     def test_save_failures_are_recorded_for_the_gateway_and_survive_reopen(self):
         self.store.record_save_failure("s", "PinnedCapacityError: pinned capacity exhausted")
         self.store.close()

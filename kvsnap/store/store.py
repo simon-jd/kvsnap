@@ -139,6 +139,7 @@ class SnapshotStore:
         self._blob_file = (self.root / ".blob.lock").open("a+b")
         self._blob_lock = _ProcessLock(self._blob_file)
         self._read_local = threading.local()
+        self._host_bytes_bound = None   # see make_room_volatile
         self._read_connections: list[sqlite3.Connection] = []
         self._read_connections_lock = threading.Lock()
         self._lock.__enter__()
@@ -549,6 +550,8 @@ class SnapshotStore:
                                 (body["state"], serialized, snapshot_id))
                 self.db.execute("INSERT OR REPLACE INTO snapshot_access VALUES(?,?)", (snapshot_id, time.time()))
                 self._hit("before_manifest_commit")
+            if level == "volatile":
+                self._count_host_commit(entries.values())
             self._hit("after_manifest_commit")
             self._hit("before_gpu_release")
             return json.loads(serialized)
@@ -823,6 +826,7 @@ class SnapshotStore:
                 self.db.executemany("INSERT INTO snapshot_blobs VALUES(?,?)",
                                     [(body["snapshot_id"], key) for key in locations])
                 self._hit("before_manifest_commit")
+            self._count_host_commit((segments[key]["length"], None) for key in locations)
             # No directory fsync: if a crash brings the intent back, it is an
             # expired temporary root that collection reclaims, and the host
             # memory it described is gone with the process anyway.
@@ -895,13 +899,18 @@ class SnapshotStore:
         leased snapshots remain, the caller's save may still not fit.
         """
         evicted = []
-        # Usually nothing has to go, and that needs no writer lock: this runs
-        # on the scheduler thread at every turn end.
-        if self.volatile_bytes() + needed_bytes <= capacity_bytes:
+        # Usually nothing has to go. This runs on the scheduler thread at every
+        # turn end, and measuring the tier walks every host block, so first try
+        # an upper bound: the size last measured plus every host-memory commit
+        # this store has made since. Invalidations elsewhere only make it looser.
+        if self._host_bytes_bound is not None and self._host_bytes_bound + needed_bytes <= capacity_bytes:
+            return evicted
+        used = self._host_bytes_bound = self.volatile_bytes()
+        if used + needed_bytes <= capacity_bytes:
             return evicted
         with self._lock:
             self._check_owner()
-            while self.volatile_bytes() + needed_bytes > capacity_bytes:
+            while (used := self.volatile_bytes()) + needed_bytes > capacity_bytes:
                 row = self.db.execute(
                     "SELECT s.snapshot_id FROM snapshots s LEFT JOIN snapshot_access a ON a.snapshot_id=s.snapshot_id "
                     "WHERE s.durability='volatile' AND s.state='HostValid' AND s.snapshot_id NOT IN "
@@ -911,7 +920,13 @@ class SnapshotStore:
                     break
                 self._invalidate(row[0], "evicted from the host tier (least recently used)")
                 evicted.append(row[0])
+            self._host_bytes_bound = used
         return evicted
+
+    def _count_host_commit(self, entries):
+        """Raise the host tier's upper bound by a committed snapshot's blocks (lengths first)."""
+        if self._host_bytes_bound is not None:
+            self._host_bytes_bound += sum(length for length, _ in entries)
 
     def invalidate_snapshot(self, snapshot_id, reason):
         with self._lock:
