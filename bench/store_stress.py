@@ -12,6 +12,8 @@ issue on a turn:
                                     prepares it (admission, writes) and the
                                     scheduler's commit_prepared publishes it
   invalidate_host / invalidate_disk one snapshot, as eviction and failed loads do
+  make_room_fits                    make_room_volatile when the tier has room, as at
+                                    every host-memory turn end
   evict_one                         make_room_volatile forcing one LRU eviction
   get_manifest                      the scheduler's lookup when a resume arrives
   lease                             acquire_lease + release_lease
@@ -109,12 +111,13 @@ def run(args) -> dict:
     result["invalidate_disk"] = describe([timed(store.invalidate_snapshot, disks[i], "stress")
                                           for i in range(args.repeat)])
     block = args.block_bytes
-
-    def evict_one():
-        used = store.volatile_bytes()
-        store.make_room_volatile(block, used)
-
-    result["evict_one"] = describe([timed(evict_one) for _ in range(args.repeat)])
+    result["make_room_fits"] = describe([timed(store.make_room_volatile, block, 1 << 40)
+                                         for _ in range(args.repeat)])
+    evictions = []
+    for _ in range(args.repeat):
+        full = store.volatile_bytes()            # a tier exactly full: the next block forces one eviction
+        evictions.append(timed(store.make_room_volatile, block, full))
+    result["evict_one"] = describe(evictions)
 
     stop, committed = threading.Event(), []
 
