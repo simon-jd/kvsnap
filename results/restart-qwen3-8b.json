@@ -1,96 +1,474 @@
 {
- "model": "~/.cache/huggingface/hub/models--Qwen--Qwen3-8B/snapshots/b968826d9c46dd6066d109eabc6255188de91218",
- "engine_restart_s": 20.648522512055933,
+ "model": "Qwen/Qwen3-8B",
+ "revision": "b968826d9c46dd6066d109eabc6255188de91218",
+ "lengths": [
+  2048,
+  8192
+ ],
+ "kv_cache_gib": 2,
+ "max_num_batched_tokens": 8448,
+ "runs": 3,
+ "seeds": [
+  1,
+  2,
+  3
+ ],
+ "engine_restart_s_by_run": [
+  19.400515157962218,
+  19.156947697978467,
+  19.518600315088406
+ ],
  "rows": [
   {
    "context_tokens": 2048,
    "cold": true,
-   "ttft_ms": 180.00166001729667,
-   "recompute_ttft_ms": 215.7196660991758,
-   "match": true
+   "ttft_ms": 242.43303202092648,
+   "recompute_ttft_ms": 209.99482087790966,
+   "match": true,
+   "run": 0
   },
   {
    "context_tokens": 2048,
    "cold": false,
-   "ttft_ms": 97.9268851224333,
-   "recompute_ttft_ms": 215.59314196929336,
-   "match": true
+   "ttft_ms": 99.00932898744941,
+   "recompute_ttft_ms": 210.767192998901,
+   "match": true,
+   "run": 0
   },
   {
    "context_tokens": 2048,
    "cold": true,
-   "ttft_ms": 182.54424817860126,
-   "recompute_ttft_ms": 210.21630708128214,
-   "match": true
+   "ttft_ms": 191.50418601930141,
+   "recompute_ttft_ms": 209.7756618168205,
+   "match": true,
+   "run": 0
   },
   {
    "context_tokens": 2048,
    "cold": false,
-   "ttft_ms": 95.8982789888978,
-   "recompute_ttft_ms": 212.89381315000355,
-   "match": true
+   "ttft_ms": 102.28189895860851,
+   "recompute_ttft_ms": 211.07354806736112,
+   "match": true,
+   "run": 0
   },
   {
    "context_tokens": 8192,
    "cold": true,
-   "ttft_ms": 636.803254019469,
-   "recompute_ttft_ms": 1053.950450848788,
-   "match": true
+   "ttft_ms": 595.0197360944003,
+   "recompute_ttft_ms": 882.7932509593666,
+   "match": true,
+   "run": 0
   },
   {
    "context_tokens": 8192,
    "cold": false,
-   "ttft_ms": 242.11660400032997,
-   "recompute_ttft_ms": 970.4091870225966,
-   "match": true
+   "ttft_ms": 266.92991401068866,
+   "recompute_ttft_ms": 886.6314189508557,
+   "match": true,
+   "run": 0
   },
   {
    "context_tokens": 8192,
    "cold": true,
-   "ttft_ms": 596.2480760645121,
-   "recompute_ttft_ms": 970.2598860021681,
-   "match": true
+   "ttft_ms": 597.3482180852443,
+   "recompute_ttft_ms": 884.5355988014489,
+   "match": true,
+   "run": 0
   },
   {
    "context_tokens": 8192,
    "cold": false,
-   "ttft_ms": 245.13027793727815,
-   "recompute_ttft_ms": 985.3900210000575,
-   "match": true
+   "ttft_ms": 233.40609692968428,
+   "recompute_ttft_ms": 885.5774451512843,
+   "match": true,
+   "run": 0
+  },
+  {
+   "context_tokens": 2048,
+   "cold": true,
+   "ttft_ms": 189.67562704347074,
+   "recompute_ttft_ms": 209.96128302067518,
+   "match": true,
+   "run": 1
+  },
+  {
+   "context_tokens": 2048,
+   "cold": false,
+   "ttft_ms": 92.99942501820624,
+   "recompute_ttft_ms": 209.4121379777789,
+   "match": true,
+   "run": 1
+  },
+  {
+   "context_tokens": 2048,
+   "cold": true,
+   "ttft_ms": 183.4927808959037,
+   "recompute_ttft_ms": 208.91219307668507,
+   "match": true,
+   "run": 1
+  },
+  {
+   "context_tokens": 2048,
+   "cold": false,
+   "ttft_ms": 91.95966715924442,
+   "recompute_ttft_ms": 210.9149710740894,
+   "match": true,
+   "run": 1
+  },
+  {
+   "context_tokens": 8192,
+   "cold": true,
+   "ttft_ms": 597.4860519636422,
+   "recompute_ttft_ms": 883.1660919822752,
+   "match": true,
+   "run": 1
+  },
+  {
+   "context_tokens": 8192,
+   "cold": false,
+   "ttft_ms": 241.25909293070436,
+   "recompute_ttft_ms": 882.9094669781625,
+   "match": true,
+   "run": 1
+  },
+  {
+   "context_tokens": 8192,
+   "cold": true,
+   "ttft_ms": 592.9196141660213,
+   "recompute_ttft_ms": 882.7051930129528,
+   "match": true,
+   "run": 1
+  },
+  {
+   "context_tokens": 8192,
+   "cold": false,
+   "ttft_ms": 252.05287500284612,
+   "recompute_ttft_ms": 884.9255610257387,
+   "match": true,
+   "run": 1
+  },
+  {
+   "context_tokens": 2048,
+   "cold": true,
+   "ttft_ms": 189.18931600637734,
+   "recompute_ttft_ms": 209.31309601292014,
+   "match": true,
+   "run": 2
+  },
+  {
+   "context_tokens": 2048,
+   "cold": false,
+   "ttft_ms": 94.84284301288426,
+   "recompute_ttft_ms": 208.9026200119406,
+   "match": true,
+   "run": 2
+  },
+  {
+   "context_tokens": 2048,
+   "cold": true,
+   "ttft_ms": 183.55851201340556,
+   "recompute_ttft_ms": 209.29850894026458,
+   "match": true,
+   "run": 2
+  },
+  {
+   "context_tokens": 2048,
+   "cold": false,
+   "ttft_ms": 95.35174700431526,
+   "recompute_ttft_ms": 208.75089499168098,
+   "match": false,
+   "run": 2
+  },
+  {
+   "context_tokens": 8192,
+   "cold": true,
+   "ttft_ms": 598.4165449626744,
+   "recompute_ttft_ms": 880.8531749527901,
+   "match": false,
+   "run": 2
+  },
+  {
+   "context_tokens": 8192,
+   "cold": false,
+   "ttft_ms": 238.99017390795052,
+   "recompute_ttft_ms": 884.1380230151117,
+   "match": true,
+   "run": 2
+  },
+  {
+   "context_tokens": 8192,
+   "cold": true,
+   "ttft_ms": 592.6514649763703,
+   "recompute_ttft_ms": 884.1993662063032,
+   "match": true,
+   "run": 2
+  },
+  {
+   "context_tokens": 8192,
+   "cold": false,
+   "ttft_ms": 314.53837803564966,
+   "recompute_ttft_ms": 882.9569180961698,
+   "match": true,
+   "run": 2
   }
  ],
  "summary": [
   {
    "context_tokens": 2048,
    "cold": false,
-   "n": 2,
-   "ttft_ms_median": 96.91258205566555,
-   "recompute_ttft_ms_median": 214.24347755964845,
-   "tokens_match": 2
+   "n": 6,
+   "ttft_ms_median": 95.09729500859976,
+   "ttft_ms_min": 91.95966715924442,
+   "ttft_ms_max": 102.28189895860851,
+   "recompute_ttft_ms_median": 210.08966548833996,
+   "recompute_ttft_ms_min": 208.75089499168098,
+   "recompute_ttft_ms_max": 211.07354806736112,
+   "tokens_match": 5
   },
   {
    "context_tokens": 2048,
    "cold": true,
-   "n": 2,
-   "ttft_ms_median": 181.27295409794897,
-   "recompute_ttft_ms_median": 212.96798659022897,
-   "tokens_match": 2
+   "n": 6,
+   "ttft_ms_median": 189.43247152492404,
+   "ttft_ms_min": 183.4927808959037,
+   "ttft_ms_max": 242.43303202092648,
+   "recompute_ttft_ms_median": 209.54437891487032,
+   "recompute_ttft_ms_min": 208.91219307668507,
+   "recompute_ttft_ms_max": 209.99482087790966,
+   "tokens_match": 6
   },
   {
    "context_tokens": 8192,
    "cold": false,
-   "n": 2,
-   "ttft_ms_median": 243.62344096880406,
-   "recompute_ttft_ms_median": 977.899604011327,
-   "tokens_match": 2
+   "n": 6,
+   "ttft_ms_median": 246.65598396677524,
+   "ttft_ms_min": 233.40609692968428,
+   "ttft_ms_max": 314.53837803564966,
+   "recompute_ttft_ms_median": 884.5317920204252,
+   "recompute_ttft_ms_min": 882.9094669781625,
+   "recompute_ttft_ms_max": 886.6314189508557,
+   "tokens_match": 6
   },
   {
    "context_tokens": 8192,
    "cold": true,
-   "n": 2,
-   "ttft_ms_median": 616.5256650419906,
-   "recompute_ttft_ms_median": 1012.105168425478,
-   "tokens_match": 2
+   "n": 6,
+   "ttft_ms_median": 596.1839770898223,
+   "ttft_ms_min": 592.6514649763703,
+   "ttft_ms_max": 598.4165449626744,
+   "recompute_ttft_ms_median": 882.9796714708209,
+   "recompute_ttft_ms_min": 880.8531749527901,
+   "recompute_ttft_ms_max": 884.5355988014489,
+   "tokens_match": 5
+  }
+ ],
+ "environment_by_run": [
+  {
+   "gpu_at_start": {
+    "name": "NVIDIA GeForce RTX 4090",
+    "driver_version": "595.99.02",
+    "clocks.sm": "2775 MHz",
+    "clocks.mem": "10501 MHz",
+    "clocks.max.sm": "3105 MHz",
+    "clocks.max.mem": "10501 MHz",
+    "pcie.link.gen.current": "4",
+    "pcie.link.gen.max": "4",
+    "pcie.link.width.current": "16",
+    "pcie.link.width.max": "16",
+    "power.limit": "450.00 W",
+    "temperature.gpu": "62",
+    "memory.used": "768 MiB",
+    "memory.total": "24564 MiB",
+    "host_load_average_1_5_15": [
+     5.69,
+     5.33,
+     5.77
+    ]
+   },
+   "git": {
+    "commit": "eceed3997cef1fdc2cf6ee92e67c2695445d3c5e",
+    "dirty": true
+   },
+   "host": {
+    "cpu": "13th Gen Intel(R) Core(TM) i9-13900K",
+    "cpus": 32,
+    "memory_gib": 123.2,
+    "kernel": "7.0.0-38-generic",
+    "load_average_1_5_15": [
+     5.69,
+     5.33,
+     5.77
+    ]
+   },
+   "storage": {
+    "device": "nvme1n1",
+    "model_transport": "Samsung SSD 980 PRO 2TB nvme"
+   },
+   "software": {
+    "python": "3.12.15",
+    "vllm": "0.31.0",
+    "torch": "2.13.0+cu130",
+    "torch_cuda": "13.0"
+   },
+   "gpu_at_measurement": {
+    "name": "NVIDIA GeForce RTX 4090",
+    "driver_version": "595.99.02",
+    "clocks.sm": "2520 MHz",
+    "clocks.mem": "10251 MHz",
+    "clocks.max.sm": "3105 MHz",
+    "clocks.max.mem": "10501 MHz",
+    "pcie.link.gen.current": "4",
+    "pcie.link.gen.max": "4",
+    "pcie.link.width.current": "16",
+    "pcie.link.width.max": "16",
+    "power.limit": "450.00 W",
+    "temperature.gpu": "57",
+    "memory.used": "19382 MiB",
+    "memory.total": "24564 MiB",
+    "host_load_average_1_5_15": [
+     5.12,
+     5.23,
+     5.71
+    ]
+   }
+  },
+  {
+   "gpu_at_start": {
+    "name": "NVIDIA GeForce RTX 4090",
+    "driver_version": "595.99.02",
+    "clocks.sm": "2775 MHz",
+    "clocks.mem": "10501 MHz",
+    "clocks.max.sm": "3105 MHz",
+    "clocks.max.mem": "10501 MHz",
+    "pcie.link.gen.current": "4",
+    "pcie.link.gen.max": "4",
+    "pcie.link.width.current": "16",
+    "pcie.link.width.max": "16",
+    "power.limit": "450.00 W",
+    "temperature.gpu": "60",
+    "memory.used": "764 MiB",
+    "memory.total": "24564 MiB",
+    "host_load_average_1_5_15": [
+     4.89,
+     5.16,
+     5.67
+    ]
+   },
+   "git": {
+    "commit": "eceed3997cef1fdc2cf6ee92e67c2695445d3c5e",
+    "dirty": true
+   },
+   "host": {
+    "cpu": "13th Gen Intel(R) Core(TM) i9-13900K",
+    "cpus": 32,
+    "memory_gib": 123.2,
+    "kernel": "7.0.0-38-generic",
+    "load_average_1_5_15": [
+     4.89,
+     5.16,
+     5.67
+    ]
+   },
+   "storage": {
+    "device": "nvme1n1",
+    "model_transport": "Samsung SSD 980 PRO 2TB nvme"
+   },
+   "software": {
+    "python": "3.12.15",
+    "vllm": "0.31.0",
+    "torch": "2.13.0+cu130",
+    "torch_cuda": "13.0"
+   },
+   "gpu_at_measurement": {
+    "name": "NVIDIA GeForce RTX 4090",
+    "driver_version": "595.99.02",
+    "clocks.sm": "2520 MHz",
+    "clocks.mem": "10251 MHz",
+    "clocks.max.sm": "3105 MHz",
+    "clocks.max.mem": "10501 MHz",
+    "pcie.link.gen.current": "4",
+    "pcie.link.gen.max": "4",
+    "pcie.link.width.current": "16",
+    "pcie.link.width.max": "16",
+    "power.limit": "450.00 W",
+    "temperature.gpu": "56",
+    "memory.used": "19383 MiB",
+    "memory.total": "24564 MiB",
+    "host_load_average_1_5_15": [
+     7.31,
+     5.83,
+     5.88
+    ]
+   }
+  },
+  {
+   "gpu_at_start": {
+    "name": "NVIDIA GeForce RTX 4090",
+    "driver_version": "595.99.02",
+    "clocks.sm": "2775 MHz",
+    "clocks.mem": "10501 MHz",
+    "clocks.max.sm": "3105 MHz",
+    "clocks.max.mem": "10501 MHz",
+    "pcie.link.gen.current": "4",
+    "pcie.link.gen.max": "4",
+    "pcie.link.width.current": "16",
+    "pcie.link.width.max": "16",
+    "power.limit": "450.00 W",
+    "temperature.gpu": "59",
+    "memory.used": "764 MiB",
+    "memory.total": "24564 MiB",
+    "host_load_average_1_5_15": [
+     6.74,
+     5.8,
+     5.86
+    ]
+   },
+   "git": {
+    "commit": "eceed3997cef1fdc2cf6ee92e67c2695445d3c5e",
+    "dirty": true
+   },
+   "host": {
+    "cpu": "13th Gen Intel(R) Core(TM) i9-13900K",
+    "cpus": 32,
+    "memory_gib": 123.2,
+    "kernel": "7.0.0-38-generic",
+    "load_average_1_5_15": [
+     6.74,
+     5.8,
+     5.86
+    ]
+   },
+   "storage": {
+    "device": "nvme1n1",
+    "model_transport": "Samsung SSD 980 PRO 2TB nvme"
+   },
+   "software": {
+    "python": "3.12.15",
+    "vllm": "0.31.0",
+    "torch": "2.13.0+cu130",
+    "torch_cuda": "13.0"
+   },
+   "gpu_at_measurement": {
+    "name": "NVIDIA GeForce RTX 4090",
+    "driver_version": "595.99.02",
+    "clocks.sm": "2520 MHz",
+    "clocks.mem": "10251 MHz",
+    "clocks.max.sm": "3105 MHz",
+    "clocks.max.mem": "10501 MHz",
+    "pcie.link.gen.current": "4",
+    "pcie.link.gen.max": "4",
+    "pcie.link.width.current": "16",
+    "pcie.link.width.max": "16",
+    "power.limit": "450.00 W",
+    "temperature.gpu": "55",
+    "memory.used": "19383 MiB",
+    "memory.total": "24564 MiB",
+    "host_load_average_1_5_15": [
+     7.95,
+     6.38,
+     6.06
+    ]
+   }
   }
  ]
 }

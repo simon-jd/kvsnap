@@ -1,0 +1,246 @@
+{
+ "benchmark": "bench/restore_under_load.py --engines async --trace-dir DIR, other options at their defaults: Qwen3-1.7B, 16 greedy decode streams, six 8k-token host-memory sessions resuming one every 2 s, --max-num-batched-tokens 2048",
+ "summary": "bench/trace_summary.py; times in ms",
+ "traces": [
+  {
+   "label": "published",
+   "code": "the code in this repository, at the commit in its environment",
+   "engines": {
+    "async": {
+     "save_phases_ms": {
+      "d2h": {
+       "n": 61,
+       "min": 56.8,
+       "median": 66.3,
+       "max": 85.7
+      },
+      "prepare": {
+       "n": 61,
+       "min": 109.1,
+       "median": 127.3,
+       "max": 267.8
+      },
+      "commit": {
+       "n": 61,
+       "min": 9.0,
+       "median": 23.0,
+       "max": 115.5
+      },
+      "request_finished": {
+       "n": 61,
+       "min": 0.4,
+       "median": 0.5,
+       "max": 10.4
+      },
+      "host_tier_eviction_in_request_finished": {
+       "n": 61,
+       "min": 0.0,
+       "median": 0.0,
+       "max": 9.5
+      }
+     },
+     "arms": {
+      "async": {
+       "resumed_turns": 54,
+       "turn_end_steps_over_20_ms": [
+        21.6,
+        21.6,
+        26.9,
+        31.4,
+        40.1,
+        41.0,
+        43.8
+       ],
+       "turn_end_steps_per_turn": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        0,
+        2,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+       ],
+       "loop_stalls_over_5_ms": [
+        6.1,
+        6.4,
+        7.3,
+        8.6,
+        42.0
+       ],
+       "loop_stalls_spanning_a_submit": [],
+       "gc_pauses_over_5_ms": []
+      },
+      "recompute": {
+       "resumed_turns": 54,
+       "turn_end_steps_over_20_ms": [
+        40.9,
+        46.5
+       ],
+       "turn_end_steps_per_turn": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+       ],
+       "loop_stalls_over_5_ms": [
+        6.9,
+        7.3,
+        7.5,
+        9.0,
+        9.7,
+        29.9
+       ],
+       "loop_stalls_spanning_a_submit": [],
+       "gc_pauses_over_5_ms": []
+      }
+     }
+    }
+   },
+   "environment": {
+    "gpu_at_start": {
+     "name": "NVIDIA GeForce RTX 4090",
+     "driver_version": "595.99.02",
+     "clocks.sm": "2790 MHz",
+     "clocks.mem": "10501 MHz",
+     "clocks.max.sm": "3105 MHz",
+     "clocks.max.mem": "10501 MHz",
+     "pcie.link.gen.current": "4",
+     "pcie.link.gen.max": "4",
+     "pcie.link.width.current": "16",
+     "pcie.link.width.max": "16",
+     "power.limit": "450.00 W",
+     "temperature.gpu": "54",
+     "memory.used": "693 MiB",
+     "memory.total": "24564 MiB",
+     "host_load_average_1_5_15": [
+      5.04,
+      5.62,
+      5.82
+     ]
+    },
+    "git": {
+     "commit": "eceed3997cef1fdc2cf6ee92e67c2695445d3c5e",
+     "dirty": true
+    },
+    "host": {
+     "cpu": "13th Gen Intel(R) Core(TM) i9-13900K",
+     "cpus": 32,
+     "memory_gib": 123.2,
+     "kernel": "7.0.0-38-generic",
+     "load_average_1_5_15": [
+      5.04,
+      5.62,
+      5.82
+     ]
+    },
+    "storage": {
+     "device": "nvme1n1",
+     "model_transport": "Samsung SSD 980 PRO 2TB nvme"
+    },
+    "software": {
+     "python": "3.12.15",
+     "vllm": "0.31.0",
+     "torch": "2.13.0+cu130",
+     "torch_cuda": "13.0"
+    }
+   }
+  }
+ ]
+}

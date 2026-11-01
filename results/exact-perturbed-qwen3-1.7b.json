@@ -6,184 +6,577 @@
  "async_load": true,
  "perturb": true,
  "max_num_batched_tokens": 16384,
+ "kv_cache_gib": 6,
  "suffix_tokens": 64,
  "output_tokens": 16,
+ "seed": 1,
  "rows": [
   {
    "context_tokens": 2048,
    "arm": "recompute",
    "n": 9,
-   "ttft_ms_median": 57.94133385643363,
-   "ttft_ms_min": 56.60674185492098,
-   "ttft_ms_max": 58.99101682007313,
+   "ttft_ms_median": 56.813946925103664,
+   "ttft_ms_min": 56.43458804115653,
+   "ttft_ms_max": 58.33252309821546,
    "ttft_ms": [
-    56.61462806165218,
-    56.713788071647286,
-    57.960897916927934,
-    58.99101682007313,
-    58.840318117290735,
-    57.94133385643363,
-    57.711953995749354,
-    58.38973703794181,
-    56.60674185492098
+    56.813946925103664,
+    56.792136980220675,
+    57.47075309045613,
+    56.76428601145744,
+    56.74122110940516,
+    57.440530974417925,
+    56.43458804115653,
+    58.33252309821546,
+    56.94543500430882
+   ],
+   "samples": [
+    {
+     "ttft_ms": 56.813946925103664
+    },
+    {
+     "ttft_ms": 56.792136980220675
+    },
+    {
+     "ttft_ms": 57.47075309045613
+    },
+    {
+     "ttft_ms": 56.76428601145744
+    },
+    {
+     "ttft_ms": 56.74122110940516
+    },
+    {
+     "ttft_ms": 57.440530974417925
+    },
+    {
+     "ttft_ms": 56.43458804115653
+    },
+    {
+     "ttft_ms": 58.33252309821546
+    },
+    {
+     "ttft_ms": 56.94543500430882
+    }
    ]
   },
   {
    "context_tokens": 2048,
    "arm": "restore-cold",
    "n": 3,
-   "ttft_ms_median": 137.04255293123424,
-   "ttft_ms_min": 134.10652801394463,
-   "ttft_ms_max": 137.51211413182318,
+   "ttft_ms_median": 139.2188740428537,
+   "ttft_ms_min": 138.44955689273775,
+   "ttft_ms_max": 143.90041306614876,
    "ttft_ms": [
-    137.51211413182318,
-    137.04255293123424,
-    134.10652801394463
+    143.90041306614876,
+    138.44955689273775,
+    139.2188740428537
    ],
-   "save_ms_median": 529.3485159054399,
-   "admit_ms_median": 12.471743,
-   "read_ms_median": 96.06536,
-   "h2d_ms_median": 15.026859,
-   "after_ms_median": 12.713699,
+   "save_ms_median": 547.9605279397219,
+   "admit_ms_median": 12.121271,
+   "read_ms_median": 99.975507,
+   "h2d_ms_median": 14.748689,
+   "after_ms_median": 12.678032,
    "bytes_median": 234881024,
    "copies_median": 4,
    "tokens_match": 2,
    "logprobs_equal": 0,
-   "max_logprob_delta": 2.7384356260299683
+   "max_logprob_delta": 2.7384356260299683,
+   "samples": [
+    {
+     "ttft_ms": 143.90041306614876,
+     "save_ms": 547.9605279397219,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.07716894149780273,
+     "recompute_ttft_ms": 57.47075309045613,
+     "admit_ms": 13.438764,
+     "read_ms": 102.479397,
+     "h2d_ms": 15.304729,
+     "after_ms": 12.678032,
+     "bytes": 234881024,
+     "copies": 4
+    },
+    {
+     "ttft_ms": 138.44955689273775,
+     "save_ms": 508.7559900712222,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.0308513343334198,
+     "recompute_ttft_ms": 57.440530974417925,
+     "admit_ms": 11.942115,
+     "read_ms": 98.56958,
+     "h2d_ms": 14.748689,
+     "after_ms": 13.190101,
+     "bytes": 234881024,
+     "copies": 4
+    },
+    {
+     "ttft_ms": 139.2188740428537,
+     "save_ms": 571.3721360079944,
+     "match": false,
+     "logprobs_equal": false,
+     "max_logprob_delta": 2.7384356260299683,
+     "recompute_ttft_ms": 56.94543500430882,
+     "admit_ms": 12.121271,
+     "read_ms": 99.975507,
+     "h2d_ms": 14.695324,
+     "after_ms": 12.427418,
+     "bytes": 234881024,
+     "copies": 4
+    }
+   ]
   },
   {
    "context_tokens": 2048,
    "arm": "restore-disk",
    "n": 3,
-   "ttft_ms_median": 63.37655195966363,
-   "ttft_ms_min": 61.10655190423131,
-   "ttft_ms_max": 63.63671785220504,
+   "ttft_ms_median": 64.92283591069281,
+   "ttft_ms_min": 63.10146604664624,
+   "ttft_ms_max": 67.00847903266549,
    "ttft_ms": [
-    63.37655195966363,
-    63.63671785220504,
-    61.10655190423131
+    64.92283591069281,
+    67.00847903266549,
+    63.10146604664624
    ],
-   "save_ms_median": 528.461200883612,
-   "admit_ms_median": 12.536643,
-   "read_ms_median": 23.331112,
-   "h2d_ms_median": 15.046078,
-   "after_ms_median": 13.218755,
+   "save_ms_median": 539.1699250321835,
+   "admit_ms_median": 12.797884,
+   "read_ms_median": 24.983107,
+   "h2d_ms_median": 15.113816,
+   "after_ms_median": 12.678255,
    "bytes_median": 234881024,
    "copies_median": 4,
    "tokens_match": 3,
    "logprobs_equal": 0,
-   "max_logprob_delta": 0.1136850118637085
+   "max_logprob_delta": 0.1136850118637085,
+   "samples": [
+    {
+     "ttft_ms": 64.92283591069281,
+     "save_ms": 539.1699250321835,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.04633522033691406,
+     "recompute_ttft_ms": 56.792136980220675,
+     "admit_ms": 12.797884,
+     "read_ms": 24.983107,
+     "h2d_ms": 15.113816,
+     "after_ms": 12.029064,
+     "bytes": 234881024,
+     "copies": 4
+    },
+    {
+     "ttft_ms": 67.00847903266549,
+     "save_ms": 568.8480010721833,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.05264759063720703,
+     "recompute_ttft_ms": 56.74122110940516,
+     "admit_ms": 13.450593,
+     "read_ms": 25.831559,
+     "h2d_ms": 15.049161,
+     "after_ms": 12.678255,
+     "bytes": 234881024,
+     "copies": 4
+    },
+    {
+     "ttft_ms": 63.10146604664624,
+     "save_ms": 506.95274281315506,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.1136850118637085,
+     "recompute_ttft_ms": 58.33252309821546,
+     "admit_ms": 11.626553,
+     "read_ms": 21.328497,
+     "h2d_ms": 16.438771,
+     "after_ms": 13.708536,
+     "bytes": 234881024,
+     "copies": 4
+    }
+   ]
   },
   {
    "context_tokens": 2048,
    "arm": "restore-host",
    "n": 3,
-   "ttft_ms_median": 33.41932198964059,
-   "ttft_ms_min": 31.633493956178427,
-   "ttft_ms_max": 33.484490821138024,
+   "ttft_ms_median": 31.3477769959718,
+   "ttft_ms_min": 30.559242935851216,
+   "ttft_ms_max": 61.46431202068925,
    "ttft_ms": [
-    33.484490821138024,
-    33.41932198964059,
-    31.633493956178427
+    30.559242935851216,
+    61.46431202068925,
+    31.3477769959718
    ],
-   "save_ms_median": 98.22158794850111,
-   "admit_ms_median": 3.826307,
-   "read_ms_median": 0.701832,
-   "h2d_ms_median": 15.529568,
-   "after_ms_median": 13.266197,
+   "save_ms_median": 66.73559988848865,
+   "admit_ms_median": 4.134438,
+   "read_ms_median": 0.615885,
+   "h2d_ms_median": 14.399823,
+   "after_ms_median": 12.286996,
    "bytes_median": 234881024,
    "copies_median": 128,
    "tokens_match": 3,
    "logprobs_equal": 3,
-   "max_logprob_delta": 0.0
+   "max_logprob_delta": 0.0,
+   "samples": [
+    {
+     "ttft_ms": 30.559242935851216,
+     "save_ms": 64.19286411255598,
+     "match": true,
+     "logprobs_equal": true,
+     "max_logprob_delta": 0.0,
+     "recompute_ttft_ms": 56.813946925103664,
+     "admit_ms": 3.312645,
+     "read_ms": 0.57767,
+     "h2d_ms": 14.38268,
+     "after_ms": 12.286996,
+     "bytes": 234881024,
+     "copies": 128
+    },
+    {
+     "ttft_ms": 61.46431202068925,
+     "save_ms": 76.58406905829906,
+     "match": true,
+     "logprobs_equal": true,
+     "max_logprob_delta": 0.0,
+     "recompute_ttft_ms": 56.76428601145744,
+     "admit_ms": 30.768062,
+     "read_ms": 1.482508,
+     "h2d_ms": 16.168863,
+     "after_ms": 13.046587,
+     "bytes": 234881024,
+     "copies": 128
+    },
+    {
+     "ttft_ms": 31.3477769959718,
+     "save_ms": 66.73559988848865,
+     "match": true,
+     "logprobs_equal": true,
+     "max_logprob_delta": 0.0,
+     "recompute_ttft_ms": 56.43458804115653,
+     "admit_ms": 4.134438,
+     "read_ms": 0.615885,
+     "h2d_ms": 14.399823,
+     "after_ms": 12.198221,
+     "bytes": 234881024,
+     "copies": 128
+    }
+   ]
   },
   {
    "context_tokens": 8192,
    "arm": "recompute",
    "n": 9,
-   "ttft_ms_median": 252.9582150746137,
-   "ttft_ms_min": 236.85271898284554,
-   "ttft_ms_max": 260.7084629125893,
+   "ttft_ms_median": 250.4043721128255,
+   "ttft_ms_min": 237.39319504238665,
+   "ttft_ms_max": 257.2622881270945,
    "ttft_ms": [
-    237.05914709717035,
-    257.3929368518293,
-    260.7084629125893,
-    242.14564496651292,
-    252.9582150746137,
-    250.14025694690645,
-    236.85271898284554,
-    258.20780801586807,
-    256.90749497152865
+    237.92245099321008,
+    257.2622881270945,
+    253.9552168454975,
+    237.39319504238665,
+    249.56406117416918,
+    252.09795706905425,
+    238.66098700091243,
+    251.4082200359553,
+    250.4043721128255
+   ],
+   "samples": [
+    {
+     "ttft_ms": 237.92245099321008
+    },
+    {
+     "ttft_ms": 257.2622881270945
+    },
+    {
+     "ttft_ms": 253.9552168454975
+    },
+    {
+     "ttft_ms": 237.39319504238665
+    },
+    {
+     "ttft_ms": 249.56406117416918
+    },
+    {
+     "ttft_ms": 252.09795706905425
+    },
+    {
+     "ttft_ms": 238.66098700091243
+    },
+    {
+     "ttft_ms": 251.4082200359553
+    },
+    {
+     "ttft_ms": 250.4043721128255
+    }
    ]
   },
   {
    "context_tokens": 8192,
    "arm": "restore-cold",
    "n": 3,
-   "ttft_ms_median": 469.5920329540968,
-   "ttft_ms_min": 466.07015398330986,
-   "ttft_ms_max": 472.91525499895215,
+   "ttft_ms_median": 471.0947461426258,
+   "ttft_ms_min": 464.5923839416355,
+   "ttft_ms_max": 483.77889883704484,
    "ttft_ms": [
-    472.91525499895215,
-    466.07015398330986,
-    469.5920329540968
+    483.77889883704484,
+    471.0947461426258,
+    464.5923839416355
    ],
-   "save_ms_median": 1984.7181639634073,
-   "admit_ms_median": 15.97579,
-   "read_ms_median": 377.343709,
-   "h2d_ms_median": 57.420509,
-   "after_ms_median": 18.47404,
+   "save_ms_median": 2015.5436298809946,
+   "admit_ms_median": 16.502479,
+   "read_ms_median": 380.304537,
+   "h2d_ms_median": 55.752172,
+   "after_ms_median": 19.553299,
    "bytes_median": 939524096,
    "copies_median": 15,
    "tokens_match": 3,
    "logprobs_equal": 0,
-   "max_logprob_delta": 0.12311983108520508
+   "max_logprob_delta": 0.12311983108520508,
+   "samples": [
+    {
+     "ttft_ms": 483.77889883704484,
+     "save_ms": 1977.7070351410657,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.059612274169921875,
+     "recompute_ttft_ms": 253.9552168454975,
+     "admit_ms": 21.069684,
+     "read_ms": 384.155655,
+     "h2d_ms": 58.018088,
+     "after_ms": 20.536555,
+     "bytes": 939524096,
+     "copies": 15
+    },
+    {
+     "ttft_ms": 471.0947461426258,
+     "save_ms": 2015.5436298809946,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.12311983108520508,
+     "recompute_ttft_ms": 252.09795706905425,
+     "admit_ms": 15.485299,
+     "read_ms": 380.304537,
+     "h2d_ms": 55.752172,
+     "after_ms": 19.553299,
+     "bytes": 939524096,
+     "copies": 15
+    },
+    {
+     "ttft_ms": 464.5923839416355,
+     "save_ms": 2288.473231019452,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.05622142553329468,
+     "recompute_ttft_ms": 250.4043721128255,
+     "admit_ms": 16.502479,
+     "read_ms": 374.171684,
+     "h2d_ms": 55.747283,
+     "after_ms": 18.171615,
+     "bytes": 939524096,
+     "copies": 15
+    }
+   ]
   },
   {
    "context_tokens": 8192,
    "arm": "restore-disk",
    "n": 3,
-   "ttft_ms_median": 163.53134205564857,
-   "ttft_ms_min": 160.7438230421394,
-   "ttft_ms_max": 195.62345696613193,
+   "ttft_ms_median": 174.31415198370814,
+   "ttft_ms_min": 172.38276498392224,
+   "ttft_ms_max": 176.04963202029467,
    "ttft_ms": [
-    163.53134205564857,
-    160.7438230421394,
-    195.62345696613193
+    174.31415198370814,
+    176.04963202029467,
+    172.38276498392224
    ],
-   "save_ms_median": 2096.409239107743,
-   "admit_ms_median": 16.300803,
-   "read_ms_median": 72.481194,
-   "h2d_ms_median": 57.178178,
-   "after_ms_median": 17.688573,
+   "save_ms_median": 2046.3941700290889,
+   "admit_ms_median": 18.160049,
+   "read_ms_median": 81.464527,
+   "h2d_ms_median": 55.980879,
+   "after_ms_median": 19.330539,
    "bytes_median": 939524096,
    "copies_median": 15,
    "tokens_match": 3,
    "logprobs_equal": 0,
-   "max_logprob_delta": 0.08255475759506226
+   "max_logprob_delta": 0.08255475759506226,
+   "samples": [
+    {
+     "ttft_ms": 174.31415198370814,
+     "save_ms": 2431.8786018993706,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.026444673538208008,
+     "recompute_ttft_ms": 257.2622881270945,
+     "admit_ms": 18.160049,
+     "read_ms": 80.203856,
+     "h2d_ms": 57.223622,
+     "after_ms": 18.727344,
+     "bytes": 939524096,
+     "copies": 15
+    },
+    {
+     "ttft_ms": 176.04963202029467,
+     "save_ms": 1993.0482001509517,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.041932106018066406,
+     "recompute_ttft_ms": 249.56406117416918,
+     "admit_ms": 18.360218,
+     "read_ms": 82.378685,
+     "h2d_ms": 55.980879,
+     "after_ms": 19.330539,
+     "bytes": 939524096,
+     "copies": 15
+    },
+    {
+     "ttft_ms": 172.38276498392224,
+     "save_ms": 2046.3941700290889,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.08255475759506226,
+     "recompute_ttft_ms": 251.4082200359553,
+     "admit_ms": 16.082629,
+     "read_ms": 81.464527,
+     "h2d_ms": 54.828355,
+     "after_ms": 20.007913,
+     "bytes": 939524096,
+     "copies": 15
+    }
+   ]
   },
   {
    "context_tokens": 8192,
    "arm": "restore-host",
    "n": 3,
-   "ttft_ms_median": 85.00286098569632,
-   "ttft_ms_min": 84.37688718549907,
-   "ttft_ms_max": 86.8549570441246,
+   "ttft_ms_median": 89.6554789505899,
+   "ttft_ms_min": 86.08944015577435,
+   "ttft_ms_max": 106.08677007257938,
    "ttft_ms": [
-    84.37688718549907,
-    86.8549570441246,
-    85.00286098569632
+    86.08944015577435,
+    89.6554789505899,
+    106.08677007257938
    ],
-   "save_ms_median": 264.04189597815275,
-   "admit_ms_median": 8.230602,
-   "read_ms_median": 0.847868,
-   "h2d_ms_median": 58.04255,
-   "after_ms_median": 18.519469,
+   "save_ms_median": 222.36764011904597,
+   "admit_ms_median": 9.223491,
+   "read_ms_median": 1.199254,
+   "h2d_ms_median": 57.475912,
+   "after_ms_median": 19.95363,
    "bytes_median": 939524096,
    "copies_median": 512,
    "tokens_match": 3,
    "logprobs_equal": 3,
-   "max_logprob_delta": 0.0
+   "max_logprob_delta": 0.0,
+   "samples": [
+    {
+     "ttft_ms": 86.08944015577435,
+     "save_ms": 228.5015038214624,
+     "match": true,
+     "logprobs_equal": true,
+     "max_logprob_delta": 0.0,
+     "recompute_ttft_ms": 237.92245099321008,
+     "admit_ms": 8.742052,
+     "read_ms": 0.936277,
+     "h2d_ms": 57.475912,
+     "after_ms": 18.935776,
+     "bytes": 939524096,
+     "copies": 512
+    },
+    {
+     "ttft_ms": 89.6554789505899,
+     "save_ms": 220.89064097963274,
+     "match": true,
+     "logprobs_equal": true,
+     "max_logprob_delta": 0.0,
+     "recompute_ttft_ms": 237.39319504238665,
+     "admit_ms": 9.223491,
+     "read_ms": 1.285641,
+     "h2d_ms": 58.921211,
+     "after_ms": 20.22586,
+     "bytes": 939524096,
+     "copies": 512
+    },
+    {
+     "ttft_ms": 106.08677007257938,
+     "save_ms": 222.36764011904597,
+     "match": true,
+     "logprobs_equal": true,
+     "max_logprob_delta": 0.0,
+     "recompute_ttft_ms": 238.66098700091243,
+     "admit_ms": 28.133734,
+     "read_ms": 1.199254,
+     "h2d_ms": 56.800908,
+     "after_ms": 19.95363,
+     "bytes": 939524096,
+     "copies": 512
+    }
+   ]
   }
- ]
+ ],
+ "environment": {
+  "gpu_at_start": {
+   "name": "NVIDIA GeForce RTX 4090",
+   "driver_version": "595.99.02",
+   "clocks.sm": "2790 MHz",
+   "clocks.mem": "10501 MHz",
+   "clocks.max.sm": "3105 MHz",
+   "clocks.max.mem": "10501 MHz",
+   "pcie.link.gen.current": "4",
+   "pcie.link.gen.max": "4",
+   "pcie.link.width.current": "16",
+   "pcie.link.width.max": "16",
+   "power.limit": "450.00 W",
+   "temperature.gpu": "55",
+   "memory.used": "863 MiB",
+   "memory.total": "24564 MiB",
+   "host_load_average_1_5_15": [
+    10.32,
+    7.47,
+    6.97
+   ]
+  },
+  "git": {
+   "commit": "eceed3997cef1fdc2cf6ee92e67c2695445d3c5e",
+   "dirty": true
+  },
+  "host": {
+   "cpu": "13th Gen Intel(R) Core(TM) i9-13900K",
+   "cpus": 32,
+   "memory_gib": 123.2,
+   "kernel": "7.0.0-38-generic",
+   "load_average_1_5_15": [
+    10.32,
+    7.47,
+    6.97
+   ]
+  },
+  "storage": {
+   "device": "nvme1n1",
+   "model_transport": "Samsung SSD 980 PRO 2TB nvme"
+  },
+  "software": {
+   "python": "3.12.15",
+   "vllm": "0.31.0",
+   "torch": "2.13.0+cu130",
+   "torch_cuda": "13.0"
+  },
+  "gpu_at_measurement": {
+   "name": "NVIDIA GeForce RTX 4090",
+   "driver_version": "595.99.02",
+   "clocks.sm": "2790 MHz",
+   "clocks.mem": "10251 MHz",
+   "clocks.max.sm": "3105 MHz",
+   "clocks.max.mem": "10501 MHz",
+   "pcie.link.gen.current": "4",
+   "pcie.link.gen.max": "4",
+   "pcie.link.width.current": "16",
+   "pcie.link.width.max": "16",
+   "power.limit": "450.00 W",
+   "temperature.gpu": "55",
+   "memory.used": "11550 MiB",
+   "memory.total": "24564 MiB",
+   "host_load_average_1_5_15": [
+    8.84,
+    7.28,
+    6.91
+   ]
+  }
+ }
 }

@@ -3,13 +3,127 @@
   "blocks": 512,
   "layers": 36,
   "layer_block_bytes": 65536,
-  "peak": 19.41,
-  "2d/consecutive": 17.88,
-  "per_block/consecutive": 13.78,
-  "scatter/consecutive": 17.29,
-  "per_block_scatter/consecutive": 17.1,
-  "2d/shuffled": 13.0,
-  "per_block/shuffled": 13.76,
-  "scatter/shuffled": 17.29,
-  "per_block_scatter/shuffled": 17.11
+  "rounds": 3,
+  "peak": 19.13,
+  "2d/consecutive": 17.52,
+  "per_block/consecutive": 13.69,
+  "scatter/consecutive": 17.12,
+  "per_block_scatter/consecutive": 16.88,
+  "2d/shuffled": 12.93,
+  "per_block/shuffled": 13.66,
+  "scatter/shuffled": 17.11,
+  "per_block_scatter/shuffled": 16.89,
+  "gb_per_s_by_round": {
+    "peak": [
+      19.13,
+      19.19,
+      18.95
+    ],
+    "2d/consecutive": [
+      17.56,
+      17.52,
+      17.49
+    ],
+    "per_block/consecutive": [
+      13.47,
+      13.69,
+      13.7
+    ],
+    "scatter/consecutive": [
+      17.12,
+      17.14,
+      17.08
+    ],
+    "per_block_scatter/consecutive": [
+      16.88,
+      15.39,
+      16.96
+    ],
+    "2d/shuffled": [
+      12.96,
+      7.18,
+      12.93
+    ],
+    "per_block/shuffled": [
+      13.66,
+      13.69,
+      13.63
+    ],
+    "scatter/shuffled": [
+      17.11,
+      16.94,
+      17.16
+    ],
+    "per_block_scatter/shuffled": [
+      16.89,
+      16.9,
+      16.76
+    ]
+  },
+  "environment": {
+    "gpu_at_start": {
+      "name": "NVIDIA GeForce RTX 4090",
+      "driver_version": "595.99.02",
+      "clocks.sm": "585 MHz",
+      "clocks.mem": "5001 MHz",
+      "clocks.max.sm": "3105 MHz",
+      "clocks.max.mem": "10501 MHz",
+      "pcie.link.gen.current": "4",
+      "pcie.link.gen.max": "4",
+      "pcie.link.width.current": "16",
+      "pcie.link.width.max": "16",
+      "power.limit": "450.00 W",
+      "temperature.gpu": "60",
+      "memory.used": "714 MiB",
+      "memory.total": "24564 MiB",
+      "host_load_average_1_5_15": [
+        7.33,
+        8.95,
+        7.61
+      ]
+    },
+    "git": {
+      "commit": "eceed3997cef1fdc2cf6ee92e67c2695445d3c5e",
+      "dirty": false
+    },
+    "host": {
+      "cpu": "13th Gen Intel(R) Core(TM) i9-13900K",
+      "cpus": 32,
+      "memory_gib": 123.2,
+      "kernel": "7.0.0-38-generic",
+      "load_average_1_5_15": [
+        7.33,
+        8.95,
+        7.61
+      ]
+    },
+    "storage": null,
+    "software": {
+      "python": "3.12.15",
+      "vllm": "0.31.0",
+      "torch": "2.13.0+cu130",
+      "torch_cuda": "13.0"
+    },
+    "gpu_at_measurement": {
+      "name": "NVIDIA GeForce RTX 4090",
+      "driver_version": "595.99.02",
+      "clocks.sm": "2520 MHz",
+      "clocks.mem": "10251 MHz",
+      "clocks.max.sm": "3105 MHz",
+      "clocks.max.mem": "10501 MHz",
+      "pcie.link.gen.current": "4",
+      "pcie.link.gen.max": "4",
+      "pcie.link.width.current": "16",
+      "pcie.link.width.max": "16",
+      "power.limit": "450.00 W",
+      "temperature.gpu": "59",
+      "memory.used": "5791 MiB",
+      "memory.total": "24564 MiB",
+      "host_load_average_1_5_15": [
+        9.39,
+        9.35,
+        7.74
+      ]
+    }
+  }
 }

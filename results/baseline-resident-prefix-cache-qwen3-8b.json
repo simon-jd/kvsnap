@@ -1,0 +1,836 @@
+{
+ "model": "Qwen/Qwen3-8B",
+ "revision": "b968826d9c46dd6066d109eabc6255188de91218",
+ "engine": "prefix-cache",
+ "regime": "resident",
+ "lengths": [
+  1024,
+  2048,
+  4096,
+  8192
+ ],
+ "sessions": 1,
+ "rounds": 1,
+ "kv_cache_gib": 2,
+ "offload_gib": 8,
+ "pinned_gib": 8,
+ "prefix_caching": true,
+ "max_num_batched_tokens": 8448,
+ "suffix_tokens": 64,
+ "output_tokens": 16,
+ "runs": 3,
+ "seeds": [
+  1,
+  2,
+  3
+ ],
+ "samples": [
+  {
+   "length": 1024,
+   "session": 0,
+   "round": 0,
+   "ttft_ms": 24.677975103259087,
+   "prompt_tokens": 1089,
+   "num_cached_tokens": 1024,
+   "run": 0
+  },
+  {
+   "length": 1024,
+   "session": 1,
+   "round": 0,
+   "ttft_ms": 24.666426004841924,
+   "prompt_tokens": 1089,
+   "num_cached_tokens": 1024,
+   "run": 0
+  },
+  {
+   "length": 1024,
+   "session": 2,
+   "round": 0,
+   "ttft_ms": 24.843849940225482,
+   "prompt_tokens": 1089,
+   "num_cached_tokens": 1024,
+   "run": 0
+  },
+  {
+   "length": 1024,
+   "session": 3,
+   "round": 0,
+   "ttft_ms": 25.099428836256266,
+   "prompt_tokens": 1089,
+   "num_cached_tokens": 1024,
+   "run": 0
+  },
+  {
+   "length": 1024,
+   "session": 4,
+   "round": 0,
+   "ttft_ms": 24.890878004953265,
+   "prompt_tokens": 1089,
+   "num_cached_tokens": 1024,
+   "run": 0
+  },
+  {
+   "length": 2048,
+   "session": 0,
+   "round": 0,
+   "ttft_ms": 26.156701147556305,
+   "prompt_tokens": 2113,
+   "num_cached_tokens": 2048,
+   "run": 0
+  },
+  {
+   "length": 2048,
+   "session": 1,
+   "round": 0,
+   "ttft_ms": 25.92781907878816,
+   "prompt_tokens": 2113,
+   "num_cached_tokens": 2048,
+   "run": 0
+  },
+  {
+   "length": 2048,
+   "session": 2,
+   "round": 0,
+   "ttft_ms": 26.166724041104317,
+   "prompt_tokens": 2113,
+   "num_cached_tokens": 2048,
+   "run": 0
+  },
+  {
+   "length": 2048,
+   "session": 3,
+   "round": 0,
+   "ttft_ms": 26.260819984599948,
+   "prompt_tokens": 2113,
+   "num_cached_tokens": 2048,
+   "run": 0
+  },
+  {
+   "length": 2048,
+   "session": 4,
+   "round": 0,
+   "ttft_ms": 25.798497954383492,
+   "prompt_tokens": 2113,
+   "num_cached_tokens": 2048,
+   "run": 0
+  },
+  {
+   "length": 4096,
+   "session": 0,
+   "round": 0,
+   "ttft_ms": 28.32315699197352,
+   "prompt_tokens": 4161,
+   "num_cached_tokens": 4096,
+   "run": 0
+  },
+  {
+   "length": 4096,
+   "session": 1,
+   "round": 0,
+   "ttft_ms": 28.724011965095997,
+   "prompt_tokens": 4161,
+   "num_cached_tokens": 4096,
+   "run": 0
+  },
+  {
+   "length": 4096,
+   "session": 2,
+   "round": 0,
+   "ttft_ms": 28.248476097360253,
+   "prompt_tokens": 4161,
+   "num_cached_tokens": 4096,
+   "run": 0
+  },
+  {
+   "length": 4096,
+   "session": 3,
+   "round": 0,
+   "ttft_ms": 28.42516195960343,
+   "prompt_tokens": 4161,
+   "num_cached_tokens": 4096,
+   "run": 0
+  },
+  {
+   "length": 4096,
+   "session": 4,
+   "round": 0,
+   "ttft_ms": 28.07670086622238,
+   "prompt_tokens": 4161,
+   "num_cached_tokens": 4096,
+   "run": 0
+  },
+  {
+   "length": 8192,
+   "session": 0,
+   "round": 0,
+   "ttft_ms": 34.09828199073672,
+   "prompt_tokens": 8257,
+   "num_cached_tokens": 8192,
+   "run": 0
+  },
+  {
+   "length": 8192,
+   "session": 1,
+   "round": 0,
+   "ttft_ms": 34.8750960547477,
+   "prompt_tokens": 8257,
+   "num_cached_tokens": 8192,
+   "run": 0
+  },
+  {
+   "length": 8192,
+   "session": 2,
+   "round": 0,
+   "ttft_ms": 35.6718220282346,
+   "prompt_tokens": 8257,
+   "num_cached_tokens": 8192,
+   "run": 0
+  },
+  {
+   "length": 8192,
+   "session": 3,
+   "round": 0,
+   "ttft_ms": 35.647162003442645,
+   "prompt_tokens": 8257,
+   "num_cached_tokens": 8192,
+   "run": 0
+  },
+  {
+   "length": 8192,
+   "session": 4,
+   "round": 0,
+   "ttft_ms": 34.19989091344178,
+   "prompt_tokens": 8257,
+   "num_cached_tokens": 8192,
+   "run": 0
+  },
+  {
+   "length": 1024,
+   "session": 0,
+   "round": 0,
+   "ttft_ms": 24.6170898899436,
+   "prompt_tokens": 1089,
+   "num_cached_tokens": 1024,
+   "run": 1
+  },
+  {
+   "length": 1024,
+   "session": 1,
+   "round": 0,
+   "ttft_ms": 24.71739612519741,
+   "prompt_tokens": 1089,
+   "num_cached_tokens": 1024,
+   "run": 1
+  },
+  {
+   "length": 1024,
+   "session": 2,
+   "round": 0,
+   "ttft_ms": 25.045921094715595,
+   "prompt_tokens": 1089,
+   "num_cached_tokens": 1024,
+   "run": 1
+  },
+  {
+   "length": 1024,
+   "session": 3,
+   "round": 0,
+   "ttft_ms": 25.60812095180154,
+   "prompt_tokens": 1089,
+   "num_cached_tokens": 1024,
+   "run": 1
+  },
+  {
+   "length": 1024,
+   "session": 4,
+   "round": 0,
+   "ttft_ms": 24.790965020656586,
+   "prompt_tokens": 1089,
+   "num_cached_tokens": 1024,
+   "run": 1
+  },
+  {
+   "length": 2048,
+   "session": 0,
+   "round": 0,
+   "ttft_ms": 26.00002591498196,
+   "prompt_tokens": 2113,
+   "num_cached_tokens": 2048,
+   "run": 1
+  },
+  {
+   "length": 2048,
+   "session": 1,
+   "round": 0,
+   "ttft_ms": 26.2903468683362,
+   "prompt_tokens": 2113,
+   "num_cached_tokens": 2048,
+   "run": 1
+  },
+  {
+   "length": 2048,
+   "session": 2,
+   "round": 0,
+   "ttft_ms": 26.121498085558414,
+   "prompt_tokens": 2113,
+   "num_cached_tokens": 2048,
+   "run": 1
+  },
+  {
+   "length": 2048,
+   "session": 3,
+   "round": 0,
+   "ttft_ms": 25.77752200886607,
+   "prompt_tokens": 2113,
+   "num_cached_tokens": 2048,
+   "run": 1
+  },
+  {
+   "length": 2048,
+   "session": 4,
+   "round": 0,
+   "ttft_ms": 25.980374077335,
+   "prompt_tokens": 2113,
+   "num_cached_tokens": 2048,
+   "run": 1
+  },
+  {
+   "length": 4096,
+   "session": 0,
+   "round": 0,
+   "ttft_ms": 29.81696301139891,
+   "prompt_tokens": 4161,
+   "num_cached_tokens": 4096,
+   "run": 1
+  },
+  {
+   "length": 4096,
+   "session": 1,
+   "round": 0,
+   "ttft_ms": 28.796746162697673,
+   "prompt_tokens": 4161,
+   "num_cached_tokens": 4096,
+   "run": 1
+  },
+  {
+   "length": 4096,
+   "session": 2,
+   "round": 0,
+   "ttft_ms": 28.84889696724713,
+   "prompt_tokens": 4161,
+   "num_cached_tokens": 4096,
+   "run": 1
+  },
+  {
+   "length": 4096,
+   "session": 3,
+   "round": 0,
+   "ttft_ms": 28.92327797599137,
+   "prompt_tokens": 4161,
+   "num_cached_tokens": 4096,
+   "run": 1
+  },
+  {
+   "length": 4096,
+   "session": 4,
+   "round": 0,
+   "ttft_ms": 28.399943141266704,
+   "prompt_tokens": 4161,
+   "num_cached_tokens": 4096,
+   "run": 1
+  },
+  {
+   "length": 8192,
+   "session": 0,
+   "round": 0,
+   "ttft_ms": 35.73183296248317,
+   "prompt_tokens": 8257,
+   "num_cached_tokens": 8192,
+   "run": 1
+  },
+  {
+   "length": 8192,
+   "session": 1,
+   "round": 0,
+   "ttft_ms": 34.96631816960871,
+   "prompt_tokens": 8257,
+   "num_cached_tokens": 8192,
+   "run": 1
+  },
+  {
+   "length": 8192,
+   "session": 2,
+   "round": 0,
+   "ttft_ms": 34.535954939201474,
+   "prompt_tokens": 8257,
+   "num_cached_tokens": 8192,
+   "run": 1
+  },
+  {
+   "length": 8192,
+   "session": 3,
+   "round": 0,
+   "ttft_ms": 35.251953173428774,
+   "prompt_tokens": 8257,
+   "num_cached_tokens": 8192,
+   "run": 1
+  },
+  {
+   "length": 8192,
+   "session": 4,
+   "round": 0,
+   "ttft_ms": 35.51921411417425,
+   "prompt_tokens": 8257,
+   "num_cached_tokens": 8192,
+   "run": 1
+  },
+  {
+   "length": 1024,
+   "session": 0,
+   "round": 0,
+   "ttft_ms": 24.801802122965455,
+   "prompt_tokens": 1089,
+   "num_cached_tokens": 1024,
+   "run": 2
+  },
+  {
+   "length": 1024,
+   "session": 1,
+   "round": 0,
+   "ttft_ms": 25.12059616856277,
+   "prompt_tokens": 1089,
+   "num_cached_tokens": 1024,
+   "run": 2
+  },
+  {
+   "length": 1024,
+   "session": 2,
+   "round": 0,
+   "ttft_ms": 24.820687947794795,
+   "prompt_tokens": 1089,
+   "num_cached_tokens": 1024,
+   "run": 2
+  },
+  {
+   "length": 1024,
+   "session": 3,
+   "round": 0,
+   "ttft_ms": 24.338535964488983,
+   "prompt_tokens": 1089,
+   "num_cached_tokens": 1024,
+   "run": 2
+  },
+  {
+   "length": 1024,
+   "session": 4,
+   "round": 0,
+   "ttft_ms": 24.759623920544982,
+   "prompt_tokens": 1089,
+   "num_cached_tokens": 1024,
+   "run": 2
+  },
+  {
+   "length": 2048,
+   "session": 0,
+   "round": 0,
+   "ttft_ms": 25.61897598206997,
+   "prompt_tokens": 2113,
+   "num_cached_tokens": 2048,
+   "run": 2
+  },
+  {
+   "length": 2048,
+   "session": 1,
+   "round": 0,
+   "ttft_ms": 26.88402496278286,
+   "prompt_tokens": 2113,
+   "num_cached_tokens": 2048,
+   "run": 2
+  },
+  {
+   "length": 2048,
+   "session": 2,
+   "round": 0,
+   "ttft_ms": 26.712888851761818,
+   "prompt_tokens": 2113,
+   "num_cached_tokens": 2048,
+   "run": 2
+  },
+  {
+   "length": 2048,
+   "session": 3,
+   "round": 0,
+   "ttft_ms": 25.924402056261897,
+   "prompt_tokens": 2113,
+   "num_cached_tokens": 2048,
+   "run": 2
+  },
+  {
+   "length": 2048,
+   "session": 4,
+   "round": 0,
+   "ttft_ms": 25.977052049711347,
+   "prompt_tokens": 2113,
+   "num_cached_tokens": 2048,
+   "run": 2
+  },
+  {
+   "length": 4096,
+   "session": 0,
+   "round": 0,
+   "ttft_ms": 28.47748389467597,
+   "prompt_tokens": 4161,
+   "num_cached_tokens": 4096,
+   "run": 2
+  },
+  {
+   "length": 4096,
+   "session": 1,
+   "round": 0,
+   "ttft_ms": 28.390597086399794,
+   "prompt_tokens": 4161,
+   "num_cached_tokens": 4096,
+   "run": 2
+  },
+  {
+   "length": 4096,
+   "session": 2,
+   "round": 0,
+   "ttft_ms": 28.626877814531326,
+   "prompt_tokens": 4161,
+   "num_cached_tokens": 4096,
+   "run": 2
+  },
+  {
+   "length": 4096,
+   "session": 3,
+   "round": 0,
+   "ttft_ms": 28.66012998856604,
+   "prompt_tokens": 4161,
+   "num_cached_tokens": 4096,
+   "run": 2
+  },
+  {
+   "length": 4096,
+   "session": 4,
+   "round": 0,
+   "ttft_ms": 28.381399111822248,
+   "prompt_tokens": 4161,
+   "num_cached_tokens": 4096,
+   "run": 2
+  },
+  {
+   "length": 8192,
+   "session": 0,
+   "round": 0,
+   "ttft_ms": 34.224003087729216,
+   "prompt_tokens": 8257,
+   "num_cached_tokens": 8192,
+   "run": 2
+  },
+  {
+   "length": 8192,
+   "session": 1,
+   "round": 0,
+   "ttft_ms": 36.38381091877818,
+   "prompt_tokens": 8257,
+   "num_cached_tokens": 8192,
+   "run": 2
+  },
+  {
+   "length": 8192,
+   "session": 2,
+   "round": 0,
+   "ttft_ms": 34.72349001094699,
+   "prompt_tokens": 8257,
+   "num_cached_tokens": 8192,
+   "run": 2
+  },
+  {
+   "length": 8192,
+   "session": 3,
+   "round": 0,
+   "ttft_ms": 38.62846293486655,
+   "prompt_tokens": 8257,
+   "num_cached_tokens": 8192,
+   "run": 2
+  },
+  {
+   "length": 8192,
+   "session": 4,
+   "round": 0,
+   "ttft_ms": 34.6912438981235,
+   "prompt_tokens": 8257,
+   "num_cached_tokens": 8192,
+   "run": 2
+  }
+ ],
+ "summary": [
+  {
+   "context_tokens": 1024,
+   "n": 15,
+   "ttft_ms_median": 24.801802122965455,
+   "ttft_ms_min": 24.338535964488983,
+   "ttft_ms_max": 25.60812095180154,
+   "ttft_ms_median_by_run": [
+    24.843849940225482,
+    24.790965020656586,
+    24.801802122965455
+   ],
+   "num_cached_tokens_median": 1024,
+   "prompt_tokens_median": 1089
+  },
+  {
+   "context_tokens": 2048,
+   "n": 15,
+   "ttft_ms_median": 26.00002591498196,
+   "ttft_ms_min": 25.61897598206997,
+   "ttft_ms_max": 26.88402496278286,
+   "ttft_ms_median_by_run": [
+    26.156701147556305,
+    26.00002591498196,
+    25.977052049711347
+   ],
+   "num_cached_tokens_median": 2048,
+   "prompt_tokens_median": 2113
+  },
+  {
+   "context_tokens": 4096,
+   "n": 15,
+   "ttft_ms_median": 28.47748389467597,
+   "ttft_ms_min": 28.07670086622238,
+   "ttft_ms_max": 29.81696301139891,
+   "ttft_ms_median_by_run": [
+    28.32315699197352,
+    28.84889696724713,
+    28.47748389467597
+   ],
+   "num_cached_tokens_median": 4096,
+   "prompt_tokens_median": 4161
+  },
+  {
+   "context_tokens": 8192,
+   "n": 15,
+   "ttft_ms_median": 34.96631816960871,
+   "ttft_ms_min": 34.09828199073672,
+   "ttft_ms_max": 38.62846293486655,
+   "ttft_ms_median_by_run": [
+    34.8750960547477,
+    35.251953173428774,
+    34.72349001094699
+   ],
+   "num_cached_tokens_median": 8192,
+   "prompt_tokens_median": 8257
+  }
+ ],
+ "environment_by_run": [
+  {
+   "gpu_at_start": {
+    "name": "NVIDIA GeForce RTX 4090",
+    "driver_version": "595.99.02",
+    "clocks.sm": "2775 MHz",
+    "clocks.mem": "10501 MHz",
+    "clocks.max.sm": "3105 MHz",
+    "clocks.max.mem": "10501 MHz",
+    "pcie.link.gen.current": "4",
+    "pcie.link.gen.max": "4",
+    "pcie.link.width.current": "16",
+    "pcie.link.width.max": "16",
+    "power.limit": "450.00 W",
+    "temperature.gpu": "58",
+    "memory.used": "763 MiB",
+    "memory.total": "24564 MiB",
+    "host_load_average_1_5_15": [
+     7.65,
+     6.41,
+     6.08
+    ]
+   },
+   "git": {
+    "commit": "eceed3997cef1fdc2cf6ee92e67c2695445d3c5e",
+    "dirty": true
+   },
+   "host": {
+    "cpu": "13th Gen Intel(R) Core(TM) i9-13900K",
+    "cpus": 32,
+    "memory_gib": 123.2,
+    "kernel": "7.0.0-38-generic",
+    "load_average_1_5_15": [
+     7.65,
+     6.41,
+     6.08
+    ]
+   },
+   "storage": {
+    "device": "nvme1n1",
+    "model_transport": "Samsung SSD 980 PRO 2TB nvme"
+   },
+   "software": {
+    "python": "3.12.15",
+    "vllm": "0.31.0",
+    "torch": "2.13.0+cu130",
+    "torch_cuda": "13.0"
+   },
+   "gpu_at_measurement": {
+    "name": "NVIDIA GeForce RTX 4090",
+    "driver_version": "595.99.02",
+    "clocks.sm": "2775 MHz",
+    "clocks.mem": "10251 MHz",
+    "clocks.max.sm": "3105 MHz",
+    "clocks.max.mem": "10501 MHz",
+    "pcie.link.gen.current": "4",
+    "pcie.link.gen.max": "4",
+    "pcie.link.width.current": "16",
+    "pcie.link.width.max": "16",
+    "power.limit": "450.00 W",
+    "temperature.gpu": "62",
+    "memory.used": "19501 MiB",
+    "memory.total": "24564 MiB",
+    "host_load_average_1_5_15": [
+     6.82,
+     6.32,
+     6.06
+    ]
+   }
+  },
+  {
+   "gpu_at_start": {
+    "name": "NVIDIA GeForce RTX 4090",
+    "driver_version": "595.99.02",
+    "clocks.sm": "2775 MHz",
+    "clocks.mem": "10501 MHz",
+    "clocks.max.sm": "3105 MHz",
+    "clocks.max.mem": "10501 MHz",
+    "pcie.link.gen.current": "4",
+    "pcie.link.gen.max": "4",
+    "pcie.link.width.current": "16",
+    "pcie.link.width.max": "16",
+    "power.limit": "450.00 W",
+    "temperature.gpu": "61",
+    "memory.used": "763 MiB",
+    "memory.total": "24564 MiB",
+    "host_load_average_1_5_15": [
+     6.09,
+     6.19,
+     6.02
+    ]
+   },
+   "git": {
+    "commit": "eceed3997cef1fdc2cf6ee92e67c2695445d3c5e",
+    "dirty": true
+   },
+   "host": {
+    "cpu": "13th Gen Intel(R) Core(TM) i9-13900K",
+    "cpus": 32,
+    "memory_gib": 123.2,
+    "kernel": "7.0.0-38-generic",
+    "load_average_1_5_15": [
+     6.09,
+     6.19,
+     6.02
+    ]
+   },
+   "storage": {
+    "device": "nvme1n1",
+    "model_transport": "Samsung SSD 980 PRO 2TB nvme"
+   },
+   "software": {
+    "python": "3.12.15",
+    "vllm": "0.31.0",
+    "torch": "2.13.0+cu130",
+    "torch_cuda": "13.0"
+   },
+   "gpu_at_measurement": {
+    "name": "NVIDIA GeForce RTX 4090",
+    "driver_version": "595.99.02",
+    "clocks.sm": "2775 MHz",
+    "clocks.mem": "10251 MHz",
+    "clocks.max.sm": "3105 MHz",
+    "clocks.max.mem": "10501 MHz",
+    "pcie.link.gen.current": "4",
+    "pcie.link.gen.max": "4",
+    "pcie.link.width.current": "16",
+    "pcie.link.width.max": "16",
+    "power.limit": "450.00 W",
+    "temperature.gpu": "64",
+    "memory.used": "19500 MiB",
+    "memory.total": "24564 MiB",
+    "host_load_average_1_5_15": [
+     6.28,
+     6.23,
+     6.04
+    ]
+   }
+  },
+  {
+   "gpu_at_start": {
+    "name": "NVIDIA GeForce RTX 4090",
+    "driver_version": "595.99.02",
+    "clocks.sm": "2775 MHz",
+    "clocks.mem": "10501 MHz",
+    "clocks.max.sm": "3105 MHz",
+    "clocks.max.mem": "10501 MHz",
+    "pcie.link.gen.current": "4",
+    "pcie.link.gen.max": "4",
+    "pcie.link.width.current": "16",
+    "pcie.link.width.max": "16",
+    "power.limit": "450.00 W",
+    "temperature.gpu": "62",
+    "memory.used": "765 MiB",
+    "memory.total": "24564 MiB",
+    "host_load_average_1_5_15": [
+     5.75,
+     6.1,
+     6.0
+    ]
+   },
+   "git": {
+    "commit": "eceed3997cef1fdc2cf6ee92e67c2695445d3c5e",
+    "dirty": true
+   },
+   "host": {
+    "cpu": "13th Gen Intel(R) Core(TM) i9-13900K",
+    "cpus": 32,
+    "memory_gib": 123.2,
+    "kernel": "7.0.0-38-generic",
+    "load_average_1_5_15": [
+     5.75,
+     6.1,
+     6.0
+    ]
+   },
+   "storage": {
+    "device": "nvme1n1",
+    "model_transport": "Samsung SSD 980 PRO 2TB nvme"
+   },
+   "software": {
+    "python": "3.12.15",
+    "vllm": "0.31.0",
+    "torch": "2.13.0+cu130",
+    "torch_cuda": "13.0"
+   },
+   "gpu_at_measurement": {
+    "name": "NVIDIA GeForce RTX 4090",
+    "driver_version": "595.99.02",
+    "clocks.sm": "2775 MHz",
+    "clocks.mem": "10251 MHz",
+    "clocks.max.sm": "3105 MHz",
+    "clocks.max.mem": "10501 MHz",
+    "pcie.link.gen.current": "4",
+    "pcie.link.gen.max": "4",
+    "pcie.link.width.current": "16",
+    "pcie.link.width.max": "16",
+    "power.limit": "450.00 W",
+    "temperature.gpu": "65",
+    "memory.used": "19501 MiB",
+    "memory.total": "24564 MiB",
+    "host_load_average_1_5_15": [
+     5.56,
+     6.05,
+     5.98
+    ]
+   }
+  }
+ ]
+}

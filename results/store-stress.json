@@ -1,0 +1,337 @@
+{
+ "measurements": {
+  "before-500x64": {
+   "kvsnap": "build/stress-before/kvsnap",
+   "code_commit": "3b55430",
+   "sessions": 500,
+   "blocks": 64,
+   "block_bytes": 256,
+   "repeat": 5,
+   "fill_s": 14.34,
+   "operations": {
+    "commit_durable": {
+     "n": 5,
+     "median_ms": 294.009,
+     "p90_ms": 311.475,
+     "max_ms": 311.475
+    },
+    "commit_process": {
+     "n": 5,
+     "median_ms": 128.075,
+     "p90_ms": 178.006,
+     "max_ms": 178.006
+    },
+    "get_manifest": {
+     "n": 5,
+     "median_ms": 0.072,
+     "p90_ms": 0.139,
+     "max_ms": 0.139
+    },
+    "lease": {
+     "n": 5,
+     "median_ms": 0.138,
+     "p90_ms": 0.24,
+     "max_ms": 0.24
+    },
+    "invalidate_host": {
+     "n": 5,
+     "median_ms": 40721.663,
+     "p90_ms": 43380.474,
+     "max_ms": 43380.474
+    },
+    "invalidate_disk": {
+     "n": 5,
+     "median_ms": 38579.47,
+     "p90_ms": 40869.329,
+     "max_ms": 40869.329
+    },
+    "make_room_fits": {
+     "n": 5,
+     "median_ms": 25.553,
+     "p90_ms": 31.039,
+     "max_ms": 31.039
+    },
+    "evict_one": {
+     "n": 5,
+     "median_ms": 35804.66,
+     "p90_ms": 39608.502,
+     "max_ms": 39608.502
+    },
+    "get_manifest_during_commits": {
+     "n": 4024,
+     "median_ms": 0.147,
+     "p90_ms": 0.223,
+     "max_ms": 42.482,
+     "commits_meanwhile": 32
+    }
+   },
+   "environment": {
+    "gpu_at_start": {
+     "name": "NVIDIA GeForce RTX 4090",
+     "driver_version": "595.99.02",
+     "clocks.sm": "2775 MHz",
+     "clocks.mem": "10251 MHz",
+     "clocks.max.sm": "3105 MHz",
+     "clocks.max.mem": "10501 MHz",
+     "pcie.link.gen.current": "4",
+     "pcie.link.gen.max": "4",
+     "pcie.link.width.current": "16",
+     "pcie.link.width.max": "16",
+     "power.limit": "450.00 W",
+     "temperature.gpu": "60",
+     "memory.used": "15324 MiB",
+     "memory.total": "24564 MiB",
+     "host_load_average_1_5_15": [
+      10.05,
+      9.14,
+      7.28
+     ]
+    },
+    "git": {
+     "commit": "eceed3997cef1fdc2cf6ee92e67c2695445d3c5e",
+     "dirty": false
+    },
+    "host": {
+     "cpu": "13th Gen Intel(R) Core(TM) i9-13900K",
+     "cpus": 32,
+     "memory_gib": 123.2,
+     "kernel": "7.0.0-38-generic",
+     "load_average_1_5_15": [
+      10.05,
+      9.14,
+      7.28
+     ]
+    },
+    "storage": {
+     "device": "nvme1n1",
+     "model_transport": "Samsung SSD 980 PRO 2TB nvme"
+    },
+    "software": {
+     "python": "3.12.15"
+    }
+   }
+  },
+  "after-500x64": {
+   "kvsnap": "build/stress-after/kvsnap",
+   "code_commit": "eceed39",
+   "sessions": 500,
+   "blocks": 64,
+   "block_bytes": 256,
+   "repeat": 5,
+   "fill_s": 5.68,
+   "operations": {
+    "commit_durable": {
+     "n": 5,
+     "median_ms": 234.272,
+     "p90_ms": 322.189,
+     "max_ms": 322.189
+    },
+    "commit_process": {
+     "n": 5,
+     "median_ms": 47.068,
+     "p90_ms": 68.706,
+     "max_ms": 68.706
+    },
+    "get_manifest": {
+     "n": 5,
+     "median_ms": 0.075,
+     "p90_ms": 0.304,
+     "max_ms": 0.304
+    },
+    "lease": {
+     "n": 5,
+     "median_ms": 0.151,
+     "p90_ms": 0.231,
+     "max_ms": 0.231
+    },
+    "invalidate_host": {
+     "n": 5,
+     "median_ms": 0.922,
+     "p90_ms": 23.085,
+     "max_ms": 23.085
+    },
+    "invalidate_disk": {
+     "n": 5,
+     "median_ms": 9.971,
+     "p90_ms": 9.998,
+     "max_ms": 9.998
+    },
+    "make_room_fits": {
+     "n": 5,
+     "median_ms": 0.001,
+     "p90_ms": 24.043,
+     "max_ms": 24.043
+    },
+    "evict_one": {
+     "n": 5,
+     "median_ms": 68.932,
+     "p90_ms": 74.931,
+     "max_ms": 74.931
+    },
+    "get_manifest_during_commits": {
+     "n": 4449,
+     "median_ms": 0.147,
+     "p90_ms": 0.226,
+     "max_ms": 3.027,
+     "commits_meanwhile": 42
+    }
+   },
+   "environment": {
+    "gpu_at_start": {
+     "name": "NVIDIA GeForce RTX 4090",
+     "driver_version": "595.99.02",
+     "clocks.sm": "2760 MHz",
+     "clocks.mem": "10251 MHz",
+     "clocks.max.sm": "3105 MHz",
+     "clocks.max.mem": "10501 MHz",
+     "pcie.link.gen.current": "4",
+     "pcie.link.gen.max": "4",
+     "pcie.link.width.current": "16",
+     "pcie.link.width.max": "16",
+     "power.limit": "450.00 W",
+     "temperature.gpu": "72",
+     "memory.used": "15879 MiB",
+     "memory.total": "24564 MiB",
+     "host_load_average_1_5_15": [
+      10.79,
+      9.35,
+      7.37
+     ]
+    },
+    "git": {
+     "commit": "eceed3997cef1fdc2cf6ee92e67c2695445d3c5e",
+     "dirty": false
+    },
+    "host": {
+     "cpu": "13th Gen Intel(R) Core(TM) i9-13900K",
+     "cpus": 32,
+     "memory_gib": 123.2,
+     "kernel": "7.0.0-38-generic",
+     "load_average_1_5_15": [
+      10.79,
+      9.35,
+      7.37
+     ]
+    },
+    "storage": {
+     "device": "nvme1n1",
+     "model_transport": "Samsung SSD 980 PRO 2TB nvme"
+    },
+    "software": {
+     "python": "3.12.15"
+    }
+   }
+  },
+  "after-500x512": {
+   "kvsnap": "build/stress-after/kvsnap",
+   "code_commit": "eceed39",
+   "sessions": 500,
+   "blocks": 512,
+   "block_bytes": 256,
+   "repeat": 20,
+   "fill_s": 46.47,
+   "operations": {
+    "commit_durable": {
+     "n": 20,
+     "median_ms": 1515.061,
+     "p90_ms": 1583.989,
+     "max_ms": 1592.193
+    },
+    "commit_process": {
+     "n": 20,
+     "median_ms": 176.77,
+     "p90_ms": 244.304,
+     "max_ms": 280.795
+    },
+    "get_manifest": {
+     "n": 20,
+     "median_ms": 0.956,
+     "p90_ms": 1.057,
+     "max_ms": 1.766
+    },
+    "lease": {
+     "n": 20,
+     "median_ms": 2.013,
+     "p90_ms": 10.866,
+     "max_ms": 21.875
+    },
+    "invalidate_host": {
+     "n": 20,
+     "median_ms": 25.648,
+     "p90_ms": 32.108,
+     "max_ms": 32.248
+    },
+    "invalidate_disk": {
+     "n": 20,
+     "median_ms": 25.712,
+     "p90_ms": 29.927,
+     "max_ms": 34.086
+    },
+    "make_room_fits": {
+     "n": 20,
+     "median_ms": 0.0,
+     "p90_ms": 0.001,
+     "max_ms": 564.207
+    },
+    "evict_one": {
+     "n": 20,
+     "median_ms": 718.037,
+     "p90_ms": 845.148,
+     "max_ms": 904.381
+    },
+    "get_manifest_during_commits": {
+     "n": 3520,
+     "median_ms": 0.623,
+     "p90_ms": 0.999,
+     "max_ms": 10.492,
+     "commits_meanwhile": 7
+    }
+   },
+   "environment": {
+    "gpu_at_start": {
+     "name": "NVIDIA GeForce RTX 4090",
+     "driver_version": "595.99.02",
+     "clocks.sm": "2775 MHz",
+     "clocks.mem": "10251 MHz",
+     "clocks.max.sm": "3105 MHz",
+     "clocks.max.mem": "10501 MHz",
+     "pcie.link.gen.current": "4",
+     "pcie.link.gen.max": "4",
+     "pcie.link.width.current": "16",
+     "pcie.link.width.max": "16",
+     "power.limit": "450.00 W",
+     "temperature.gpu": "69",
+     "memory.used": "21354 MiB",
+     "memory.total": "24564 MiB",
+     "host_load_average_1_5_15": [
+      9.84,
+      9.61,
+      7.7
+     ]
+    },
+    "git": {
+     "commit": "eceed3997cef1fdc2cf6ee92e67c2695445d3c5e",
+     "dirty": false
+    },
+    "host": {
+     "cpu": "13th Gen Intel(R) Core(TM) i9-13900K",
+     "cpus": 32,
+     "memory_gib": 123.2,
+     "kernel": "7.0.0-38-generic",
+     "load_average_1_5_15": [
+      9.84,
+      9.61,
+      7.7
+     ]
+    },
+    "storage": {
+     "device": "nvme1n1",
+     "model_transport": "Samsung SSD 980 PRO 2TB nvme"
+    },
+    "software": {
+     "python": "3.12.15"
+    }
+   }
+  }
+ }
+}

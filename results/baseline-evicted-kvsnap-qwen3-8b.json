@@ -1,0 +1,537 @@
+{
+ "model": "Qwen/Qwen3-8B",
+ "revision": "b968826d9c46dd6066d109eabc6255188de91218",
+ "engine": "kvsnap",
+ "regime": "evicted",
+ "lengths": [
+  8192
+ ],
+ "sessions": 4,
+ "rounds": 3,
+ "kv_cache_gib": 2,
+ "offload_gib": 8,
+ "pinned_gib": 8,
+ "prefix_caching": false,
+ "max_num_batched_tokens": 8448,
+ "suffix_tokens": 64,
+ "output_tokens": 16,
+ "runs": 3,
+ "seeds": [
+  1,
+  2,
+  3
+ ],
+ "samples": [
+  {
+   "length": 8192,
+   "session": 0,
+   "round": 0,
+   "ttft_ms": 123.25181416235864,
+   "prompt_tokens": 8257,
+   "run": 0
+  },
+  {
+   "length": 8192,
+   "session": 1,
+   "round": 0,
+   "ttft_ms": 116.74513504840434,
+   "prompt_tokens": 8257,
+   "run": 0
+  },
+  {
+   "length": 8192,
+   "session": 2,
+   "round": 0,
+   "ttft_ms": 134.46029601618648,
+   "prompt_tokens": 8257,
+   "run": 0
+  },
+  {
+   "length": 8192,
+   "session": 3,
+   "round": 0,
+   "ttft_ms": 167.26941987872124,
+   "prompt_tokens": 8257,
+   "run": 0
+  },
+  {
+   "length": 8192,
+   "session": 0,
+   "round": 1,
+   "ttft_ms": 123.3520652167499,
+   "prompt_tokens": 8337,
+   "run": 0
+  },
+  {
+   "length": 8192,
+   "session": 1,
+   "round": 1,
+   "ttft_ms": 114.9990928824991,
+   "prompt_tokens": 8337,
+   "run": 0
+  },
+  {
+   "length": 8192,
+   "session": 2,
+   "round": 1,
+   "ttft_ms": 116.4812920615077,
+   "prompt_tokens": 8337,
+   "run": 0
+  },
+  {
+   "length": 8192,
+   "session": 3,
+   "round": 1,
+   "ttft_ms": 145.23404580540955,
+   "prompt_tokens": 8337,
+   "run": 0
+  },
+  {
+   "length": 8192,
+   "session": 0,
+   "round": 2,
+   "ttft_ms": 119.57158497534692,
+   "prompt_tokens": 8417,
+   "run": 0
+  },
+  {
+   "length": 8192,
+   "session": 1,
+   "round": 2,
+   "ttft_ms": 117.51589016057551,
+   "prompt_tokens": 8417,
+   "run": 0
+  },
+  {
+   "length": 8192,
+   "session": 2,
+   "round": 2,
+   "ttft_ms": 142.32307998463511,
+   "prompt_tokens": 8417,
+   "run": 0
+  },
+  {
+   "length": 8192,
+   "session": 3,
+   "round": 2,
+   "ttft_ms": 117.16888006776571,
+   "prompt_tokens": 8417,
+   "run": 0
+  },
+  {
+   "length": 8192,
+   "session": 0,
+   "round": 0,
+   "ttft_ms": 117.145752068609,
+   "prompt_tokens": 8257,
+   "run": 1
+  },
+  {
+   "length": 8192,
+   "session": 1,
+   "round": 0,
+   "ttft_ms": 115.1664040517062,
+   "prompt_tokens": 8257,
+   "run": 1
+  },
+  {
+   "length": 8192,
+   "session": 2,
+   "round": 0,
+   "ttft_ms": 115.52816699258983,
+   "prompt_tokens": 8257,
+   "run": 1
+  },
+  {
+   "length": 8192,
+   "session": 3,
+   "round": 0,
+   "ttft_ms": 171.43642692826688,
+   "prompt_tokens": 8257,
+   "run": 1
+  },
+  {
+   "length": 8192,
+   "session": 0,
+   "round": 1,
+   "ttft_ms": 119.22830389812589,
+   "prompt_tokens": 8337,
+   "run": 1
+  },
+  {
+   "length": 8192,
+   "session": 1,
+   "round": 1,
+   "ttft_ms": 118.31545806489885,
+   "prompt_tokens": 8337,
+   "run": 1
+  },
+  {
+   "length": 8192,
+   "session": 2,
+   "round": 1,
+   "ttft_ms": 119.08441013656557,
+   "prompt_tokens": 8337,
+   "run": 1
+  },
+  {
+   "length": 8192,
+   "session": 3,
+   "round": 1,
+   "ttft_ms": 135.6507781893015,
+   "prompt_tokens": 8337,
+   "run": 1
+  },
+  {
+   "length": 8192,
+   "session": 0,
+   "round": 2,
+   "ttft_ms": 121.74799083732069,
+   "prompt_tokens": 8417,
+   "run": 1
+  },
+  {
+   "length": 8192,
+   "session": 1,
+   "round": 2,
+   "ttft_ms": 120.91071088798344,
+   "prompt_tokens": 8417,
+   "run": 1
+  },
+  {
+   "length": 8192,
+   "session": 2,
+   "round": 2,
+   "ttft_ms": 119.47501287795603,
+   "prompt_tokens": 8417,
+   "run": 1
+  },
+  {
+   "length": 8192,
+   "session": 3,
+   "round": 2,
+   "ttft_ms": 145.3880111221224,
+   "prompt_tokens": 8417,
+   "run": 1
+  },
+  {
+   "length": 8192,
+   "session": 0,
+   "round": 0,
+   "ttft_ms": 122.57326696999371,
+   "prompt_tokens": 8257,
+   "run": 2
+  },
+  {
+   "length": 8192,
+   "session": 1,
+   "round": 0,
+   "ttft_ms": 126.62606104277074,
+   "prompt_tokens": 8257,
+   "run": 2
+  },
+  {
+   "length": 8192,
+   "session": 2,
+   "round": 0,
+   "ttft_ms": 122.04208387993276,
+   "prompt_tokens": 8257,
+   "run": 2
+  },
+  {
+   "length": 8192,
+   "session": 3,
+   "round": 0,
+   "ttft_ms": 150.60628787614405,
+   "prompt_tokens": 8257,
+   "run": 2
+  },
+  {
+   "length": 8192,
+   "session": 0,
+   "round": 1,
+   "ttft_ms": 119.78392815217376,
+   "prompt_tokens": 8337,
+   "run": 2
+  },
+  {
+   "length": 8192,
+   "session": 1,
+   "round": 1,
+   "ttft_ms": 120.44690898619592,
+   "prompt_tokens": 8337,
+   "run": 2
+  },
+  {
+   "length": 8192,
+   "session": 2,
+   "round": 1,
+   "ttft_ms": 121.33060791529715,
+   "prompt_tokens": 8337,
+   "run": 2
+  },
+  {
+   "length": 8192,
+   "session": 3,
+   "round": 1,
+   "ttft_ms": 137.00130698271096,
+   "prompt_tokens": 8337,
+   "run": 2
+  },
+  {
+   "length": 8192,
+   "session": 0,
+   "round": 2,
+   "ttft_ms": 116.92653992213309,
+   "prompt_tokens": 8417,
+   "run": 2
+  },
+  {
+   "length": 8192,
+   "session": 1,
+   "round": 2,
+   "ttft_ms": 119.16823405772448,
+   "prompt_tokens": 8417,
+   "run": 2
+  },
+  {
+   "length": 8192,
+   "session": 2,
+   "round": 2,
+   "ttft_ms": 129.58322395570576,
+   "prompt_tokens": 8417,
+   "run": 2
+  },
+  {
+   "length": 8192,
+   "session": 3,
+   "round": 2,
+   "ttft_ms": 144.48215696029365,
+   "prompt_tokens": 8417,
+   "run": 2
+  }
+ ],
+ "summary": [
+  {
+   "context_tokens": 8192,
+   "n": 36,
+   "ttft_ms_median": 121.1206594016403,
+   "ttft_ms_min": 114.9990928824991,
+   "ttft_ms_max": 171.43642692826688,
+   "ttft_ms_median_by_run": [
+    121.41169956885278,
+    119.35165838804096,
+    122.30767542496324
+   ]
+  }
+ ],
+ "environment_by_run": [
+  {
+   "gpu_at_start": {
+    "name": "NVIDIA GeForce RTX 4090",
+    "driver_version": "595.99.02",
+    "clocks.sm": "2775 MHz",
+    "clocks.mem": "10501 MHz",
+    "clocks.max.sm": "3105 MHz",
+    "clocks.max.mem": "10501 MHz",
+    "pcie.link.gen.current": "4",
+    "pcie.link.gen.max": "4",
+    "pcie.link.width.current": "16",
+    "pcie.link.width.max": "16",
+    "power.limit": "450.00 W",
+    "temperature.gpu": "58",
+    "memory.used": "693 MiB",
+    "memory.total": "24564 MiB",
+    "host_load_average_1_5_15": [
+     5.36,
+     5.88,
+     5.94
+    ]
+   },
+   "git": {
+    "commit": "eceed3997cef1fdc2cf6ee92e67c2695445d3c5e",
+    "dirty": true
+   },
+   "host": {
+    "cpu": "13th Gen Intel(R) Core(TM) i9-13900K",
+    "cpus": 32,
+    "memory_gib": 123.2,
+    "kernel": "7.0.0-38-generic",
+    "load_average_1_5_15": [
+     5.36,
+     5.88,
+     5.94
+    ]
+   },
+   "storage": {
+    "device": "nvme1n1",
+    "model_transport": "Samsung SSD 980 PRO 2TB nvme"
+   },
+   "software": {
+    "python": "3.12.15",
+    "vllm": "0.31.0",
+    "torch": "2.13.0+cu130",
+    "torch_cuda": "13.0"
+   },
+   "gpu_at_measurement": {
+    "name": "NVIDIA GeForce RTX 4090",
+    "driver_version": "595.99.02",
+    "clocks.sm": "2790 MHz",
+    "clocks.mem": "10251 MHz",
+    "clocks.max.sm": "3105 MHz",
+    "clocks.max.mem": "10501 MHz",
+    "pcie.link.gen.current": "4",
+    "pcie.link.gen.max": "4",
+    "pcie.link.width.current": "16",
+    "pcie.link.width.max": "16",
+    "power.limit": "450.00 W",
+    "temperature.gpu": "57",
+    "memory.used": "20575 MiB",
+    "memory.total": "24564 MiB",
+    "host_load_average_1_5_15": [
+     5.26,
+     5.79,
+     5.9
+    ]
+   }
+  },
+  {
+   "gpu_at_start": {
+    "name": "NVIDIA GeForce RTX 4090",
+    "driver_version": "595.99.02",
+    "clocks.sm": "2790 MHz",
+    "clocks.mem": "10501 MHz",
+    "clocks.max.sm": "3105 MHz",
+    "clocks.max.mem": "10501 MHz",
+    "pcie.link.gen.current": "4",
+    "pcie.link.gen.max": "4",
+    "pcie.link.width.current": "16",
+    "pcie.link.width.max": "16",
+    "power.limit": "450.00 W",
+    "temperature.gpu": "56",
+    "memory.used": "694 MiB",
+    "memory.total": "24564 MiB",
+    "host_load_average_1_5_15": [
+     5.51,
+     5.83,
+     5.91
+    ]
+   },
+   "git": {
+    "commit": "eceed3997cef1fdc2cf6ee92e67c2695445d3c5e",
+    "dirty": true
+   },
+   "host": {
+    "cpu": "13th Gen Intel(R) Core(TM) i9-13900K",
+    "cpus": 32,
+    "memory_gib": 123.2,
+    "kernel": "7.0.0-38-generic",
+    "load_average_1_5_15": [
+     5.51,
+     5.83,
+     5.91
+    ]
+   },
+   "storage": {
+    "device": "nvme1n1",
+    "model_transport": "Samsung SSD 980 PRO 2TB nvme"
+   },
+   "software": {
+    "python": "3.12.15",
+    "vllm": "0.31.0",
+    "torch": "2.13.0+cu130",
+    "torch_cuda": "13.0"
+   },
+   "gpu_at_measurement": {
+    "name": "NVIDIA GeForce RTX 4090",
+    "driver_version": "595.99.02",
+    "clocks.sm": "2775 MHz",
+    "clocks.mem": "10251 MHz",
+    "clocks.max.sm": "3105 MHz",
+    "clocks.max.mem": "10501 MHz",
+    "pcie.link.gen.current": "4",
+    "pcie.link.gen.max": "4",
+    "pcie.link.width.current": "16",
+    "pcie.link.width.max": "16",
+    "power.limit": "450.00 W",
+    "temperature.gpu": "57",
+    "memory.used": "20575 MiB",
+    "memory.total": "24564 MiB",
+    "host_load_average_1_5_15": [
+     5.52,
+     5.81,
+     5.9
+    ]
+   }
+  },
+  {
+   "gpu_at_start": {
+    "name": "NVIDIA GeForce RTX 4090",
+    "driver_version": "595.99.02",
+    "clocks.sm": "2790 MHz",
+    "clocks.mem": "10501 MHz",
+    "clocks.max.sm": "3105 MHz",
+    "clocks.max.mem": "10501 MHz",
+    "pcie.link.gen.current": "4",
+    "pcie.link.gen.max": "4",
+    "pcie.link.width.current": "16",
+    "pcie.link.width.max": "16",
+    "power.limit": "450.00 W",
+    "temperature.gpu": "56",
+    "memory.used": "696 MiB",
+    "memory.total": "24564 MiB",
+    "host_load_average_1_5_15": [
+     5.49,
+     5.78,
+     5.9
+    ]
+   },
+   "git": {
+    "commit": "eceed3997cef1fdc2cf6ee92e67c2695445d3c5e",
+    "dirty": true
+   },
+   "host": {
+    "cpu": "13th Gen Intel(R) Core(TM) i9-13900K",
+    "cpus": 32,
+    "memory_gib": 123.2,
+    "kernel": "7.0.0-38-generic",
+    "load_average_1_5_15": [
+     5.49,
+     5.78,
+     5.9
+    ]
+   },
+   "storage": {
+    "device": "nvme1n1",
+    "model_transport": "Samsung SSD 980 PRO 2TB nvme"
+   },
+   "software": {
+    "python": "3.12.15",
+    "vllm": "0.31.0",
+    "torch": "2.13.0+cu130",
+    "torch_cuda": "13.0"
+   },
+   "gpu_at_measurement": {
+    "name": "NVIDIA GeForce RTX 4090",
+    "driver_version": "595.99.02",
+    "clocks.sm": "2775 MHz",
+    "clocks.mem": "10251 MHz",
+    "clocks.max.sm": "3105 MHz",
+    "clocks.max.mem": "10501 MHz",
+    "pcie.link.gen.current": "4",
+    "pcie.link.gen.max": "4",
+    "pcie.link.width.current": "16",
+    "pcie.link.width.max": "16",
+    "power.limit": "450.00 W",
+    "temperature.gpu": "57",
+    "memory.used": "20574 MiB",
+    "memory.total": "24564 MiB",
+    "host_load_average_1_5_15": [
+     5.91,
+     5.86,
+     5.92
+    ]
+   }
+  }
+ ]
+}
