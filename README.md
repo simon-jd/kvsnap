@@ -400,10 +400,10 @@ is still walks every host block (see [Limitations](#limitations)).
   - An unprovable completion keeps the memory.
   - Tests compile the pool against a fault-injecting fake CUDA runtime.
 
-`pytest` runs 168 tests on CPU, covering:
+`pytest` runs 169 tests on CPU, covering:
 - the store, crash recovery, host-tier eviction and the store's reference
   counts and disk accounting;
-- the gateway;
+- the gateway, and its HTTP server over a loopback socket;
 - the connector's control flow and failure policy;
 - the native data plane, against the fake CUDA runtime;
 - block-layout geometry;
@@ -427,7 +427,7 @@ processes when each run started.
 
 ```sh
 scripts/install.sh cpu                 # .venv: the package and the CPU tests
-.venv/bin/python -m pytest             # 168 tests, no GPU; .venv has no torch, so 5 skip
+.venv/bin/python -m pytest             # 169 tests, no GPU; .venv has no torch, so 5 skip
 scripts/install.sh gpu                 # .venv-gpu: vLLM 0.31.0, torch 2.13.0 (CUDA 13.0), the pinned pool
 scripts/install.sh lmcache             # optional .venv-lmcache: LMCache 0.5.6 for its baseline
 scripts/download-models.sh             # Qwen3-1.7B and Qwen3-8B at the pinned revisions, about 20 GB
