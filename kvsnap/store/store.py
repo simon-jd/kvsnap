@@ -6,7 +6,6 @@ The connector must retain its pinned allocation until its own CUDA event ends.
 
 from __future__ import annotations
 
-import copy
 from concurrent.futures import ThreadPoolExecutor
 import fcntl
 import hashlib
@@ -22,32 +21,12 @@ import uuid
 from contextlib import contextmanager
 from typing import Callable, Iterable
 
+from .blobs import BlobFiles
+from .common import (COMMITTED, DISK_USAGE, FAILPOINTS, HEADER, MAGIC, CapacityError, CorruptSnapshotError,
+                     GenerationConflict, StoreError, _dict, _json, _shallow)
 from .crc32c import crc32c
-
-
-HEADER = struct.Struct("<8sIQI8s")
-MAGIC = b"KVSBLOB1"
-DISK_USAGE = ".disk_usage"
-COMMITTED = ("HostValid", "Durable")
-FAILPOINTS = ("after_d2h", "during_blob_write", "before_fdatasync",
-              "after_rename", "before_manifest_commit", "after_manifest_commit",
-              "before_gpu_release", "during_h2d")
-
-
-class StoreError(RuntimeError):
-    pass
-
-
-class CapacityError(StoreError):
-    pass
-
-
-class CorruptSnapshotError(StoreError):
-    pass
-
-
-class GenerationConflict(StoreError):
-    pass
+from .maintenance import Maintenance
+from .volatile_tier import VolatileTier
 
 
 class _ProcessLock:
@@ -83,18 +62,6 @@ class _ProcessLock:
         return self.owner == threading.get_ident()
 
 
-def _dict(value):
-    return copy.deepcopy(value.to_dict() if hasattr(value, "to_dict") else dict(value))
-
-
-def _shallow(value):
-    return value.to_dict() if hasattr(value, "to_dict") else dict(value)
-
-
-def _json(value):
-    return json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False)
-
-
 def _mkdir_with_parent_sync(path):
     """Persist newly created directory entries all the way to an existing root."""
     path = Path(path)
@@ -108,7 +75,7 @@ def _mkdir_with_parent_sync(path):
         SnapshotStore._sync_directory(created.parent)
 
 
-class SnapshotStore:
+class SnapshotStore(VolatileTier, Maintenance, BlobFiles):
     """Open a storage directory. Concurrent threads and processes serialize writes.
 
     Storage requires a local filesystem with working advisory locks and SQLite WAL.
@@ -193,18 +160,6 @@ class SnapshotStore:
             raise StoreError("store connection cannot be inherited across fork")
         if self._lock_file.closed:
             raise StoreError("store is closed")
-
-    def _hit(self, name):
-        if self.failpoint is not None:
-            self.failpoint(name)
-
-    @staticmethod
-    def _sync_directory(path):
-        fd = os.open(path, os.O_RDONLY | os.O_DIRECTORY)
-        try:
-            os.fsync(fd)
-        finally:
-            os.close(fd)
 
     @contextmanager
     def _reader(self):
@@ -334,143 +289,6 @@ class SnapshotStore:
         manifest.setdefault("parent_id", None)
         manifest.setdefault("durability", "volatile")
         return (count + block_size - 1) // block_size
-
-    def _path(self, blob_id):
-        if len(blob_id) != 64 or any(c not in "0123456789abcdef" for c in blob_id):
-            raise CorruptSnapshotError("invalid blob identifier")
-        return self.blob_dir / (blob_id + ".blob")
-
-    def _read_blob(self, blob_id, *, disk_only=False):
-        if not disk_only and blob_id in self._host:
-            data = self._host[blob_id]
-            if hashlib.sha256(data).hexdigest() != blob_id:
-                raise CorruptSnapshotError("host blob checksum mismatch")
-            return data
-        path = self._path(blob_id)
-        try:
-            with path.open("rb") as stream:
-                raw = self.io.pread_all(stream.fileno(), HEADER.size, 0)
-                if len(raw) != HEADER.size:
-                    raise CorruptSnapshotError("truncated blob header")
-                magic, version, length, checksum, reserved = HEADER.unpack(raw)
-                if magic != MAGIC or version != 1 or reserved != b"\0" * 8:
-                    raise CorruptSnapshotError("invalid blob header")
-                if length != os.fstat(stream.fileno()).st_size - HEADER.size:
-                    raise CorruptSnapshotError("blob length mismatch")
-                data = self.io.pread_all(stream.fileno(), length, HEADER.size)
-                if crc32c(data) != checksum or hashlib.sha256(data).hexdigest() != blob_id:
-                    raise CorruptSnapshotError("blob checksum mismatch")
-                return data
-        except OSError as exc:
-            raise CorruptSnapshotError(f"unreadable blob {blob_id}: {exc}") from exc
-
-    def _blob_header(self, blob_id, segment):
-        """(length, crc32c) from a blob's header, checked against its manifest segment."""
-        try:
-            with self._path(blob_id).open("rb") as stream:
-                raw = stream.read(HEADER.size)
-                size = os.fstat(stream.fileno()).st_size
-        except OSError as exc:
-            raise CorruptSnapshotError(f"prepared blob {blob_id} is missing: {exc}") from exc
-        if len(raw) != HEADER.size:
-            raise CorruptSnapshotError("truncated blob header")
-        magic, version, length, checksum, reserved = HEADER.unpack(raw)
-        if (magic != MAGIC or version != 1 or reserved != b"\0" * 8 or length != size - HEADER.size
-                or segment["offset"] != 0 or segment["length"] != length or segment["crc32c"] != checksum):
-            raise CorruptSnapshotError("prepared blob header differs from its manifest segment")
-        return length, checksum
-
-    def _write_blob(self, blob_id, data, checksum, durability, *, sync_directory=True):
-        final = self._path(blob_id)
-        if final.exists():
-            # Same SHA-256 name: the header check catches a truncated or
-            # foreign file without reading and rehashing the payload.
-            self._blob_header(blob_id, dict(offset=0, length=len(data), crc32c=checksum))
-            # An earlier process-level commit is promoted before a durable reference.
-            if durability == "durable":
-                fd = os.open(final, os.O_RDONLY)
-                try:
-                    os.fdatasync(fd)
-                finally:
-                    os.close(fd)
-                if sync_directory:
-                    self._sync_directory(self.blob_dir)
-            return
-        temporary = self.blob_dir / (blob_id + "." + uuid.uuid4().hex + ".tmp")
-        fd = os.open(temporary, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
-        try:
-            header = HEADER.pack(MAGIC, 1, len(data), checksum, b"\0" * 8)
-            self._pwrite_all(fd, header, 0)
-            middle = max(1, len(data) // 2)
-            self._pwrite_all(fd, data[:middle], HEADER.size)
-            self._hit("during_blob_write")
-            self._pwrite_all(fd, data[middle:], HEADER.size + middle)
-            self._hit("before_fdatasync")
-            if durability == "durable":
-                os.fdatasync(fd)
-        finally:
-            os.close(fd)
-        os.replace(temporary, final)
-        self._hit("after_rename")
-        if durability == "durable" and sync_directory:
-            self._sync_directory(self.blob_dir)
-
-    def _pwrite_all(self, fd, data, offset):
-        self.io.pwrite_all(fd, data, offset)
-
-    def _admit(self, payloads, durability):
-        """Check capacity and, on disk, reserve it. The caller holds the exclusive blob lock."""
-        if durability == "volatile":
-            extra = sum(len(data) for key, data in payloads.items() if key not in self._host)
-            if sum(map(len, self._host.values())) + extra > self.host_capacity_bytes:
-                raise CapacityError("host capacity exhausted; request process/durable spill explicitly")
-        else:
-            used = self._disk_usage()
-            extra = sum(HEADER.size + len(data) for key, data in payloads.items() if not self._path(key).exists())
-            if used + extra > self.disk_capacity_bytes:
-                raise CapacityError("disk capacity exhausted; committed snapshots are never silently evicted")
-            self._record_disk_usage(used + extra)
-
-    def _disk_usage(self):
-        """Bytes of blob files plus admitted blobs not yet written. The caller holds the blob lock.
-
-        Admission adds a new blob's bytes before it is written, instead of
-        stat-ing every blob file on every save; garbage collection and
-        recovery recount from the directory. A failed write leaves its
-        reservation until the next recount, which errs towards refusing a
-        save. The file is only a cache: missing or unreadable, it is recounted.
-        """
-        try:
-            return int((self.root / DISK_USAGE).read_text())
-        except (OSError, ValueError):
-            return self._recount_disk_usage()
-
-    def _recount_disk_usage(self):
-        used = 0
-        with os.scandir(self.blob_dir) as entries:
-            for entry in entries:
-                if entry.is_file():
-                    used += entry.stat().st_size
-        for path in self.prepared_dir.glob("*.json"):      # live intents not written yet
-            try:
-                record = json.loads(path.read_text())
-            except (OSError, ValueError):
-                continue
-            if record.get("durability") == "volatile" or record.get("expires_at", 0) <= time.time():
-                continue
-            for segment in record.get("segments", []):
-                try:
-                    if not self._path(segment["blob_id"]).exists():
-                        used += HEADER.size + segment["length"]
-                except (CorruptSnapshotError, KeyError, TypeError):
-                    continue
-        self._record_disk_usage(used)
-        return used
-
-    def _record_disk_usage(self, value):
-        temporary = self.root / (DISK_USAGE + ".tmp")
-        temporary.write_text(str(value))
-        os.replace(temporary, self.root / DISK_USAGE)
 
     def commit(self, manifest, blocks: Iterable[bytes]):
         """Commit complete KV blocks, deduplicated by immutable byte content.
@@ -703,138 +521,6 @@ class SnapshotStore:
             self._sync_directory(self.prepared_dir)
             return result
 
-    def volatile_locations(self, manifest):
-        """Opaque worker handles; no process-local pointer is exposed."""
-        keys = sorted({segment["blob_id"] for segment in manifest["segments"]})
-        with self._reader() as db:
-            result = self._committed_volatile_locations(keys, db)
-        if len(result) != len(keys):
-            raise CorruptSnapshotError("volatile snapshot has no worker-owned allocation")
-        return result
-
-    def _committed_volatile_locations(self, keys, db=None):
-        # One statement for any number of keys: a snapshot has one row per block.
-        rows = (db or self.db).execute("SELECT blob_id,location_json FROM volatile_locations "
-                               "WHERE blob_id IN (SELECT value FROM json_each(?))", (json.dumps(keys),))
-        return {row[0]: json.loads(row[1]) for row in rows}
-
-    def _read_volatile_blob(self, key):
-        from kvsnap.connector.volatile import VolatileClient
-        row = self.db.execute("SELECT location_json FROM volatile_locations WHERE blob_id=?", (key,)).fetchone()
-        if row is not None:
-            location = json.loads(row[0])
-            return VolatileClient(self.root, location["owner"]).read(key, location)
-        if key in self._host:
-            return self._read_blob(key)
-        raise CorruptSnapshotError("volatile owner or resident allocation is unavailable")
-
-    def _live_volatile_locations(self, keys):
-        """Committed locations of ``keys`` whose owner still holds the allocation.
-
-        A turn re-saves every block of the turns before it, so most keys are
-        already committed. They are checked in one round trip per owner, not
-        one per block: per-block checks held the scheduler thread for tens of
-        milliseconds at every turn end. Only an owner that fails the batch is
-        asked about each of its blocks.
-        """
-        from kvsnap.connector.volatile import VolatileClient
-        owners = {}
-        for key, location in self._committed_volatile_locations(keys).items():
-            owners.setdefault(location["owner"]["owner_id"], (location["owner"], {}))[1][key] = location
-        live = {}
-        for owner, held in owners.values():
-            client = VolatileClient(self.root, owner)
-            try:
-                client.check(held)
-                live.update(held)
-                continue
-            except CorruptSnapshotError:
-                pass
-            for key, location in held.items():
-                try:
-                    client.check({key: location})
-                    live[key] = location
-                except CorruptSnapshotError:
-                    pass
-        return live
-
-    def _commit_volatile_prepared(self, body, record, expected_generation):
-        from kvsnap.connector.volatile import VolatileClient
-        ident = record.get("preparation_id", "")
-        if len(ident) != 32 or any(c not in "0123456789abcdef" for c in ident):
-            raise ValueError("invalid preparation ID")
-        with self._lock, self._blob_lock:
-            self._check_owner()
-            path = self.prepared_dir / (ident + ".json")
-            if json.loads(path.read_text()) != record or record["expires_at"] <= time.time():
-                raise StoreError("volatile preparation differs from intent or expired")
-            if (body["durability"] != "volatile" or body["session_id"] != record["session_id"] or
-                    body["generation"] != record["generation"]):
-                raise GenerationConflict("volatile preparation identity or generation mismatch")
-            if expected_generation is not None and body["generation"] != expected_generation:
-                raise GenerationConflict("manifest generation differs from expected generation")
-            body["segments"], body["state"] = record["segments"], "HostValid"
-            expected = self._validate_manifest(body)
-            if len(body["segments"]) != expected:
-                raise CorruptSnapshotError("volatile preparation does not cover KV blocks")
-            keys = {segment["blob_id"] for segment in body["segments"]}
-            if keys != set(record["locations"]):
-                raise CorruptSnapshotError("volatile location set differs from manifest")
-            # The worker hashed each block in place right after its D2H fence
-            # and wrote the digests into the intent. Here the owner only has to
-            # confirm, in one round trip, that it still holds every handle at
-            # the recorded length; no payload crosses the socket.
-            for segment in body["segments"]:
-                location = record["locations"][segment["blob_id"]]
-                if segment["offset"] != 0 or segment["length"] != location["length"]:
-                    raise CorruptSnapshotError("volatile segment length differs from its allocation")
-            owners = {}
-            for key, location in record["locations"].items():
-                owners.setdefault(location["owner"]["owner_id"], (location["owner"], {}))[1][key] = location
-            for owner, locations in owners.values():
-                VolatileClient(self.root, owner).check(locations)
-            with self._transaction("volatile"):
-                if self.db.execute("SELECT 1 FROM closed_sessions WHERE session_id=?", (body["session_id"],)).fetchone():
-                    raise GenerationConflict("cannot commit to a closed session")
-                row = self.db.execute("SELECT generation FROM sessions WHERE session_id=?", (body["session_id"],)).fetchone()
-                if row and row[0] != body["generation"]:
-                    raise GenerationConflict("stale snapshot generation")
-                if self.db.execute("SELECT 1 FROM snapshots WHERE snapshot_id=?", (body["snapshot_id"],)).fetchone():
-                    raise StoreError("snapshot IDs are immutable and cannot be reused")
-                if body.get("parent_id"):
-                    # Validated when it was committed: only identity and prefix matter here.
-                    parent = self._get_manifest(body["parent_id"], include_invalid=True)
-                    if (parent["identity"] != body["identity"] or
-                            body["token_ids"][:len(parent["token_ids"])] != parent["token_ids"]):
-                        raise StoreError("child snapshot must preserve parent identity and token prefix")
-                self.db.execute("INSERT OR IGNORE INTO sessions VALUES(?,?)", (body["session_id"], body["generation"]))
-                self.db.execute("INSERT OR REPLACE INTO snapshot_access VALUES(?,?)", (body["snapshot_id"], time.time()))
-                serialized = _json(body)
-                self.db.execute("INSERT INTO snapshots VALUES(?,?,?,?,?,?,NULL)",
-                                (body["snapshot_id"], body["session_id"], body["generation"],
-                                 body["state"], body["durability"], serialized))
-                # Keep a live canonical allocation when another worker
-                # prepares the same bytes; never move existing roots to an
-                # unnecessary duplicate owner that might die independently.
-                locations = dict(record["locations"])
-                locations.update(self._live_volatile_locations(list(locations)))
-                segments = {segment["blob_id"]: segment for segment in body["segments"]}
-                self.db.executemany("INSERT INTO volatile_locations VALUES(?,?) ON CONFLICT(blob_id) DO UPDATE SET location_json=excluded.location_json",
-                                    [(key, _json(location)) for key, location in locations.items()])
-                self.db.executemany("INSERT INTO blobs VALUES(?,?,?,1) ON CONFLICT(blob_id) DO UPDATE SET refcount=refcount+1",
-                                    [(key, segments[key]["length"], segments[key]["crc32c"]) for key in locations])
-                self.db.executemany("INSERT INTO snapshot_blobs VALUES(?,?)",
-                                    [(body["snapshot_id"], key) for key in locations])
-                self._hit("before_manifest_commit")
-            self._count_host_commit((segments[key]["length"], None) for key in locations)
-            # No directory fsync: if a crash brings the intent back, it is an
-            # expired temporary root that collection reclaims, and the host
-            # memory it described is gone with the process anyway.
-            path.unlink(missing_ok=True)
-            self._hit("after_manifest_commit")
-            self._hit("before_gpu_release")
-            return json.loads(serialized)
-
     def acquire_lease(self, snapshot_id, *, ttl_seconds=300):
         if not math.isfinite(ttl_seconds) or ttl_seconds <= 0:
             raise ValueError("lease TTL must be finite and positive")
@@ -882,278 +568,6 @@ class SnapshotStore:
             row = db.execute("SELECT reason FROM failed_saves WHERE snapshot_id=?", (snapshot_id,)).fetchone()
             return None if row is None else row[0]
 
-    def volatile_bytes(self):
-        """Bytes of distinct blobs referenced by committed host-memory snapshots."""
-        with self._reader() as db:
-            return db.execute(
-                "SELECT COALESCE(SUM(length),0) FROM blobs WHERE blob_id IN (SELECT sb.blob_id FROM snapshot_blobs sb "
-                "JOIN snapshots s ON s.snapshot_id=sb.snapshot_id WHERE s.durability='volatile' AND s.state='HostValid')"
-            ).fetchone()[0]
-
-    def make_room_volatile(self, needed_bytes, capacity_bytes):
-        """Invalidate least recently used host-memory snapshots until ``needed_bytes`` fit.
-
-        The host tier is a cache: an evicted session's next turn misses and is
-        recomputed. A snapshot under a load lease is never evicted. Recency is
-        the last commit or restore. Returns the evicted snapshot ids; if only
-        leased snapshots remain, the caller's save may still not fit.
-        """
-        evicted = []
-        # Usually nothing has to go. This runs on the scheduler thread at every
-        # turn end, and measuring the tier walks every host block, so first try
-        # an upper bound: the size last measured plus every host-memory commit
-        # this store has made since. Invalidations elsewhere only make it looser.
-        if self._host_bytes_bound is not None and self._host_bytes_bound + needed_bytes <= capacity_bytes:
-            return evicted
-        used = self._host_bytes_bound = self.volatile_bytes()
-        if used + needed_bytes <= capacity_bytes:
-            return evicted
-        with self._lock:
-            self._check_owner()
-            while (used := self.volatile_bytes()) + needed_bytes > capacity_bytes:
-                row = self.db.execute(
-                    "SELECT s.snapshot_id FROM snapshots s LEFT JOIN snapshot_access a ON a.snapshot_id=s.snapshot_id "
-                    "WHERE s.durability='volatile' AND s.state='HostValid' AND s.snapshot_id NOT IN "
-                    "(SELECT snapshot_id FROM leases WHERE expires_at>?) ORDER BY COALESCE(a.at,0) LIMIT 1",
-                    (time.time(),)).fetchone()
-                if row is None:
-                    break
-                self._invalidate(row[0], "evicted from the host tier (least recently used)")
-                evicted.append(row[0])
-            self._host_bytes_bound = used
-        return evicted
-
-    def _count_host_commit(self, entries):
-        """Raise the host tier's upper bound by a committed snapshot's blocks (lengths first)."""
-        if self._host_bytes_bound is not None:
-            self._host_bytes_bound += sum(length for length, _ in entries)
-
-    def invalidate_snapshot(self, snapshot_id, reason):
-        with self._lock:
-            self._check_owner()
-            # A load lease can outlive an explicitly deleted manifest.
-            if not self.db.execute("SELECT 1 FROM snapshots WHERE snapshot_id=?", (snapshot_id,)).fetchone():
-                return
-            self._invalidate(snapshot_id, reason)
-
-    def _invalidate(self, snapshot_id, reason):
-        row = self.db.execute("SELECT durability FROM snapshots WHERE snapshot_id=?", (snapshot_id,)).fetchone()
-        # A host-memory snapshot cannot outlive the process, and recovery
-        # invalidates every one of them, so its invalidation needs no fsync.
-        with self._transaction("volatile" if row and row[0] == "volatile" else "durable"):
-            body = self._get_manifest(snapshot_id, True)
-            body["state"] = "Invalid"
-            self.db.execute("UPDATE snapshots SET state='Invalid',manifest_json=?,error=? WHERE snapshot_id=?",
-                            (_json(body), reason, snapshot_id))
-            self._release_references(snapshot_id)
-
-    def _release_references(self, snapshot_id):
-        """Drop one snapshot's blob references: O(its blocks), not O(every snapshot).
-
-        Every reference count equals the number of ``snapshot_blobs`` rows for
-        its blob; ``_rebuild_references`` restores that from the manifests at
-        recovery and in garbage collection.
-        """
-        self.db.execute("UPDATE blobs SET refcount=MAX(refcount-1,0) WHERE blob_id IN "
-                        "(SELECT blob_id FROM snapshot_blobs WHERE snapshot_id=?)", (snapshot_id,))
-        self.db.execute("DELETE FROM snapshot_blobs WHERE snapshot_id=?", (snapshot_id,))
-
-    def _rebuild_references(self):
-        self.db.execute("DELETE FROM snapshot_blobs")
-        for row in self.db.execute("SELECT snapshot_id,manifest_json FROM snapshots WHERE state IN ('HostValid','Durable')").fetchall():
-            for segment in json.loads(row["manifest_json"]).get("segments", []):
-                key = segment["blob_id"]
-                self.db.execute("INSERT OR IGNORE INTO blobs VALUES(?,?,?,0)",
-                                (key, segment["length"], segment["crc32c"]))
-                self.db.execute("INSERT OR IGNORE INTO snapshot_blobs VALUES(?,?)", (row["snapshot_id"], key))
-        self.db.execute("UPDATE blobs SET refcount=(SELECT count(*) FROM snapshot_blobs WHERE snapshot_blobs.blob_id=blobs.blob_id)")
-
-    def recover(self):
-        """Reject interrupted/volatile/corrupt snapshots and rebuild reachable counts."""
-        with self._lock, self._blob_lock:
-            self._check_owner()
-            report = {"valid": [], "invalid": [], "temporary_files": []}
-            invalid_updates = []
-            for row in self.db.execute("SELECT * FROM snapshots").fetchall():
-                reason = None
-                if row["state"] == "Invalid":
-                    report["invalid"].append(row["snapshot_id"])
-                    continue
-                try:
-                    body = json.loads(row["manifest_json"])
-                    if not isinstance(body, dict):
-                        raise ValueError("manifest JSON is not an object")
-                    if any(body.get(key) != row[key] for key in ("snapshot_id", "session_id", "generation", "state", "durability")):
-                        raise CorruptSnapshotError("manifest body disagrees with SQLite index columns")
-                    if row["state"] not in COMMITTED:
-                        reason = "interrupted uncommitted snapshot"
-                    else:
-                        self._validate_payloads(body)
-                except (CorruptSnapshotError, ValueError, KeyError, TypeError) as exc:
-                    reason = str(exc)
-                    # Preserve diagnosability even when the JSON itself is damaged.
-                    try:
-                        body = json.loads(row["manifest_json"])
-                        if not isinstance(body, dict):
-                            body = {}
-                    except ValueError:
-                        body = {}
-                    body.update({key: row[key] for key in ("snapshot_id", "session_id", "generation", "durability")})
-                if reason:
-                    body["state"] = "Invalid"
-                    invalid_updates.append((_json(body), reason, row["snapshot_id"]))
-                    report["invalid"].append(row["snapshot_id"])
-                else:
-                    report["valid"].append(row["snapshot_id"])
-            with self._transaction():
-                self.db.executemany("UPDATE snapshots SET state='Invalid',manifest_json=?,error=? WHERE snapshot_id=?",
-                                    invalid_updates)
-                self._rebuild_references()
-                self._expire_leases()
-            for path in self.blob_dir.glob("*.tmp"):
-                if path.name.split(".")[0] in self._intent_blobs():
-                    continue                  # a live writer's file (BlobWriter writes unlocked)
-                report["temporary_files"].append(path.name)
-                path.unlink()
-            if report["temporary_files"]:
-                self._sync_directory(self.blob_dir)
-            self._recount_disk_usage()
-            return report
-
-    def _intent_blobs(self):
-        """Blob ids listed by unexpired preparation intents."""
-        keys = set()
-        for path in self.prepared_dir.glob("*.json"):
-            try:
-                record = json.loads(path.read_text())
-            except (OSError, ValueError):
-                continue
-            if record.get("expires_at", 0) > time.time():
-                keys.update(segment["blob_id"] for segment in record.get("segments", []))
-        return keys
-
-    def fork(self, source_id, new_id, session_id, generation=0, *, expected_parent_generation=None):
-        """Share immutable persistent segments; GPU targets are separately allocated.
-
-        This operation does not establish GPU block sharing or device CoW.
-        """
-        with self._lock:
-            self._check_owner()
-            source = self._get_manifest(source_id)
-            if expected_parent_generation is not None:
-                row = self.db.execute("SELECT generation FROM sessions WHERE session_id=?", (source["session_id"],)).fetchone()
-                if row is None or row[0] != expected_parent_generation:
-                    raise GenerationConflict("stale source session generation")
-            # Validate parent bytes before making another promise about them.
-            self.load(source_id)
-            body = copy.deepcopy(source)
-            body.update(snapshot_id=new_id, session_id=session_id, generation=generation, parent_id=source_id)
-            self._validate_manifest(body)
-            with self._transaction(body["durability"]):
-                if self.db.execute("SELECT 1 FROM closed_sessions WHERE session_id=?", (session_id,)).fetchone():
-                    raise GenerationConflict("fork target session is closed")
-                if self.db.execute("SELECT 1 FROM snapshots WHERE snapshot_id=?", (new_id,)).fetchone():
-                    raise StoreError("snapshot IDs cannot be reused")
-                row = self.db.execute("SELECT generation FROM sessions WHERE session_id=?", (session_id,)).fetchone()
-                if row and row[0] != generation:
-                    raise GenerationConflict("stale fork generation")
-                self.db.execute("INSERT OR IGNORE INTO sessions VALUES(?,?)", (session_id, generation))
-                self.db.execute("INSERT INTO snapshots VALUES(?,?,?,?,?,?,NULL)",
-                                (new_id, session_id, generation, body["state"], body["durability"], _json(body)))
-                for key in {s["blob_id"] for s in body["segments"]}:
-                    self.db.execute("INSERT INTO snapshot_blobs VALUES(?,?)", (new_id, key))
-                    self.db.execute("UPDATE blobs SET refcount=refcount+1 WHERE blob_id=?", (key,))
-            return body
-
-    def delete_snapshot(self, snapshot_id):
-        with self._lock, self._transaction():
-            self._get_manifest(snapshot_id, True)
-            # Parent metadata is retained while children exist, preserving a valid DAG.
-            for row in self.db.execute("SELECT manifest_json FROM snapshots").fetchall():
-                if json.loads(row[0]).get("parent_id") == snapshot_id:
-                    raise StoreError("delete child snapshots before their parent")
-            self._release_references(snapshot_id)
-            self.db.execute("DELETE FROM snapshots WHERE snapshot_id=?", (snapshot_id,))
-
-    def retire_snapshot(self, snapshot_id):
-        """Logically delete one owner while retaining immutable DAG metadata.
-
-        Forks keep their own segment references; active load leases remain GC
-        roots. The tombstone cannot be resumed/forked, and physical metadata
-        deletion still requires children to be removed first.
-        """
-        with self._lock:
-            self._check_owner()
-            self._get_manifest(snapshot_id)
-            self._invalidate(snapshot_id, "snapshot owner explicitly retired; DAG metadata retained")
-
-    def _expire_leases(self):
-        self.db.execute("DELETE FROM lease_blobs WHERE lease_id IN (SELECT lease_id FROM leases WHERE expires_at<=?)", (time.time(),))
-        self.db.execute("DELETE FROM leases WHERE expires_at<=?", (time.time(),))
-
-    def collect_garbage(self):
-        with self._lock, self._blob_lock:
-            self._check_owner()
-            with self._transaction():
-                self._expire_leases()
-                self._rebuild_references()
-                reachable = {row[0] for row in self.db.execute("SELECT blob_id FROM snapshot_blobs UNION SELECT blob_id FROM lease_blobs")}
-                volatile_reachable = {row[0] for row in self.db.execute(
-                    "SELECT sb.blob_id FROM snapshot_blobs sb JOIN snapshots s ON s.snapshot_id=sb.snapshot_id "
-                    "WHERE s.durability='volatile' UNION SELECT blob_id FROM lease_blobs")}
-                for path in self.prepared_dir.glob("*.json"):
-                    record = json.loads(path.read_text())
-                    if record["expires_at"] > time.time():
-                        reachable.update(segment["blob_id"] for segment in record["segments"])
-                        if record["durability"] == "volatile":
-                            volatile_reachable.update(segment["blob_id"] for segment in record["segments"])
-                    else:
-                        path.unlink()
-                self.db.execute("DELETE FROM blobs WHERE refcount=0 AND blob_id NOT IN (SELECT blob_id FROM lease_blobs)")
-                for row in self.db.execute("SELECT blob_id FROM volatile_locations").fetchall():
-                    if row[0] not in volatile_reachable:
-                        self.db.execute("DELETE FROM volatile_locations WHERE blob_id=?", (row[0],))
-            removed = []
-            for path in self.blob_dir.iterdir():
-                # A temporary file named for a blob of a live intent is a write
-                # in progress (BlobWriter writes without holding the blob lock).
-                if path.suffix in (".tmp", ".blob") and path.name.split(".")[0] not in reachable:
-                    path.unlink()
-                    removed.append(path.name)
-            for key in list(self._host):
-                if key not in reachable:
-                    del self._host[key]
-            if removed:
-                self._sync_directory(self.blob_dir)
-            self._recount_disk_usage()
-            return removed
-
-    def export(self, path=None):
-        with self._lock:
-            self._check_owner()
-            data = dict(schema_version=1, snapshots=self.list_manifests(include_invalid=True),
-                        blobs=[dict(row) for row in self.db.execute("SELECT * FROM blobs ORDER BY blob_id")],
-                        leases=[dict(row) for row in self.db.execute("SELECT * FROM leases ORDER BY lease_id")],
-                        lease_blobs=[dict(row) for row in self.db.execute("SELECT * FROM lease_blobs ORDER BY lease_id,blob_id")],
-                        sessions=[dict(row) for row in self.db.execute("SELECT * FROM sessions ORDER BY session_id")])
-            if path is not None:
-                Path(path).write_text(_json(data) + "\n")
-            return data
-
-    def stats(self):
-        with self._lock:
-            self._check_owner()
-            remote = {row[0]: row[1] for row in self.db.execute(
-                "SELECT v.blob_id,b.length FROM volatile_locations v JOIN blobs b ON b.blob_id=v.blob_id "
-                "WHERE EXISTS(SELECT 1 FROM snapshot_blobs sb JOIN snapshots s ON sb.snapshot_id=s.snapshot_id "
-                "WHERE sb.blob_id=v.blob_id AND s.durability='volatile')")}
-            remote_bytes = sum(length for key, length in remote.items() if key not in self._host)
-            return dict(host_bytes=sum(map(len, self._host.values())) + remote_bytes,
-                        worker_host_bytes=remote_bytes,
-                        disk_bytes=sum(p.stat().st_size for p in self.blob_dir.iterdir() if p.is_file()),
-                        committed_snapshots=len(self.list_manifests()),
-                        unique_blobs=self.db.execute("SELECT count(*) FROM blobs WHERE refcount>0").fetchone()[0])
-
     def close(self):
         if self._lock_file.closed:
             return
@@ -1200,24 +614,12 @@ def _write_preparation(directory, record):
     SnapshotStore._sync_directory(directory)
 
 
-class BlobWriter:
+class BlobWriter(BlobFiles):
     """Worker filesystem data plane: no SQLite connection or manifest authority.
 
     Serializes with store GC through ``.blob.lock``. Preparation reservations
     protect files until publication or expiry. They cannot promise pinned memory.
     """
-
-    _path = SnapshotStore._path
-    _read_blob = SnapshotStore._read_blob
-    _write_blob = SnapshotStore._write_blob
-    _pwrite_all = SnapshotStore._pwrite_all
-    _sync_directory = staticmethod(SnapshotStore._sync_directory)
-    _hit = SnapshotStore._hit
-    _admit = SnapshotStore._admit
-    _disk_usage = SnapshotStore._disk_usage
-    _recount_disk_usage = SnapshotStore._recount_disk_usage
-    _record_disk_usage = SnapshotStore._record_disk_usage
-    _blob_header = SnapshotStore._blob_header
 
     def __init__(self, root, *, disk_capacity_bytes=200 * 1024**3, failpoint=None, io_backend=None):
         from .native_io import get_io_backend

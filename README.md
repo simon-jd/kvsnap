@@ -452,7 +452,7 @@ it can share a GPU with other jobs that use the same lock.
 | `kvsnap/connector/dataplane.py` | pinned pool bindings, GPU gather/scatter, KV layout checks |
 | `kvsnap/connector/volatile.py` | host-memory (pinned) snapshot tier owned by the worker |
 | `kvsnap/connector/engine.py` | `AsyncLLM` adapter used by the gateway; `create_async_llm` |
-| `kvsnap/store/store.py` | SQLite WAL manifests, blob files, leases, GC, eviction, fork, recovery |
+| `kvsnap/store/` | `store.py`: SQLite WAL manifests, commits, leases; `blobs.py`: blob files; `volatile_tier.py`: host-memory snapshots and eviction; `maintenance.py`: invalidation, recovery, fork, GC |
 | `kvsnap/gateway/` | session API: create, turn, pause, resume, fork, close (Python and HTTP) |
 | `csrc/dataplane/` | C++ pinned pool (`cudaHostAlloc`, copy stream, events) and file I/O with SSE4.2 CRC32C |
 | `bench/` | the benchmarks above, the trace summary, the store stress test and the plot |
