@@ -205,15 +205,6 @@ class PinnedAllocation:
                 self._tensor_references.clear()
 
 
-def _runs(block_ids):
-    """Yield (start index, length) of maximal runs of consecutive block ids."""
-    start = 0
-    for i in range(1, len(block_ids) + 1):
-        if i == len(block_ids) or block_ids[i] != block_ids[i - 1] + 1:
-            yield start, i - start
-            start = i
-
-
 class TorchBlockDataPlane:
     """Packed physical blocks: layer-name order, dense [H,N,C] stride permutations.
 
@@ -249,10 +240,6 @@ class TorchBlockDataPlane:
                                 "dtype": str(tensor.dtype), "stride": list(tensor.stride()[1:]),
                                 "bytes": tensor[0].numel() * tensor.element_size()})
         self.block_bytes = sum(l["bytes"] for l in self.layers)
-        # Block b of a layer starts at base + b * pitch; computing addresses
-        # directly avoids building a tensor view for every copy.
-        self._addresses = [(tensor.data_ptr(), tensor.stride(0) * tensor.element_size())
-                           for tensor in self.caches.values()]
         self.pool = CudaPool(capacity_bytes, device.index)
 
     def _validate_ids(self, ids):
@@ -266,28 +253,6 @@ class TorchBlockDataPlane:
         event.record(self.torch.cuda.current_stream(next(iter(self.caches.values())).device))
         return event
 
-    def _producer_stream(self):
-        return self.torch.cuda.current_stream(next(iter(self.caches.values())).device).cuda_stream
-
-    def _copy_runs(self, allocation, block_ids, *, to_host, producer_stream=0):
-        """Copy ``block_ids`` between the KV cache and a packed pinned buffer.
-
-        The pinned buffer holds block i at ``i * block_bytes``, with its layers
-        back to back. For each layer, every run of consecutive block ids is one
-        cudaMemcpy2DAsync (host pitch = packed block, device pitch = the layer's
-        block stride), so an N-block transfer costs layers x runs copies instead
-        of layers x N.
-        """
-        runs = list(_runs(block_ids))
-        layer_offset = 0
-        for layer, (base, device_pitch) in zip(self.layers, self._addresses):
-            for start, count in runs:
-                allocation.copy_2d(base + block_ids[start] * device_pitch, device_pitch,
-                                   start * self.block_bytes + layer_offset, self.block_bytes,
-                                   layer["bytes"], count, to_host=to_host, producer_stream=producer_stream)
-            layer_offset += layer["bytes"]
-        return len(runs) * len(self.layers)
-
     def _zero_tail(self, allocation, base, valid):
         """Zero token slots past ``valid`` in one packed block, so snapshots never carry stale KV."""
         offset = base
@@ -300,95 +265,6 @@ class TorchBlockDataPlane:
                     allocation.zero(offset + (head * sh + token * sn) * element_bytes, c * element_bytes)
             offset += layer["bytes"]
 
-    def iter_save_pinned(self, block_ids, num_kv_tokens, *, batch=64):
-        """Yield one owned pinned allocation per block (volatile snapshots keep them).
-
-        Copies are issued ``batch`` blocks at a time and fenced together, so the
-        stream never idles on a per-block wait, while at most ``batch`` blocks
-        of pinned headroom are reserved before the consumer adopts them.
-        """
-        self._validate_ids(block_ids)
-        expected = (num_kv_tokens + self.block_size - 1) // self.block_size
-        if len(block_ids) != expected:
-            raise ValueError("block count does not cover computed tokens")
-        stream = self._producer_stream()
-        valid = num_kv_tokens % self.block_size
-        for first in range(0, len(block_ids), batch):
-            group = block_ids[first:first + batch]
-            allocations = []
-            try:
-                for block_id in group:
-                    allocations.append(self.pool.reserve(self.block_bytes))
-                    self._copy_runs(allocations[-1], [block_id], to_host=True, producer_stream=stream)
-                for allocation in allocations:
-                    allocation.wait()
-                if valid and first + len(group) == len(block_ids):
-                    self._zero_tail(allocations[-1], 0, valid)
-            except BaseException:
-                for allocation in allocations:
-                    allocation.close()
-                raise
-            for index, allocation in enumerate(allocations):
-                try:
-                    yield allocation
-                except BaseException:
-                    for rest in allocations[index + 1:]:
-                        rest.close()
-                    raise
-
-    def save_pinned(self, block_ids, num_kv_tokens):
-        """Return owned, immutable pinned blocks after the final D2H event."""
-        allocations = []
-        try:
-            allocations.extend(self.iter_save_pinned(block_ids, num_kv_tokens))
-            return allocations
-        except BaseException:
-            for allocation in allocations:
-                allocation.close()
-            raise
-
-    def save_staged(self, block_ids, num_kv_tokens):
-        """D2H all blocks into one packed pinned buffer with batched copies and one wait.
-
-        Returns the fenced allocation; the caller reads it and must close it.
-        """
-        self._validate_ids(block_ids)
-        expected = (num_kv_tokens + self.block_size - 1) // self.block_size
-        if len(block_ids) != expected or not block_ids:
-            raise ValueError("block count does not cover computed tokens")
-        allocation = self.pool.reserve(self.block_bytes * len(block_ids))
-        try:
-            self._copy_runs(allocation, block_ids, to_host=True, producer_stream=self._producer_stream())
-            allocation.wait()
-            valid = num_kv_tokens % self.block_size
-            if valid:
-                self._zero_tail(allocation, (len(block_ids) - 1) * self.block_bytes, valid)
-            return allocation
-        except BaseException:
-            allocation.close()
-            raise
-
-    def save(self, block_ids, num_kv_tokens):
-        """D2H all blocks; return one bytes object per block."""
-        if not block_ids and not num_kv_tokens:
-            return []
-        allocation = self.save_staged(block_ids, num_kv_tokens)
-        try:
-            return [allocation.read_range(i * self.block_bytes, self.block_bytes) for i in range(len(block_ids))]
-        finally:
-            allocation.close()
-
-    def load_pinned(self, block_ids, allocations):
-        """Load an owner's borrowed per-block allocations without another pinned copy."""
-        self._validate_ids(block_ids)
-        if len(block_ids) != len(allocations) or any(a.size != self.block_bytes for a in allocations):
-            raise ValueError("KV pinned payload length mismatch")
-        # The pool's copy stream is serial: enqueue everything, then fence each.
-        for block_id, allocation in zip(block_ids, allocations):
-            self._copy_runs(allocation, [block_id], to_host=False)
-        for allocation in allocations:
-            allocation.wait()
-
     @contextmanager
     def staging(self, nblocks):
         """A packed pinned buffer for ``nblocks`` blocks, released (after its copies fence) on exit."""
@@ -397,16 +273,6 @@ class TorchBlockDataPlane:
             yield allocation
         finally:
             allocation.close()
-
-    def load_staged(self, block_ids, allocation):
-        """H2D a filled staging buffer into ``block_ids`` and wait for the copies."""
-        self._validate_ids(block_ids)
-        if allocation.size < self.block_bytes * len(block_ids):
-            raise ValueError("staging buffer smaller than the blocks to load")
-        copies = self._copy_runs(allocation, block_ids, to_host=False)
-        # No dependency on layer hooks skipped by full CUDA graph replay.
-        allocation.wait()
-        return copies
 
     def _scatter_targets(self):
         """Each layer's KV cache as int64 rows: row b is block b's dense span.
@@ -530,16 +396,6 @@ class TorchBlockDataPlane:
             allocation, offset = targets[-1]
             self._zero_tail(allocation, offset, valid)
         return copies
-
-    def load(self, block_ids, blocks):
-        if len(block_ids) != len(blocks) or any(len(b) != self.block_bytes for b in blocks):
-            raise ValueError("KV payload length mismatch")
-        if not blocks:
-            return
-        with self.staging(len(blocks)) as allocation:
-            for index, block in enumerate(blocks):
-                C.memmove(allocation.pointer + index * self.block_bytes, block, self.block_bytes)
-            self.load_staged(block_ids, allocation)
 
     def close(self):
         self.pool.close()
