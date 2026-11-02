@@ -62,7 +62,11 @@ part_exact() {
     --batch-invariant --perturb --store-dir "$scratch" --output "$out/exact-perturbed-qwen3-1.7b.json"
 }
 
-part_under-load() { repeat "$python" under-load-qwen3-1.7b bench.restore_under_load "${small[@]}"; }
+part_under-load() {
+  repeat "$python" under-load-qwen3-1.7b bench.restore_under_load "${small[@]}"
+  repeat "$python" under-load-native-offload-qwen3-1.7b bench.restore_under_load "${small[@]}" \
+    --engines native-offload
+}
 
 part_restart() {
   repeat "$python" restart-qwen3-8b bench.restart_resume "${large[@]}" --lengths 2048 8192 --reps 4
@@ -81,10 +85,12 @@ part_baselines() {
 }
 
 # LMCache needs its own environment (scripts/install.sh lmcache): its CPU
-# backend in the rotation, and its local-disk backend across an engine restart.
+# backend in the rotation and under load, and its local-disk backend across
+# an engine restart.
 part_lmcache() {
   repeat "$lmcache_python" baseline-evicted-lmcache-qwen3-8b bench.resume_baselines "${large[@]}" \
     --engine lmcache --regime evicted --lengths 8192 --sessions 4 --rounds 3
+  repeat "$lmcache_python" under-load-lmcache-qwen3-1.7b bench.restore_under_load "${small[@]}" --engines lmcache
   repeat "$lmcache_python" restart-lmcache-disk-qwen3-8b bench.restart_resume "${large[@]}" \
     --engine lmcache-disk --lengths 2048 8192 --reps 4
 }

@@ -20,6 +20,13 @@ Restored sessions pause after every turn, which saves the turn into the host
 tier again. ``sync`` and ``async`` need differently configured engines, so
 the benchmark builds one engine per load mode and runs recompute on both.
 
+``--engines native-offload`` or ``--engines lmcache`` instead builds one
+engine without kvsnap, with vLLM's prefix caching on and vLLM's own CPU
+offloading or LMCache's CPU backend (``--offload-gib``; LMCache needs its own
+environment), and sends every turn's whole prompt straight to it, as
+recompute does. Those turns record ``num_cached_tokens``: prompt tokens vLLM
+did not compute, whether still on the GPU or loaded from CPU memory.
+
 Each stream timestamps every output it receives. A gap between two outputs of
 one request counts as "during" if it overlaps a measured resume's window
 (submit to first token) and "outside" otherwise; gaps that overlap a warm-up
@@ -46,8 +53,10 @@ import uuid
 
 from bench.environment import environment, gpu_state, model_label
 from bench.restore_ttft import drop_session
+from bench.resume_baselines import OFFLOADERS, offloader_args
 
 SUFFIX, OUTPUT, DECODE_PROMPT = 64, 16, 128
+MODES = ("sync", "async", *OFFLOADERS)
 MIN_FOR_P99 = 100
 
 
@@ -63,8 +72,9 @@ def describe(values) -> dict:
             "max": max(values) if values else None}
 
 
-async def run_engine(args, async_load: bool) -> dict:
-    mode = "async" if async_load else "sync"
+async def run_engine(args, mode: str) -> dict:
+    """One engine: kvsnap loading ``sync`` or ``async`` (plus recompute), or an offloader."""
+    offloader = mode in OFFLOADERS
     root = Path(tempfile.mkdtemp(prefix="kvsnap-load-", dir=args.store_dir))
     os.environ["KVSNAP_EVENT_DIR"] = str(root / "events")
     if args.trace_dir:
@@ -79,16 +89,23 @@ async def run_engine(args, async_load: bool) -> dict:
     from kvsnap.store import SnapshotStore
 
     rounds = math.ceil((args.resumes + args.warmup) / args.sessions)
-    runtime = create_async_llm(root, model=args.model, revision=args.revision,
-                               max_model_len=args.length + 1 + rounds * (SUFFIX + OUTPUT) + 16,
-                               kv_cache_memory_bytes=args.kv_cache_gib * 1024**3,
-                               pinned_pool_bytes=args.pinned_gib * 1024**3,
-                               max_num_batched_tokens=args.max_num_batched_tokens, async_load=async_load)
-    store = SnapshotStore(root, host_capacity_bytes=args.pinned_gib * 1024**3)
+    common = dict(model=args.model, revision=args.revision,
+                  max_model_len=args.length + 1 + rounds * (SUFFIX + OUTPUT) + 16,
+                  kv_cache_memory_bytes=args.kv_cache_gib * 1024**3,
+                  max_num_batched_tokens=args.max_num_batched_tokens)
+    if offloader:
+        runtime = create_async_llm(root, connector=False, enable_prefix_caching=True,
+                                   engine_args=offloader_args(mode, args.offload_gib), **common)
+        store = None
+    else:
+        runtime = create_async_llm(root, pinned_pool_bytes=args.pinned_gib * 1024**3,
+                                   async_load=mode == "async", **common)
+        store = SnapshotStore(root, host_capacity_bytes=args.pinned_gib * 1024**3)
     rng = random.Random(args.seed)
     try:
-        identity = await wait_runtime_identity(root, runtime.kvsnap_runtime_id, timeout=600)
-        gateway = SessionGateway(VLLMEngine(runtime, store, require_batch_invariant=False), store)
+        if not offloader:
+            identity = await wait_runtime_identity(root, runtime.kvsnap_runtime_id, timeout=600)
+            gateway = SessionGateway(VLLMEngine(runtime, store, require_batch_invariant=False), store)
         freeze_startup_heap()  # as the gateway server does once its engine is up
         sampling = SamplingConfig(ignore_eos=True)
 
@@ -96,13 +113,17 @@ async def run_engine(args, async_load: bool) -> dict:
             return SamplingParams(max_tokens=max_tokens, temperature=0.0, ignore_eos=True, detokenize=False,
                                   output_kind=RequestOutputKind.DELTA)
 
+        cached_tokens = []
+
         async def generate(prompt, max_tokens):
             """Send a prompt straight to the engine; return (first-token time, tokens)."""
-            first, tokens = None, []
+            first, tokens, cached = None, [], None
             async for out in runtime.generate({"prompt_token_ids": list(prompt)}, params(max_tokens),
                                               uuid.uuid4().hex):
                 first = first or time.perf_counter_ns()
                 tokens.extend(out.outputs[0].token_ids)
+                cached = out.num_cached_tokens if out.num_cached_tokens is not None else cached
+            cached_tokens.append(cached)
             return first, tokens
 
         async def prepare_snapshot():
@@ -178,14 +199,15 @@ async def run_engine(args, async_load: bool) -> dict:
         if args.trace_dir:
             gc.callbacks.append(gc_probe)
         results = {}
-        for arm in ("recompute", mode):
-            if arm == "recompute":
+        for arm in (mode,) if offloader else ("recompute", mode):
+            if arm == "recompute" or offloader:
                 sessions = [await prepare_plain() for _ in range(args.sessions)]
                 resume = resume_plain
             else:
                 sessions = [await prepare_snapshot() for _ in range(args.sessions)]
                 resume = resume_snapshot
             turns, windows, warmups = [], [], []
+            cached_tokens.clear()
             loop_lag.clear()
             gc_pauses.clear()
             stop = asyncio.Event()
@@ -214,6 +236,8 @@ async def run_engine(args, async_load: bool) -> dict:
                 "ttft_ms": ttft, "ttft_ms_median": statistics.median(ttft), "ttft_ms_max": max(ttft),
                 "ttft_ms_p99": percentile(ttft, 0.99) if len(ttft) >= MIN_FOR_P99 else None,
                 "decode_gap_ms": {"during_resume": describe(during), "outside": describe(outside)}}
+            if offloader:
+                results[arm]["num_cached_tokens"] = cached_tokens[args.warmup:]   # the measured resumes
             print(arm, json.dumps(results[arm]["decode_gap_ms"]), "ttft median",
                   round(results[arm]["ttft_ms_median"], 1), "max", round(max(ttft), 1), flush=True)
             if args.trace_dir:
@@ -225,7 +249,7 @@ async def run_engine(args, async_load: bool) -> dict:
                 (args.trace_dir / f"{arm}-{mode}.json").write_text(
                     json.dumps({"turns": turns, "slow_gaps": slow, "loop_lag": list(loop_lag),
                                 "gc_pauses": list(gc_pauses)}))
-            if arm != "recompute":
+            if arm not in ("recompute", *OFFLOADERS):
                 for session in sessions:
                     await gateway.close(session.session_id, expected_generation=session.generation)
                     drop_session(store, session.session_id)
@@ -235,7 +259,8 @@ async def run_engine(args, async_load: bool) -> dict:
         return results
     finally:
         runtime.shutdown()
-        store.close()
+        if store is not None:
+            store.close()
         if args.trace_dir:
             shutil.copytree(root / "events", args.trace_dir / f"events-{mode}", dirs_exist_ok=True)
         shutil.rmtree(root, ignore_errors=True)
@@ -243,16 +268,16 @@ async def run_engine(args, async_load: bool) -> dict:
 
 def combine(runs: list[dict]) -> dict:
     """Pool TTFT over separate runs of one configuration; keep decode gaps per run."""
-    keep = {k: v for k, v in runs[0].items() if k not in ("seed", "environment", "sync", "async")}
+    keep = {k: v for k, v in runs[0].items() if k not in ("seed", "environment", *MODES)}
     for other in runs[1:]:
         if {k: v for k, v in other.items() if k in keep} != keep:
             raise ValueError("runs differ in configuration")
     summary = {}
-    for engine in ("sync", "async"):
+    for engine in MODES:
         if engine not in runs[0]:
             continue
         summary[engine] = {}
-        for arm in ("recompute", engine):
+        for arm in (engine,) if engine in OFFLOADERS else ("recompute", engine):
             per_run = [run[engine][arm] for run in runs]
             ttft = [value for result in per_run for value in result["ttft_ms"]]
             entry = {"ttft_ms": {**describe(ttft), "median": statistics.median(ttft)},
@@ -260,9 +285,13 @@ def combine(runs: list[dict]) -> dict:
             for window in ("during_resume", "outside"):
                 entry[window] = {f"{stat}_by_run": [result["decode_gap_ms"][window][stat] for result in per_run]
                                  for stat in ("n", "p50", "p99", "max")}
+            if engine in OFFLOADERS:
+                cached = [value for result in per_run for value in result["num_cached_tokens"]]
+                entry["num_cached_tokens"] = {"min": min(cached), "median": statistics.median(cached),
+                                              "max": max(cached)}
             summary[engine][arm] = entry
     return {**keep, "runs": len(runs), "seeds": [run["seed"] for run in runs], "summary": summary,
-            "per_run": [{k: run[k] for k in ("sync", "async") if k in run} for run in runs],
+            "per_run": [{k: run[k] for k in MODES if k in run} for run in runs],
             "environment_by_run": [run["environment"] for run in runs]}
 
 
@@ -280,11 +309,12 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=1)
     parser.add_argument("--kv-cache-gib", type=int, default=6)
     parser.add_argument("--pinned-gib", type=int, default=14, help="host tier is 3/4 of it; every session must fit")
+    parser.add_argument("--offload-gib", type=int, default=14, help="CPU memory of native-offload and lmcache")
     parser.add_argument("--max-num-batched-tokens", type=int, default=2048)
     parser.add_argument("--store-dir", default=None)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--engines", choices=("both", "async"), default="both",
-                        help="async skips the engine that loads inside start_load_kv")
+    parser.add_argument("--engines", choices=("both", "async", *OFFLOADERS), default="both",
+                        help="async skips the engine that loads inside start_load_kv; an offloader runs alone")
     parser.add_argument("--trace-dir", type=Path, default=None,
                         help="keep connector events and every decode gap over 20 ms, with timestamps")
     parser.add_argument("--combine", type=Path, nargs="+", metavar="RUN_JSON",
@@ -301,8 +331,10 @@ def main() -> None:
               "warmup": args.warmup, "interval_s": args.interval, "decode_tokens": args.decode_tokens,
               "kv_cache_gib": args.kv_cache_gib, "seed": args.seed,
               "max_num_batched_tokens": args.max_num_batched_tokens, "environment": environment(args.store_dir)}
-    for async_load in (False, True) if args.engines == "both" else (True,):
-        result["async" if async_load else "sync"] = asyncio.run(run_engine(args, async_load))
+    if args.engines in OFFLOADERS:
+        result["offload_gib"] = args.offload_gib
+    for mode in {"both": ("sync", "async"), "async": ("async",)}.get(args.engines, (args.engines,)):
+        result[mode] = asyncio.run(run_engine(args, mode))
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, indent=1) + "\n")
     print(args.output)
