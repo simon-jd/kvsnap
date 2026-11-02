@@ -3,7 +3,7 @@
  "metrics": "decode gaps in ms, during a resume (submit to first token) and outside one; resumed-turn TTFT in ms",
  "host": "one RTX 4090; the machine also ran other services, so runs of the same code vary",
  "before": {
-  "code": "b2fa7be, the main branch before this change",
+  "code": "the earlier design traced as 1-earlier-design in turn-end-traces.json, at a revision that predates this repository's published history",
   "runs": [
    {
     "sync": {
