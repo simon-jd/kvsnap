@@ -400,13 +400,16 @@ is still walks every host block (see [Limitations](#limitations)).
   - An unprovable completion keeps the memory.
   - Tests compile the pool against a fault-injecting fake CUDA runtime.
 
-`pytest` runs 165 tests on CPU, covering:
+`pytest` runs 170 tests on CPU, covering:
 - the store, crash recovery, host-tier eviction and the store's reference
   counts and disk accounting;
 - the gateway;
 - the connector's control flow and failure policy;
 - the native data plane, against the fake CUDA runtime;
-- block-layout geometry.
+- block-layout geometry;
+- the GPU gather and scatter that every save and restore runs, on CPU
+  tensors laid out as vLLM registers Qwen3-8B's KV cache (these 5 need
+  torch, CPU-only is enough, and are skipped without it).
 
 GitHub Actions runs them, and the native library's own test, on every push
 (`.github/workflows/cpu-tests.yml`).
@@ -424,7 +427,7 @@ processes when each run started.
 
 ```sh
 scripts/install.sh cpu                 # .venv: the package and the CPU tests
-.venv/bin/python -m pytest             # 165 tests, no GPU
+.venv/bin/python -m pytest             # 170 tests, no GPU; .venv has no torch, so 5 skip
 scripts/install.sh gpu                 # .venv-gpu: vLLM 0.31.0, torch 2.13.0 (CUDA 13.0), the pinned pool
 scripts/install.sh lmcache             # optional .venv-lmcache: LMCache 0.5.6 for its baseline
 scripts/download-models.sh             # Qwen3-1.7B and Qwen3-8B at the pinned revisions, about 20 GB

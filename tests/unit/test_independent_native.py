@@ -19,8 +19,10 @@ class NativeErrorPathTests(unittest.TestCase):
             raise unittest.SkipTest("g++ unavailable: C++ error-path shim cannot be compiled")
         cls.temporary = tempfile.TemporaryDirectory(prefix="kvsnap-native-test-")
         library = Path(cls.temporary.name) / "libfakecuda.so"
-        result = subprocess.run(["g++", "-std=c++17", "-shared", "-fPIC", "-Wall", "-Wextra", "-Werror",
-            "-I", str(ROOT / "tests/native"), str(ROOT / "csrc/dataplane/cuda_pool.cpp"),
+        # -Bsymbolic binds the pool to this fake even if a real CUDA runtime is
+        # already loaded in the process (torch with CUDA, in the GPU environment).
+        result = subprocess.run(["g++", "-std=c++17", "-shared", "-fPIC", "-Wl,-Bsymbolic", "-Wall", "-Wextra",
+            "-Werror", "-I", str(ROOT / "tests/native"), str(ROOT / "csrc/dataplane/cuda_pool.cpp"),
             str(ROOT / "tests/native/fake_cuda.cpp"), "-o", str(library)], capture_output=True, text=True)
         if result.returncode:
             raise RuntimeError(result.stderr)

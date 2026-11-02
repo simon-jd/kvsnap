@@ -222,7 +222,8 @@ class CheckedNativeClose(unittest.TestCase):
         cls.temporary = tempfile.TemporaryDirectory(prefix="kvsnap-native-close-")
         root = Path(__file__).resolve().parents[2]
         library = Path(cls.temporary.name) / "close-check.so"
-        subprocess.run(["g++", "-std=c++17", "-shared", "-fPIC", "-pthread",
+        # -Bsymbolic: bind to this fake even with a real CUDA runtime loaded (torch with CUDA).
+        subprocess.run(["g++", "-std=c++17", "-shared", "-fPIC", "-Wl,-Bsymbolic", "-pthread",
                         "-I", str(root / "tests/native"), str(root / "csrc/dataplane/cuda_pool.cpp"),
                         str(root / "tests/native/fake_cuda.cpp"), "-o", str(library)],
                        check=True, capture_output=True, text=True, timeout=60)
