@@ -51,6 +51,7 @@ from bench.environment import environment, gpu_state, model_label
 
 SUFFIX, OUTPUT = 64, 16
 ENGINES = ("recompute", "prefix-cache", "native-offload", "lmcache", "kvsnap")
+OFFLOADERS = ("native-offload", "lmcache")
 
 
 def build(args, root: Path):
@@ -63,16 +64,18 @@ def build(args, root: Path):
     if args.engine == "kvsnap":
         return create_async_llm(root, pinned_pool_bytes=args.pinned_gib * 1024**3,
                                 enable_prefix_caching=args.prefix_caching, **common)
-    extra = {}
-    if args.engine == "native-offload":
-        extra = {"kv_offloading_size": args.offload_gib, "kv_offloading_backend": "native"}
-    elif args.engine == "lmcache":
-        from vllm.config import KVTransferConfig
-        os.environ.update(LMCACHE_CHUNK_SIZE="256", LMCACHE_LOCAL_CPU="True",
-                          LMCACHE_MAX_LOCAL_CPU_SIZE=str(args.offload_gib))
-        extra = {"kv_transfer_config": KVTransferConfig(kv_connector="LMCacheConnectorV1", kv_role="kv_both")}
+    extra = offloader_args(args.engine, args.offload_gib) if args.engine in OFFLOADERS else {}
     return create_async_llm(root, connector=False, enable_prefix_caching=args.engine != "recompute",
                             engine_args=extra, **common)
+
+
+def offloader_args(engine: str, gib: int) -> dict:
+    """vLLM engine arguments for vLLM's own CPU offloading or LMCache, with ``gib`` GiB of CPU memory."""
+    if engine == "native-offload":
+        return {"kv_offloading_size": gib, "kv_offloading_backend": "native"}
+    from vllm.config import KVTransferConfig
+    os.environ.update(LMCACHE_CHUNK_SIZE="256", LMCACHE_LOCAL_CPU="True", LMCACHE_MAX_LOCAL_CPU_SIZE=str(gib))
+    return {"kv_transfer_config": KVTransferConfig(kv_connector="LMCacheConnectorV1", kv_role="kv_both")}
 
 
 async def run(args) -> dict:

@@ -80,10 +80,13 @@ part_baselines() {
   done
 }
 
-# LMCache needs its own environment (scripts/install.sh lmcache).
+# LMCache needs its own environment (scripts/install.sh lmcache): its CPU
+# backend in the rotation, and its local-disk backend across an engine restart.
 part_lmcache() {
   repeat "$lmcache_python" baseline-evicted-lmcache-qwen3-8b bench.resume_baselines "${large[@]}" \
     --engine lmcache --regime evicted --lengths 8192 --sessions 4 --rounds 3
+  repeat "$lmcache_python" restart-lmcache-disk-qwen3-8b bench.restart_resume "${large[@]}" \
+    --engine lmcache-disk --lengths 2048 8192 --reps 4
 }
 
 # Where the turn-end stalls stand on this code: one traced under-load run.
