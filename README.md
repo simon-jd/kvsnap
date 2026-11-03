@@ -63,7 +63,7 @@ sessions resuming one every 2 s; 3 runs of 54 resumes per arm):
 |---|---|---|
 | Recompute (prefill alongside the decodes) | 47.0 – 47.3 / 70 – 71 ms | 265 – 267 / 281 – 295 ms |
 | Restore, synchronous load | 7.9 – 8.4 / 97 – 109 ms | 94 / 131 ms |
-| **Restore, async load (default)** | **7.6 – 7.7 / 18 – 20 ms** | 117 / 210 ms |
+| **Restore, async load (default)** | **7.6 – 7.7 / 18 – 20 ms** | 116 / 210 ms |
 
 Outside resume windows the gap is 7.0 – 7.1 ms at the median and 9 – 11 ms at
 p99 (`results/under-load-qwen3-1.7b.json`).
@@ -285,7 +285,7 @@ its CPU copy across an engine restart.
 |---|---|---|
 | Recompute (chunked 8k prefill in the batch) | 47.0 – 47.3 / 70 – 71 ms | 265 – 267 / 281 – 295 / 289 – 337 ms |
 | Restore, load inside `start_load_kv` (sync) | 7.9 – 8.4 / 97 – 109 ms | 94 / 131 / 132 ms |
-| Restore, loader thread (async) | 7.6 – 7.7 / 18 – 20 ms | 117 / 210 / 284 ms |
+| Restore, loader thread (async) | 7.6 – 7.7 / 18 – 20 ms | 116 / 210 / 284 ms |
 
 Decode-gap ranges are over the three runs (each has 4,000 – 13,300 gaps
 during resumes). TTFT pools the 162 resumes of each arm; recompute ran on
