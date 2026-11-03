@@ -75,6 +75,8 @@ class VLLMEngine:
             ):
                 if len(result.outputs) != 1:
                     raise ContractError("kvsnap supports one output sequence")
+                if not consumed:
+                    self.telemetry.emit("adapter_first_output", request_id=request.request_id)
                 output = result.outputs[0]
                 for index, token_id in enumerate(output.token_ids):
                     boundary = len(request.token_ids) + consumed

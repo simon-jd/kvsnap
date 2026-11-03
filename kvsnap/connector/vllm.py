@@ -148,6 +148,7 @@ class KvsnapConnector(KVConnectorBase_V1):
         self._last_step = None
         self.saving = {}       # request id -> Transfer awaiting its prepared result
         self.matched = {}      # request id -> manifest matched but not yet allocated
+        self.parked = set()    # requests whose async load vLLM has not scheduled yet (telemetry)
         # A request whose load failed is recomputed; vLLM asks again when it
         # reschedules it from zero computed tokens, and must then miss.
         self.failed_loads = set()
@@ -253,11 +254,14 @@ class KvsnapConnector(KVConnectorBase_V1):
                     block_ids=selected[first:], lease_id=transfer.lease_id, error=transfer.error,
                     bytes=sum(s["length"] for s in manifest["segments"][first:count]))
         self.loads.append(transfer)
+        if self.async_load:
+            self.parked.add(request.request_id)
 
     def request_finished(self, request, block_ids):
         started = time.monotonic_ns()
         self.matched.pop(request.request_id, None)
         self.failed_loads.discard(request.request_id)
+        self.parked.discard(request.request_id)
         op = self._instruction(request)
         if not op or op.get("op") != "save":
             return False, None
@@ -297,6 +301,12 @@ class KvsnapConnector(KVConnectorBase_V1):
             self._event("step_gap", gap_ns=now - self._last_step, previous_ns=self._last_step,
                         scheduled_tokens=scheduler_output.total_num_scheduled_tokens)
         self._last_step = now
+        if self.parked:
+            scheduled = scheduler_output.num_scheduled_tokens
+            for request_id in self.parked & scheduled.keys():
+                # The load was reported and vLLM scheduled the request's suffix.
+                self.parked.discard(request_id)
+                self._event("load_scheduled", request_id=request_id, scheduled_tokens=scheduled[request_id])
         result = KvsnapMetadata(self.saves, self.loads)
         self.saves, self.loads = [], []
         return result
@@ -399,12 +409,13 @@ class KvsnapConnector(KVConnectorBase_V1):
             self._event("h2d_started", transfer=transfer, lease_id=transfer.lease_id, block_ids=targets,
                         skip_blocks=first, bytes=size * len(targets))
             ready.synchronize()
+            ready_ns = time.monotonic_ns()
             try:
                 copies = self.dataplane.load_scatter(targets, sources)
             except Exception as exc:
                 raise DMAUnknown("kvsnap H2D completion could not be proven") from exc
         self._event("h2d_completed", transfer=transfer, lease_id=transfer.lease_id, block_ids=targets,
-                    skip_blocks=first, bytes=size * len(targets), copies=copies)
+                    skip_blocks=first, bytes=size * len(targets), copies=copies, ready_ns=ready_ns)
         return copies
 
     def _volatile_sources(self, transfer, segments, stack):
@@ -542,6 +553,7 @@ class KvsnapConnector(KVConnectorBase_V1):
                 del self.load_jobs[request_id]
                 self._finish_load(transfer, future)
                 receiving.add(request_id)
+                self._event("load_reported", transfer=transfer)
         return sending, receiving
 
     def build_connector_worker_meta(self):

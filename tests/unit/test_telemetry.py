@@ -122,6 +122,32 @@ class ConnectorEventBoundaries(unittest.TestCase):
         self.assertEqual(worker.get_finished(set()), (set(), {'request'}))
         self.assertEqual(worker.worker_meta.loaded_leases, ['lease'])
 
+    def test_a_load_records_when_its_copies_could_start_and_when_it_was_reported(self):
+        worker = self.worker
+        worker._get_connector_metadata = lambda: self.module.KvsnapMetadata(loads=[self.transfer])
+        worker.start_load_kv(None)
+        self.assertEqual(self.names(), ['h2d_started', 'h2d_completed'])
+        started, completed = self.records()
+        self.assertLessEqual(started['monotonic_ns'], completed['ready_ns'])
+        self.assertLessEqual(completed['ready_ns'], completed['monotonic_ns'])
+        worker.get_finished(set())
+        self.assertEqual(self.names()[-1], 'load_reported')
+        self.assertEqual(self.records()[-1]['operation_id'], started['operation_id'])
+
+    def test_the_scheduler_records_when_a_parked_load_is_scheduled_once(self):
+        scheduler = self.worker
+        scheduler.telemetry = self.worker.telemetry
+        scheduler.parked = {'request'}
+        scheduler.build_connector_meta(SimpleNamespace(num_scheduled_tokens={'other': 1},
+                                                       total_num_scheduled_tokens=1))
+        self.assertEqual(self.names(), [])
+        for _ in range(2):
+            scheduler.build_connector_meta(SimpleNamespace(num_scheduled_tokens={'request': 64, 'other': 1},
+                                                           total_num_scheduled_tokens=65))
+        self.assertEqual(self.names(), ['load_scheduled'])
+        self.assertEqual(self.records()[0]['scheduled_tokens'], 64)
+        self.assertEqual(scheduler.parked, set())
+
     def test_h2d_failure_never_emits_completed_or_releases_lease(self):
         worker = self.worker
         worker._get_connector_metadata = lambda: self.module.KvsnapMetadata(loads=[self.transfer])

@@ -229,6 +229,7 @@ class SchedulerTests(unittest.TestCase):
         [transfer] = c.loads
         self.assertEqual((transfer.block_ids, transfer.lease_id, transfer.error), ([5, 6], "lease", None))
         self.assertEqual(c.matched, {})
+        self.assertEqual(c.parked, {"request"})
 
     def test_snapshot_lost_between_match_and_allocation_becomes_a_failed_load(self):
         c = connector(self.module)
