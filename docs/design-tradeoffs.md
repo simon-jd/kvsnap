@@ -32,8 +32,8 @@ deduplicated by content hash, so they are not rewritten, but they are copied
 and hashed again. Clients must use the gateway's turn, pause and resume API.
 And a named snapshot is not the fastest way back from host memory: with
 four 8k-token Qwen3-8B sessions rotating through GPU memory, LMCache's CPU
-backend restored a session in 75 ms, vLLM's own CPU offloading in 107 ms
-and kvsnap's host tier in 121 ms (README).
+backend restored a session in 83 ms, kvsnap's host tier in 109 ms and
+vLLM's own CPU offloading in 136 ms (README).
 
 ## Save only at turn boundaries, from settled scheduler state
 
@@ -77,30 +77,42 @@ the next turn recomputes.
 asynchronously: vLLM parks the request in `WAITING_FOR_REMOTE_KVS` and keeps
 running the batch while a loader thread copies the blocks.
 
-**Alternatives.** Load inside `start_load_kv`, before the forward pass.
+**Alternatives.** Load inside `start_load_kv`, before the forward pass, as
+LMCache does.
 
-**Why.** A synchronous load stalls every running request for the copy; the
-async one leaves the decode gap at its baseline (README).
+**Why.** A synchronous load stalls every running request for the copy: a
+p99 decode gap of 78 – 129 ms during resumes, against 23 – 26 ms for the
+async one (README).
 
-**Cost.** The restored request is reported one engine step later: under
-load its TTFT median is 22 ms above the synchronous load's (README).
+**Cost.** vLLM polls for finished loads once a step, so the restored request
+waits for the step that is running when its load is reported: under load its
+TTFT median is 11 ms above the synchronous load's (README). Reporting a load
+while its last 128 MiB is still in flight, with the next forward waiting for
+it on the GPU, removed part of that wait; the rest is the step itself.
 
-## Contiguous chunks and a GPU scatter, never small copies
+## A restore kernel that reads pinned memory, never the copy engine
 
-**Decision.** Blocks move between host and device in large copies through a
-device staging buffer; a GPU `index_copy_` (load) or `index_select` (save)
-does the per-layer scatter.
+**Decision.** A load is one Triton kernel per 64 MiB of blocks that reads
+each (layer, block) span of a packed block from pinned host memory and
+writes it into place in the KV cache. A save still gathers on the GPU into
+device staging (`index_select`) and copies out with large D2H copies.
 
 **Alternatives.** One copy per (layer, block); one `cudaMemcpy2DAsync` per
-(layer, run of consecutive block ids).
+(layer, run of consecutive block ids); large DMA copies into device staging
+and a GPU `index_copy_` scatter, the previous load path.
 
-**Why.** The copy engine is fast only for large copies, and vLLM's free list
-scatters block ids. On 1.2 GB shaped like Qwen3-8B, chunks plus a scatter
-reach 17.1 GB/s whatever the block order; per-(layer, block) copies reach
-13.7 GB/s and 2D copies fall to 12.9 GB/s on shuffled ids.
+**Why.** The copy engine is fast only for large copies, vLLM's free list
+scatters block ids, and on this machine even one contiguous DMA copy reaches
+19.5 GB/s. On 1.2 GB shaped like Qwen3-8B the kernel reaches 22.9 GB/s
+whatever the block order, against 17.5 GB/s for chunks plus a scatter,
+13.8 GB/s for per-(layer, block) copies and 13.1 GB/s for 2D copies on
+shuffled ids (`results/h2d-patterns.json`).
 
-**Cost.** An extra pass over device memory and a 64 MiB staging buffer, so
-consecutive ids are slightly slower than 2D copies (17.1 vs 17.5 GB/s).
+**Cost.** The kernel runs on 12 of the GPU's SMs while the batch decodes:
+during resumes the median decode gap is up to 0.8 ms above its baseline
+(README). It needs Triton and pinned memory the device can address, and it
+runs outside the pinned pool's per-allocation events, so a load waits for
+its last launch before its sources may be released.
 
 ## Content-addressed, checksummed blocks
 

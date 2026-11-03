@@ -15,7 +15,7 @@ FLOPs:
 
 * restoring costs about `kv_bytes_per_token × L / bandwidth`. That is
   112 KiB per token for Qwen3-1.7B and 144 KiB for Qwen3-8B, against about
-  17 GB/s of pinned H2D here;
+  23 GB/s from pinned memory here;
 * recomputing costs a prefill of L tokens, which scales with model size and,
   through attention, with L².
 
@@ -56,17 +56,30 @@ to save at.
    - takes a **lease** on the snapshot's blobs, which keeps GC and host-tier
      eviction away;
    - queues a load for the worker.
-3. `start_load_kv` (worker) records an event on the engine's stream and
-   hands the load to the loader thread. The loader:
+3. When vLLM binds the step's metadata, before the forward, the worker
+   records an event on the engine's stream. `start_load_kv`, which vLLM
+   calls after the forward when every load is asynchronous, hands the load
+   to the loader thread. The loader:
    1. **Disk snapshot:** `pread`s each block into its slot of one pinned
       staging buffer, with 8 reads in flight, and checks its CRC32C there.
       **Host-memory snapshot:** borrows the worker's own pinned blocks.
    2. Waits for the recorded event. A block freed this step by another
-      request may still be read by kernels that are already queued.
-   3. Copies the blocks to the GPU and scatters them into their slots
-      ([data plane](#data-plane)), then waits for the copy stream.
-4. `get_finished` reports the request in `finished_recving`. vLLM schedules
-   it from the next step and prefills only the suffix.
+      request may still be read by kernels queued before the forward; the
+      forward itself never touches a parked request's blocks.
+   3. Launches the restore kernel once per 64 MiB of blocks, recording an
+      event after each launch ([data plane](#data-plane)), then waits for
+      the last one.
+4. `get_finished` reports the request in `finished_recving` once the copy is
+   complete, or earlier, once every launch is queued and at most 128 MiB
+   remain (`EARLY_REPORT_BYTES`). vLLM polls once a step, right after
+   launching the forward, so a copy that ended just after a poll used to
+   wait a whole step. An early-reported load's last event goes to the next
+   forward, which waits for it on the GPU before any kernel can read the
+   blocks; at the kernel's 22 GB/s, 128 MiB is about 6 ms, less than the
+   step still running. The lease is released only when the copy is
+   complete, and a load that fails after it was reported stops the engine.
+   vLLM schedules the request from the next step and prefills only the
+   suffix.
 
 **Save**
 
@@ -220,39 +233,56 @@ to check them (`results/h2d-patterns.json`, median of 3 rounds):
 
 | Pattern | Consecutive block ids | Shuffled block ids |
 |---|---|---|
-| One contiguous copy (peak) | 19.1 GB/s | |
-| One `cudaMemcpy2DAsync` per (layer, run of consecutive ids) | 17.5 GB/s | 12.9 GB/s |
-| One copy per (layer, block) from per-block allocations | 13.7 GB/s | 13.7 GB/s |
-| **Contiguous H2D in 64 MiB chunks + GPU scatter** | **17.1 GB/s** | **17.1 GB/s** |
-| Per-block allocations, one 2.25 MiB copy each + GPU scatter | 16.9 GB/s | 16.9 GB/s |
+| One contiguous DMA copy (peak for the copy engine) | 19.5 GB/s | |
+| One `cudaMemcpy2DAsync` per (layer, run of consecutive ids) | 18.2 GB/s | 13.1 GB/s |
+| One copy per (layer, block) from per-block allocations | 13.8 GB/s | 13.8 GB/s |
+| Contiguous DMA in 64 MiB chunks + GPU scatter (the previous load path) | 17.5 GB/s | 17.5 GB/s |
+| Per-block allocations, one 2.25 MiB DMA each + GPU scatter | 17.3 GB/s | 17.2 GB/s |
+| **Restore kernel reading pinned memory, staging buffer** | **22.9 GB/s** | **22.9 GB/s** |
+| **Restore kernel reading pinned memory, per-block allocations** | **22.9 GB/s** | **22.9 GB/s** |
 
 The copy engine is efficient only for large copies. vLLM's free list
 scatters block ids in a long-running engine, and the host tier keeps one
 allocation per block so blocks can be deduplicated and freed one at a time.
-Both force small copies.
+Both force small copies, and on this machine even one large DMA copy
+reaches only 19.5 GB/s.
 
-So the data plane never asks the copy engine for small copies. A load copies
-a chunk of packed blocks into a device staging buffer, in one copy (staging
-buffer) or one per block (host tier). It then writes each layer's slice into
-the KV cache with one `index_copy_`, on the same copy stream, through an
-int64 view of that layer's storage. A save is the mirror image:
-`index_select` per layer into staging, then large D2H copies. The scatter
-costs an extra pass over device memory. That is why it trails the 2D copy on
-consecutive ids (17.1 vs 17.5 GB/s), but the scatter does not depend on
-block order.
+So a load does not use the copy engine. The restore kernel
+(`kvsnap/connector/copy_kernel.py`, Triton) takes each packed block's host
+address and walks its (layer, block) spans, reading each from pinned memory
+over PCIe and writing it straight into its place in the KV cache: base and
+block pitch per layer, through an int64 view of the layer's storage. Pinned
+memory from `cudaHostAlloc` is mapped into the device's address space under
+unified addressing, so the kernel takes host pointers as they are. Nothing
+is staged on the device and nothing is scattered afterwards, and block order
+does not matter. Every source is bounds-checked against its allocation, under
+the pool lock, before the launch. The kernel runs on 12 programs, about a
+tenth of the RTX 4090's 128 SMs, so most of the GPU stays with the decoding
+batch; beside 16 decode streams it sustains 21 GB/s
+(`results/resume-phases.json`). It compiles when the KV caches are
+registered.
+
+A save still uses the copy engine: `index_select` per layer into device
+staging, then large D2H copies from it.
 
 The C++ pool (`csrc/dataplane/cuda_pool.cpp`) owns a `cudaHostAlloc` arena, a
 non-blocking copy stream and an event per allocation:
 
 * Releasing an allocation blocks on its event, so pinned memory is never
-  reused while a copy into or out of it is in flight.
+  reused while a copy into or out of it is in flight. The restore kernel
+  runs on the same stream but outside the pool's events: a load waits for
+  its last launch before its sources can be released, and a launch that
+  fails drains the copy stream first.
 * If the device cannot prove completion, the pool keeps the memory instead
   of freeing it.
 * A reservation that does not fit raises a distinct `PinnedCapacityError`
   before anything is copied.
 
 `tests/native` compiles the pool against a fake CUDA runtime and injects
-event-record, wait and close failures.
+event-record, wait and close failures. `tests/connector/test_scatter_gather.py`
+checks the restore kernel's address tables on CPU tensors laid out like
+Qwen3-8B, and `tests/connector/test_copy_kernel_cuda.py` runs the kernel on
+the GPU and compares every byte.
 
 ## Known gaps
 
@@ -276,15 +306,20 @@ event-record, wait and close failures.
   runs only when called, and nothing on the serving path calls it, so
   unreferenced blob files stay on disk until something does (the benchmarks
   call it between sessions).
-* **Admission and reporting.** Admission takes 3–17 ms per host restore
-  and 14–35 ms per disk restore: the generation claim (fsync'd for disk
-  turns), a manifest lookup in the gateway and in the scheduler, and the
-  lease. The async load then costs one engine step to be reported, 22 ms of
-  TTFT under load, which is now the larger fixed cost.
+* **Admission and polling.** Under load, the request still spends about
+  15 ms between the adapter and the scheduler's match (input processing,
+  IPC, the wait for the running step, the manifest lookup) and 5 ms in the
+  lease, and a reported load waits for the rest of the step that was running
+  when vLLM polled, 7 ms (`results/resume-phases.json`). The gateway no
+  longer reads the manifest back (it keeps the one pause committed), and a
+  load is reported while its last 128 MiB is in flight.
 * **Slower than LMCache from host memory.** Restoring an evicted 8k-token
-  Qwen3-8B session took 121 ms from kvsnap's host tier against 75 ms with
-  LMCache's CPU backend (README). kvsnap's copy is a 73 ms H2D that nothing
-  overlaps.
+  Qwen3-8B session took 109 ms from kvsnap's host tier against 83 ms with
+  LMCache's CPU backend, and under load kvsnap's async load reached the
+  first token 39 ms after LMCache (README). LMCache loads inside the step
+  that schedules the request, so it parks nothing and polls nothing, and
+  the running requests wait for its copy: their p99 decode gap was
+  57 – 60 ms against kvsnap's 23 – 26 ms.
 * **Read and copy are not pipelined.** A disk restore reads every block
   before the first H2D. Chunked overlap would hide the shorter of the two.
 * **Synchronous scheduling only.** `request_finished` needs settled tokens;

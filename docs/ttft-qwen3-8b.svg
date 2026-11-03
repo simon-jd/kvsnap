@@ -27,34 +27,34 @@
 <text x="530.0" y="390" text-anchor="middle" fill="#555">8k</text>
 <text x="297.0" y="412" text-anchor="middle" fill="#333">context tokens before the turn</text>
 <text x="16" y="198.0" text-anchor="middle" fill="#333" transform="rotate(-90 16 198.0)">turn-2 TTFT, ms (median)</text>
-<polyline points="64.0,328.6 219.3,290.7 374.7,210.5 530.0,26.9" fill="none" stroke="#c0392b" stroke-width="2.5"/>
-<circle cx="64.0" cy="328.6" r="3.5" fill="#c0392b"/>
-<circle cx="219.3" cy="290.7" r="3.5" fill="#c0392b"/>
-<circle cx="374.7" cy="210.5" r="3.5" fill="#c0392b"/>
-<circle cx="530.0" cy="26.9" r="3.5" fill="#c0392b"/>
+<polyline points="64.0,326.3 219.3,288.5 374.7,208.3 530.0,25.4" fill="none" stroke="#c0392b" stroke-width="2.5"/>
+<circle cx="64.0" cy="326.3" r="3.5" fill="#c0392b"/>
+<circle cx="219.3" cy="288.5" r="3.5" fill="#c0392b"/>
+<circle cx="374.7" cy="208.3" r="3.5" fill="#c0392b"/>
+<circle cx="530.0" cy="25.4" r="3.5" fill="#c0392b"/>
 <rect x="546" y="23" width="12" height="3" fill="#c0392b"/>
 <text x="564" y="32" fill="#333">Recompute (prefix</text>
 <text x="564" y="46" fill="#333">caching off)</text>
-<polyline points="64.0,326.4 219.3,300.6 374.7,245.7 530.0,139.1" fill="none" stroke="#8e44ad" stroke-width="2.5"/>
-<circle cx="64.0" cy="326.4" r="3.5" fill="#8e44ad"/>
-<circle cx="219.3" cy="300.6" r="3.5" fill="#8e44ad"/>
-<circle cx="374.7" cy="245.7" r="3.5" fill="#8e44ad"/>
-<circle cx="530.0" cy="139.1" r="3.5" fill="#8e44ad"/>
+<polyline points="64.0,319.5 219.3,295.4 374.7,245.0 530.0,143.8" fill="none" stroke="#8e44ad" stroke-width="2.5"/>
+<circle cx="64.0" cy="319.5" r="3.5" fill="#8e44ad"/>
+<circle cx="219.3" cy="295.4" r="3.5" fill="#8e44ad"/>
+<circle cx="374.7" cy="245.0" r="3.5" fill="#8e44ad"/>
+<circle cx="530.0" cy="143.8" r="3.5" fill="#8e44ad"/>
 <rect x="546" y="61" width="12" height="3" fill="#8e44ad"/>
 <text x="564" y="70" fill="#333">kvsnap, disk (cold)</text>
-<polyline points="64.0,344.9 219.3,334.7 374.7,316.9 530.0,276.5" fill="none" stroke="#2471a3" stroke-width="2.5"/>
-<circle cx="64.0" cy="344.9" r="3.5" fill="#2471a3"/>
-<circle cx="219.3" cy="334.7" r="3.5" fill="#2471a3"/>
-<circle cx="374.7" cy="316.9" r="3.5" fill="#2471a3"/>
-<circle cx="530.0" cy="276.5" r="3.5" fill="#2471a3"/>
+<polyline points="64.0,333.6 219.3,326.6 374.7,309.7 530.0,279.1" fill="none" stroke="#2471a3" stroke-width="2.5"/>
+<circle cx="64.0" cy="333.6" r="3.5" fill="#2471a3"/>
+<circle cx="219.3" cy="326.6" r="3.5" fill="#2471a3"/>
+<circle cx="374.7" cy="309.7" r="3.5" fill="#2471a3"/>
+<circle cx="530.0" cy="279.1" r="3.5" fill="#2471a3"/>
 <rect x="546" y="85" width="12" height="3" fill="#2471a3"/>
 <text x="564" y="94" fill="#333">kvsnap, disk (page</text>
 <text x="564" y="108" fill="#333">cache)</text>
-<polyline points="64.0,356.8 219.3,352.5 374.7,343.7 530.0,326.2" fill="none" stroke="#17a589" stroke-width="2.5"/>
-<circle cx="64.0" cy="356.8" r="3.5" fill="#17a589"/>
-<circle cx="219.3" cy="352.5" r="3.5" fill="#17a589"/>
-<circle cx="374.7" cy="343.7" r="3.5" fill="#17a589"/>
-<circle cx="530.0" cy="326.2" r="3.5" fill="#17a589"/>
+<polyline points="64.0,353.4 219.3,349.5 374.7,341.5 530.0,327.4" fill="none" stroke="#17a589" stroke-width="2.5"/>
+<circle cx="64.0" cy="353.4" r="3.5" fill="#17a589"/>
+<circle cx="219.3" cy="349.5" r="3.5" fill="#17a589"/>
+<circle cx="374.7" cy="341.5" r="3.5" fill="#17a589"/>
+<circle cx="530.0" cy="327.4" r="3.5" fill="#17a589"/>
 <rect x="546" y="123" width="12" height="3" fill="#17a589"/>
 <text x="564" y="132" fill="#333">kvsnap, host memory</text>
 <polyline points="64.0,362.4 219.3,361.9 374.7,361.0 530.0,358.5" fill="none" stroke="#7f8c8d" stroke-width="2.5"/>
