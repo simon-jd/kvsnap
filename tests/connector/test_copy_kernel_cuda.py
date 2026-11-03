@@ -51,7 +51,11 @@ class RestoreKernel(unittest.TestCase):
                 targets = ([(owned[0], i * size) for i in range(len(saved))] if kind == "staging"
                            else [(allocation, 0) for allocation in owned])
                 self.plane.save_gather(saved, targets, len(saved) * BLOCK_SIZE)
-                self.assertEqual(self.plane.load_scatter(restored, targets), 1)
+                progress = []
+                # Three blocks a launch: seven launches, each with its completion event.
+                self.assertEqual(self.plane.load_scatter(restored, targets, progress=progress,
+                                                         chunk_bytes=3 * size), 7)
+                self.assertTrue(all(event.query() for event, _ in progress[1:]))
                 torch.cuda.synchronize()
                 after = self.bits()
                 expected = before.clone()

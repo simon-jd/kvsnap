@@ -106,7 +106,7 @@ class ConnectorEventBoundaries(unittest.TestCase):
     def test_h2d_completed_is_after_fenced_load_and_uses_actual_transfer_range(self):
         worker, transfer = self.worker, self.transfer
         worker._get_connector_metadata = lambda: self.module.KvsnapMetadata(loads=[transfer])
-        def fenced_load(ids, sources):
+        def fenced_load(ids, sources, **kwargs):
             self.assertEqual(self.names(), ['h2d_started'])
             self.assertEqual(ids, [12])
             return 1

@@ -51,6 +51,14 @@ from kvsnap.store.crc32c import crc32c
 from kvsnap.store.store import BlobWriter, StoreError
 
 
+# An async load is reported to vLLM once at most this much of its copy is
+# still in flight: about 6 ms at the 22 GB/s the restore kernel sustains
+# beside a decoding batch, less than the step that is running when vLLM asks.
+# The next forward waits on the GPU for the rest, so vLLM can schedule the
+# request a step sooner than if it waited for the copy to be complete.
+EARLY_REPORT_BYTES = 128 << 20
+
+
 class DMAUnknown(RuntimeError):
     """A copy was issued and its completion cannot be proven; the engine must stop."""
 
@@ -159,7 +167,10 @@ class KvsnapConnector(KVConnectorBase_V1):
         # Worker side.
         self.dataplane = self.volatile = None
         self.save_jobs = {}    # request id -> (Future of prepared record, D2H-fenced Event)
-        self.load_jobs = {}    # request id -> (Future of copy count, Transfer)
+        self.load_jobs = {}    # request id -> (Future of copy count, Transfer, copy progress)
+        self.reported_early = set()   # loads reported while their copy's tail was in flight
+        self.forward_waits = []       # their completion events, for the next forward to wait on
+        self._queued_before_forward = None
         self.finished, self.known_finished, self.load_errors = set(), set(), set()
         self.worker_meta = KvsnapWorkerMetadata()
         self.executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="kvsnap-save")
@@ -379,6 +390,10 @@ class KvsnapConnector(KVConnectorBase_V1):
 
     def bind_connector_metadata(self, connector_metadata):
         super().bind_connector_metadata(connector_metadata)
+        # Requests reported early may run in this forward: it waits for their copies.
+        for event in self.forward_waits:
+            self.dataplane.wait_on_engine_stream(event)
+        self.forward_waits = []
         # vLLM binds the metadata before the forward but calls start_load_kv
         # after it when every load is asynchronous. An async load's blocks
         # belong to a request this forward does not run, so its copies need
@@ -393,16 +408,18 @@ class KvsnapConnector(KVConnectorBase_V1):
             return
         # Newly allocated blocks may have been freed this step by requests
         # whose kernels are still queued; loads wait for that work first.
-        ready = getattr(self, "_queued_before_forward", None) or self.dataplane.producer_event()
+        ready = self._queued_before_forward or self.dataplane.producer_event()
         self._queued_before_forward = None
         for transfer in loads:
             if self.async_load:
-                self.load_jobs[transfer.request_id] = (self.loader.submit(self._load, transfer, ready), transfer)
+                progress = []
+                self.load_jobs[transfer.request_id] = (self.loader.submit(self._load, transfer, ready, progress),
+                                                       transfer, progress)
             else:
                 self._finish_load(transfer, _completed(self._load, transfer, ready))
 
-    def _load(self, transfer, ready):
-        """Read, check and copy one snapshot into its blocks; returns the H2D copy count."""
+    def _load(self, transfer, ready, progress=None):
+        """Read, check and copy one snapshot into its blocks; returns the kernel launch count."""
         if transfer.error:
             raise StoreError(transfer.error)
         self._check_layout(transfer.manifest)
@@ -423,7 +440,7 @@ class KvsnapConnector(KVConnectorBase_V1):
             ready.synchronize()
             ready_ns = time.monotonic_ns()
             try:
-                copies = self.dataplane.load_scatter(targets, sources)
+                copies = self.dataplane.load_scatter(targets, sources, progress=progress)
             except Exception as exc:
                 raise DMAUnknown("kvsnap H2D completion could not be proven") from exc
         self._event("h2d_completed", transfer=transfer, lease_id=transfer.lease_id, block_ids=targets,
@@ -560,13 +577,36 @@ class KvsnapConnector(KVConnectorBase_V1):
         for request_id in sending:
             self._event("save_free_authorized", request_id=request_id)
         receiving = set()
-        for request_id, (future, transfer) in list(self.load_jobs.items()):
+        for request_id, (future, transfer, progress) in list(self.load_jobs.items()):
             if future.done():
                 del self.load_jobs[request_id]
+                if request_id in self.reported_early:
+                    self.reported_early.discard(request_id)
+                    if future.exception() is not None and not isinstance(future.exception(), DMAUnknown):
+                        # vLLM may already have run the request on these blocks.
+                        raise DMAUnknown("a load failed after it was reported") from future.exception()
+                    self._finish_load(transfer, future)
+                    continue
                 self._finish_load(transfer, future)
                 receiving.add(request_id)
                 self._event("load_reported", transfer=transfer)
+            elif request_id not in self.reported_early:
+                left = self._copy_left(progress)
+                if left is not None and left <= EARLY_REPORT_BYTES:
+                    receiving.add(request_id)
+                    self.reported_early.add(request_id)
+                    self.forward_waits.append(progress[-1][0])
+                    self._event("load_reported", transfer=transfer, early=True, bytes_left=left)
         return sending, receiving
+
+    @staticmethod
+    def _copy_left(progress):
+        """Bytes of a load's copy not yet known complete, or None until every launch is queued."""
+        if not progress or progress[-1][1]:
+            return None
+        for event, left in reversed(progress):
+            if event is None or event.query():
+                return left
 
     def build_connector_worker_meta(self):
         result, self.worker_meta = self.worker_meta, KvsnapWorkerMetadata()

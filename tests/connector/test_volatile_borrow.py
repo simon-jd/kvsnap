@@ -44,7 +44,7 @@ class VolatileBorrow(unittest.TestCase):
         self.owner, self.worker, self.transfer = owner, worker, transfer
 
     def test_borrow_holds_gc_lock_until_h2d_finishes(self):
-        def h2d(ids, sources):
+        def h2d(ids, sources, **kwargs):
             self.assertEqual(ids, [7])
             self.assertEqual(sources, [(self.allocation, 0)])
             attempts = []

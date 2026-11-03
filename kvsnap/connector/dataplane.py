@@ -327,15 +327,23 @@ class TorchBlockDataPlane:
             copy_host_blocks(empty[:0], empty[:0], *tables)
         self._copy_stream.synchronize()
 
-    def load_scatter(self, block_ids, sources):
-        """Copy packed host blocks into ``block_ids`` with one kernel launch, and wait for it.
+    def wait_on_engine_stream(self, event):
+        """Make the engine's current stream wait, on the GPU, for ``event``."""
+        self.torch.cuda.current_stream(next(iter(self.caches.values())).device).wait_event(event)
+
+    def load_scatter(self, block_ids, sources, *, progress=None, chunk_bytes=64 << 20):
+        """Copy packed host blocks into ``block_ids`` with the restore kernel, and wait for it.
 
         ``sources[i]`` is ``(allocation, offset)`` holding block i packed (its
         layers back to back), in this pool's pinned memory. The kernel reads
         each (layer, block) span from host memory and writes it into its
         place in the KV cache (:mod:`kvsnap.connector.copy_kernel`): the
         bytes cross PCIe once, with no device staging, on the pool's copy
-        stream. Returns the number of launches (1).
+        stream. It is launched once per ``chunk_bytes`` of blocks; a
+        ``progress`` list receives ``(None, total bytes)`` and then, as each
+        launch is queued, ``(its completion event, bytes left once it
+        completes)``, so another thread can tell how far the copy has got.
+        Returns the number of launches.
         """
         torch = self.torch
         self._validate_ids(block_ids)
@@ -345,6 +353,8 @@ class TorchBlockDataPlane:
             return 0
         tables = self._load_tables()
         device = next(iter(self.caches.values())).device
+        n, per_launch = len(block_ids), max(1, chunk_bytes // self.block_bytes)
+        launches = 0
         with self.pool.operation():
             # The pool lock keeps every source allocation open until the launch is queued.
             addresses = []
@@ -356,17 +366,24 @@ class TorchBlockDataPlane:
             with torch.cuda.stream(self._copy_stream):
                 table = torch.tensor(addresses + list(block_ids), dtype=torch.int64).pin_memory().to(
                     device, non_blocking=True)
+                if progress is not None:
+                    progress.append((None, n * self.block_bytes))
                 try:
-                    copy_host_blocks(table[:len(block_ids)], table[len(block_ids):], *tables)
+                    for first in range(0, n, per_launch):
+                        last = min(n, first + per_launch)
+                        copy_host_blocks(table[first:last], table[n + first:n + last], *tables)
+                        launches += 1
+                        done = torch.cuda.Event()
+                        done.record()
+                        if progress is not None:
+                            progress.append((done, (n - last) * self.block_bytes))
                 except BaseException:
                     # A launch that failed part way may still be queued: nothing
                     # may release the sources before the copy stream drains.
                     self._copy_stream.synchronize()
                     raise
-                done = torch.cuda.Event()
-                done.record()
         done.synchronize()
-        return 1
+        return launches
 
     def save_gather(self, block_ids, targets, num_kv_tokens, *, chunk_bytes=64 << 20):
         """Gather blocks on the GPU into device staging, then D2H them in large copies.

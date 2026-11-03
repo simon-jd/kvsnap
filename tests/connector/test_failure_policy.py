@@ -134,7 +134,7 @@ class WorkerSaveTests(unittest.TestCase):
         worker = connector(self.module)
         order = Mock()
         worker.dataplane.producer_event.return_value = order.ready
-        worker.dataplane.save_gather.side_effect = lambda *args: order.copy()
+        worker.dataplane.save_gather.side_effect = lambda *args, **kwargs: order.copy()
         worker.writer.prepare_blocks.return_value = {"preparation_id": "p", "segments": []}
         self.save(worker)
         self.assertEqual(order.mock_calls[:2], [call.ready.synchronize(), call.copy()])
@@ -163,6 +163,55 @@ class WorkerLoadTests(unittest.TestCase):
         self.assertEqual(worker.get_finished(set()), (set(), {"request"}))
         self.assertEqual(worker.get_block_ids_with_load_errors(), set())
         self.assertEqual(worker.build_connector_worker_meta().loaded_leases, ["lease"])
+
+    def in_flight(self, worker, launched):
+        """Start a load whose copy is still running; ``launched`` is [(event done?, bytes left after it)]."""
+        jobs = []
+        worker.loader = SimpleNamespace(submit=lambda fn, *args: jobs.append(args) or Future())
+        self.load(worker)
+        progress = jobs[0][2]
+        events = []
+        progress.append((None, 300 << 20))
+        for done, left in launched:
+            events.append(Mock(query=Mock(return_value=done)))
+            progress.append((events[-1], left))
+        return worker.load_jobs["request"][0], events
+
+    def test_a_load_is_reported_once_its_copy_has_little_left_and_the_next_forward_waits(self):
+        worker = connector(self.module)
+        mib = 1 << 20
+        future, events = self.in_flight(worker, [(True, 200 * mib), (True, 100 * mib), (False, 0)])
+        self.assertEqual(worker.get_finished(set()), (set(), {"request"}))
+        self.assertEqual(worker.forward_waits, [events[-1]])
+        self.assertEqual(worker.worker_meta.loaded_leases, [])        # the lease outlives the copy
+        worker.bind_connector_metadata(self.module.KvsnapMetadata())
+        worker.dataplane.wait_on_engine_stream.assert_called_once_with(events[-1])
+        self.assertEqual(worker.forward_waits, [])
+        self.assertEqual(worker.get_finished(set()), (set(), set()))  # not reported twice
+        future.set_result(3)
+        self.assertEqual(worker.get_finished(set()), (set(), set()))
+        self.assertEqual(worker.worker_meta.loaded_leases, ["lease"])
+        self.assertEqual(worker.load_jobs, {})
+
+    def test_a_load_with_much_left_or_launches_still_queuing_is_not_reported(self):
+        mib = 1 << 20
+        for launched in ([(True, 200 * mib), (False, 100 * mib), (False, 0)],     # 200 MiB left
+                         [(True, 100 * mib), (False, 50 * mib)]):                  # not every launch queued
+            with self.subTest(launched=launched):
+                worker = connector(self.module)
+                future, _ = self.in_flight(worker, launched)
+                self.assertEqual(worker.get_finished(set()), (set(), set()))
+                self.assertEqual(worker.forward_waits, [])
+                future.set_result(3)
+                self.assertEqual(worker.get_finished(set()), (set(), {"request"}))
+
+    def test_a_load_that_fails_after_it_was_reported_stops_the_engine(self):
+        worker = connector(self.module)
+        future, _ = self.in_flight(worker, [(True, 0)])
+        self.assertEqual(worker.get_finished(set()), (set(), {"request"}))
+        future.set_exception(RuntimeError("pinned release failed"))
+        with self.assertRaises(self.module.DMAUnknown):
+            worker.get_finished(set())
 
     def test_h2d_failure_stops_the_engine_and_keeps_the_lease(self):
         for async_load in (True, False):
@@ -193,7 +242,7 @@ class WorkerLoadTests(unittest.TestCase):
                 worker = connector(self.module, async_load=async_load)
                 order = Mock()
                 worker.dataplane.producer_event.side_effect = lambda: order.event(len(order.mock_calls))
-                worker.dataplane.load_scatter.side_effect = lambda *args: order.copy()
+                worker.dataplane.load_scatter.side_effect = lambda *args, **kwargs: order.copy()
                 transfer = self.module.Transfer("request", [11], {"snapshot_id": "snapshot", "num_kv_tokens": 1,
                                                 "durability": "durable", "segments": [{}]}, lease_id="lease")
                 worker.bind_connector_metadata(self.module.KvsnapMetadata(loads=[transfer]))
@@ -210,7 +259,7 @@ class WorkerLoadTests(unittest.TestCase):
         worker = connector(self.module)
         order = Mock()
         worker.dataplane.producer_event.return_value = order.ready
-        worker.dataplane.load_scatter.side_effect = lambda *args: order.copy()
+        worker.dataplane.load_scatter.side_effect = lambda *args, **kwargs: order.copy()
         self.load(worker)
         self.assertEqual(order.mock_calls, [call.ready.synchronize(), call.copy()])
 

@@ -228,6 +228,22 @@ class Qwen3EightBGeometry(unittest.TestCase):
                         else:
                             self.assertTrue(torch.equal(after[block], before[name][block]), f"{name} {block}")
 
+    def test_load_scatter_launches_per_chunk_and_reports_what_is_left(self):
+        block_ids, size = [3, 8, 1, 0, 6], self.plane.block_bytes
+        sources = targets_for("staging", len(block_ids), size)
+        before = snapshot(self.caches)
+        for (allocation, offset), block in zip(sources, block_ids):
+            for position, name in enumerate(self.names):
+                C.memmove(allocation.pointer + offset + position * 65536, raw(bits(self.caches[name])[(block + 2) % 12]),
+                          65536)
+        progress = []
+        self.assertEqual(self.plane.load_scatter(block_ids, sources, progress=progress, chunk_bytes=2 * size), 3)
+        self.assertEqual([left for _, left in progress], [5 * size, 3 * size, size, 0])
+        self.assertIsNone(progress[0][0])
+        for name in self.names:
+            for block in block_ids:
+                self.assertTrue(torch.equal(bits(self.caches[name])[block], before[name][(block + 2) % 12]))
+
     def test_load_scatter_checks_every_source_before_the_launch(self):
         size = self.plane.block_bytes
         before = snapshot(self.caches)
