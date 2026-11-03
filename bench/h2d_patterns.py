@@ -13,12 +13,15 @@ round and every round.
     2d              staging buffer, one cudaMemcpy2DAsync per (layer, run)
     per_block       one pinned allocation per block (host tier), one copy per (layer, block)
 
-``2d`` and ``per_block`` are the data plane's earlier load paths and live here
-now; ``scatter`` and ``per_block_scatter`` call the connector's own
-``load_scatter``. Every pattern is checked by reading the blocks back with
-the connector's ``save_gather``.
+``2d``, ``per_block`` and the two ``scatter`` patterns are the data plane's
+earlier load paths and live here now; the two ``kernel`` patterns call the
+connector's own ``load_scatter``. Every pattern is checked by reading the
+blocks back with the connector's ``save_gather``.
     scatter         staging buffer, contiguous H2D in 64 MiB chunks + index_copy_ per layer
     per_block_scatter  per-block allocations, one 2.25 MiB copy per block + index_copy_
+    kernel          staging buffer, one kernel reading each (layer, block) span from pinned
+                    memory into its place (kvsnap/connector/copy_kernel.py)
+    per_block_kernel   the same kernel, from per-block allocations (the host tier)
 """
 from __future__ import annotations
 
@@ -74,6 +77,47 @@ def load_per_block(plane, block_ids, allocations):
         copy_runs(plane, allocation, [block_id], to_host=False)
     for allocation in allocations:
         allocation.wait()
+
+
+def load_dma_scatter(plane, block_ids, sources, *, chunk_bytes=64 << 20):
+    """The connector's load path before its kernel: H2D packed blocks into device staging, then
+    scatter them with one ``index_copy_`` per layer and chunk; returns the H2D copy count.
+
+    ``sources[i]`` is ``(allocation, offset)`` holding block i packed. The PCIe
+    transfer is one copy per chunk for a staging buffer or one per block for
+    per-block allocations; adjacent sources in one allocation share a copy.
+    """
+    plane._validate_ids(block_ids)
+    if not block_ids:
+        return 0
+    raw, ranges = plane._scatter_targets()
+    size = plane.block_bytes
+    per_chunk = max(1, min(len(block_ids), chunk_bytes // size))
+    device = next(iter(plane.caches.values())).device
+    copies = 0
+    with torch.cuda.stream(plane._copy_stream):
+        ids = torch.tensor(block_ids, dtype=torch.int64).pin_memory().to(device, non_blocking=True)
+        stage = torch.empty((per_chunk, size // 8), dtype=torch.int64, device=device)
+        for first in range(0, len(block_ids), per_chunk):
+            count = min(per_chunk, len(block_ids) - first)
+            i = first
+            while i < first + count:
+                allocation, offset = sources[i]
+                j = i + 1
+                while (j < first + count and sources[j][0] is allocation
+                       and sources[j][1] == offset + (j - i) * size):
+                    j += 1
+                allocation.copy(stage.data_ptr() + (i - first) * size, (j - i) * size, offset, to_host=False)
+                copies += 1
+                i = j
+            for target, (start, stop) in zip(raw, ranges):
+                target.index_copy_(0, ids[first:first + count], stage[:count, start:stop])
+        done = torch.cuda.Event()
+        done.record()
+    done.synchronize()
+    for allocation in {id(a): a for a, _ in sources}.values():
+        allocation.wait()
+    return copies
 
 
 def measure(fn, repeat=5):
@@ -136,8 +180,11 @@ def main():
                 patterns = {
                     "2d": lambda: load_2d(plane, ids, staged),
                     "per_block": lambda: load_per_block(plane, ids, singles),
-                    "scatter": lambda: plane.load_scatter(ids, [(staged, i * plane.block_bytes) for i in range(BLOCKS)]),
-                    "per_block_scatter": lambda: plane.load_scatter(ids, [(a, 0) for a in singles]),
+                    "scatter": lambda: load_dma_scatter(plane, ids, [(staged, i * plane.block_bytes)
+                                                                     for i in range(BLOCKS)]),
+                    "per_block_scatter": lambda: load_dma_scatter(plane, ids, [(a, 0) for a in singles]),
+                    "kernel": lambda: plane.load_scatter(ids, [(staged, i * plane.block_bytes) for i in range(BLOCKS)]),
+                    "per_block_kernel": lambda: plane.load_scatter(ids, [(a, 0) for a in singles]),
                 }
                 for pattern, fn in patterns.items():
                     seconds = measure(fn)

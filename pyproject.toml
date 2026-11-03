@@ -13,7 +13,7 @@ dependencies = []
 kvsnap = "kvsnap.gateway.cli:main"
 
 [project.optional-dependencies]
-gpu = ["vllm==0.31.0", "torch==2.13.0"]
+gpu = ["vllm==0.31.0", "torch==2.13.0", "triton==3.7.1"]
 test = ["pytest>=8,<10"]
 
 [tool.setuptools.packages.find]

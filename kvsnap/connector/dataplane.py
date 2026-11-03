@@ -25,6 +25,12 @@ def resolve_cuda_library(library=None):
     return packaged[0] if packaged else Path(__file__).resolve().parents[2] / "build/dataplane/libkvsnap_cuda.so"
 
 
+def copy_host_blocks(*args):
+    """The restore kernel's launch, imported on first use: Triton loads only with CUDA tensors."""
+    from kvsnap.connector.copy_kernel import copy_host_blocks as launch
+    launch(*args)
+
+
 class PinnedCapacityError(MemoryError):
     """The pinned pool cannot fit a reservation. Nothing was copied."""
 
@@ -298,16 +304,38 @@ class TorchBlockDataPlane:
             self._raw_layers, self._layer_words = raw, ranges
         return self._raw_layers, self._layer_words
 
-    def load_scatter(self, block_ids, sources, *, chunk_bytes=64 << 20):
-        """H2D packed blocks contiguously into device staging, then scatter them on the GPU.
+    def _load_tables(self):
+        """Per layer, as int64 device tensors: its offset in a packed block, its KV cache's
+        base address and block pitch in bytes, and its span in 8-byte words."""
+        if getattr(self, "_tables", None) is None:
+            raw, ranges = self._scatter_targets()
+            device = next(iter(self.caches.values())).device
+            columns = ([start * 8 for start, _ in ranges], [rows.data_ptr() for rows in raw],
+                       [rows.stride(0) * 8 for rows in raw], [stop - start for start, stop in ranges])
+            self._tables = tuple(self.torch.tensor(column, dtype=self.torch.int64, device=device)
+                                 for column in columns)
+        return self._tables
+
+    def warm_up(self):
+        """Build the load tables and compile the restore kernel with an empty launch, at registration
+        rather than on the first restore."""
+        torch = self.torch
+        tables = self._load_tables()
+        device = next(iter(self.caches.values())).device
+        with torch.cuda.stream(self._copy_stream):
+            empty = torch.zeros(1, dtype=torch.int64, device=device)
+            copy_host_blocks(empty[:0], empty[:0], *tables)
+        self._copy_stream.synchronize()
+
+    def load_scatter(self, block_ids, sources):
+        """Copy packed host blocks into ``block_ids`` with one kernel launch, and wait for it.
 
         ``sources[i]`` is ``(allocation, offset)`` holding block i packed (its
-        layers back to back). The PCIe transfer is a few large copies, one per
-        chunk for a staging buffer or one per block for per-block host
-        allocations, instead of one 64 KiB copy per (layer, block run). Each
-        chunk is then written into the KV cache with one ``index_copy_`` per
-        layer on the same stream, which costs device bandwidth only. Returns
-        the number of H2D copies issued.
+        layers back to back), in this pool's pinned memory. The kernel reads
+        each (layer, block) span from host memory and writes it into its
+        place in the KV cache (:mod:`kvsnap.connector.copy_kernel`): the
+        bytes cross PCIe once, with no device staging, on the pool's copy
+        stream. Returns the number of launches (1).
         """
         torch = self.torch
         self._validate_ids(block_ids)
@@ -315,41 +343,35 @@ class TorchBlockDataPlane:
             raise ValueError("one source per block is required")
         if not block_ids:
             return 0
-        raw, ranges = self._scatter_targets()
-        size = self.block_bytes
-        per_chunk = max(1, min(len(block_ids), chunk_bytes // size))
+        tables = self._load_tables()
         device = next(iter(self.caches.values())).device
-        copies = 0
-        with torch.cuda.stream(self._copy_stream):
-            ids = torch.tensor(block_ids, dtype=torch.int64).pin_memory().to(device, non_blocking=True)
-            stage = torch.empty((per_chunk, size // 8), dtype=torch.int64, device=device)
-            for first in range(0, len(block_ids), per_chunk):
-                count = min(per_chunk, len(block_ids) - first)
-                i = first
-                while i < first + count:
-                    allocation, offset = sources[i]
-                    j = i + 1
-                    while (j < first + count and sources[j][0] is allocation
-                           and sources[j][1] == offset + (j - i) * size):
-                        j += 1
-                    allocation.copy(stage.data_ptr() + (i - first) * size, (j - i) * size, offset, to_host=False)
-                    copies += 1
-                    i = j
-                # Stream order: the scatter reads this chunk after its copies,
-                # and the next chunk's copies overwrite stage only afterwards.
-                for target, (start, stop) in zip(raw, ranges):
-                    target.index_copy_(0, ids[first:first + count], stage[:count, start:stop])
-            done = torch.cuda.Event()
-            done.record()
+        with self.pool.operation():
+            # The pool lock keeps every source allocation open until the launch is queued.
+            addresses = []
+            for allocation, offset in sources:
+                allocation._open()
+                if offset < 0 or offset + self.block_bytes > allocation.size:
+                    raise ValueError("load source outside its allocation")
+                addresses.append(allocation.pointer + offset)
+            with torch.cuda.stream(self._copy_stream):
+                table = torch.tensor(addresses + list(block_ids), dtype=torch.int64).pin_memory().to(
+                    device, non_blocking=True)
+                try:
+                    copy_host_blocks(table[:len(block_ids)], table[len(block_ids):], *tables)
+                except BaseException:
+                    # A launch that failed part way may still be queued: nothing
+                    # may release the sources before the copy stream drains.
+                    self._copy_stream.synchronize()
+                    raise
+                done = torch.cuda.Event()
+                done.record()
         done.synchronize()
-        for allocation in {id(a): a for a, _ in sources}.values():
-            allocation.wait()
-        return copies
+        return 1
 
     def save_gather(self, block_ids, targets, num_kv_tokens, *, chunk_bytes=64 << 20):
         """Gather blocks on the GPU into device staging, then D2H them in large copies.
 
-        The reverse of :meth:`load_scatter`: ``targets[i]`` is ``(allocation,
+        The layout :meth:`load_scatter` reads: ``targets[i]`` is ``(allocation,
         offset)`` that receives block i packed. The caller must have fenced the
         producer stream (the copies run on the pool's copy stream). Token slots
         past ``num_kv_tokens`` in the last block are zeroed on the host, so a

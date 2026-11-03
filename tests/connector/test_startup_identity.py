@@ -21,10 +21,12 @@ class StartupIdentity(unittest.IsolatedAsyncioTestCase):
             worker.block_size, worker.capacity, worker._vllm_config = 4, 4096, object()
             layers = [{"name": "layer.0", "shape": [3, 4, 8], "stride": [8, 24, 1],
                        "dtype": "torch.bfloat16", "bytes": 192}]
-            with patch.object(module, "TorchBlockDataPlane", return_value=SimpleNamespace(layers=layers, block_bytes=4)), \
+            plane = SimpleNamespace(layers=layers, block_bytes=4, warm_up=Mock())
+            with patch.object(module, "TorchBlockDataPlane", return_value=plane), \
                  patch.object(module, "VolatileOwner", return_value=Mock()), \
                  patch.object(module, "runtime_identity", side_effect=lambda config, layout: replace(fixture_identity(4), kv_layout=layout)):
                 worker.register_kv_caches({"layer.0": object()})
+            plane.warm_up.assert_called_once_with()   # the restore kernel compiles at registration
             resolved = await wait_runtime_identity(directory, "a" * 32, timeout=0.2)
             self.assertEqual(json.loads(resolved.kv_layout), layers)
             with self.assertRaises(IdentityMismatch):

@@ -6,16 +6,18 @@ bf16 view of [blocks, 16 tokens, 8 heads, 256] storage (K and V side by side),
 so one (layer, block) span is 64 KiB and a packed block is 2.25 MiB. The layers
 are carved out of one buffer, so every layer but the first has a storage
 offset. Only CUDA is replaced: the pool's copies are memmoves between host
-buffers and the staging tensor, and streams and events do nothing. The gather,
-the scatter, chunking, coalescing of adjacent sources and tail zeroing are
-the connector's own code. Without torch these tests are skipped.
+buffers and the staging tensor, the restore kernel is a memmove per (block,
+layer) job driven by the tables the data plane builds for it, and streams and
+events do nothing. The gather, chunking, coalescing of adjacent sources, the
+restore's address tables and bounds checks, and tail zeroing are the
+connector's own code. Without torch these tests are skipped.
 """
 from contextlib import contextmanager, nullcontext
 import ctypes as C
 import sys
 from types import SimpleNamespace
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 try:
     import torch
@@ -30,9 +32,13 @@ LAYERS, HEADS, BLOCK_SIZE, WIDTH = 36, 8, 16, 256
 class HostAllocation:
     """A pinned allocation stand-in: plain host memory, copies are memmoves."""
     def __init__(self, size):
-        self.size, self.waits = size, 0
+        self.size, self.waits, self.closed = size, 0, False
         self.buffer = C.create_string_buffer(size)
         self.pointer = C.addressof(self.buffer)
+
+    def _open(self):
+        if self.closed:
+            raise RuntimeError("pinned allocation closed")
 
     def copy(self, device_ptr, size, offset=0, *, to_host, producer_stream=0):
         if min(size, offset) < 0 or offset + size > self.size:
@@ -57,6 +63,21 @@ class HostPool:
     def borrow_copy_stream(self):
         yield 1
 
+    @contextmanager
+    def operation(self):
+        yield
+
+
+def emulated_kernel(sources, blocks, layer_offsets, layer_bases, layer_pitches, layer_words):
+    """copy_kernel's semantics: each (block, layer) span from its host address to its cache row."""
+    layers = list(zip(*(table.tolist() for table in (layer_offsets, layer_bases, layer_pitches, layer_words))))
+    for source, block in zip(sources.tolist(), blocks.tolist()):
+        for offset, base, pitch, words in layers:
+            C.memmove(base + block * pitch, source + offset, words * 8)
+
+
+restore_kernel = patch("kvsnap.connector.dataplane.copy_host_blocks", new=emulated_kernel)
+
 
 class Pinnable:
     """torch.tensor's result, whose pin_memory() needs no CUDA here."""
@@ -65,6 +86,9 @@ class Pinnable:
 
     def pin_memory(self):
         return self.tensor
+
+    def __getattr__(self, name):
+        return getattr(self.tensor, name)
 
 
 class Event:
@@ -147,6 +171,7 @@ def targets_for(kind, count, size):
 
 
 @unittest.skipIf(torch is None, "needs torch (CPU tensors only)")
+@restore_kernel
 class Qwen3EightBGeometry(unittest.TestCase):
     def setUp(self):
         self.caches = qwen3_8b_caches(12)
@@ -184,7 +209,7 @@ class Qwen3EightBGeometry(unittest.TestCase):
     def test_load_scatter_writes_only_the_target_blocks(self):
         block_ids = [10, 0, 5, 6, 1]
         size = self.plane.block_bytes
-        for kind, copies in (("per-block", 5), ("staging", 3)):
+        for kind in ("per-block", "staging"):
             with self.subTest(kind):
                 sources = targets_for(kind, len(block_ids), size)
                 payload = torch.randint(-2**15, 2**15, (len(block_ids), size // 2), dtype=torch.int16,
@@ -192,7 +217,7 @@ class Qwen3EightBGeometry(unittest.TestCase):
                 for (allocation, offset), row in zip(sources, payload):
                     C.memmove(allocation.pointer + offset, row.data_ptr(), size)
                 before = snapshot(self.caches)
-                self.assertEqual(self.plane.load_scatter(block_ids, sources, chunk_bytes=2 * size), copies)
+                self.assertEqual(self.plane.load_scatter(block_ids, sources), 1)     # one launch
                 for name_index, name in enumerate(self.names):
                     after = bits(self.caches[name])
                     for block in range(12):
@@ -202,10 +227,35 @@ class Qwen3EightBGeometry(unittest.TestCase):
                             self.assertEqual(block_span(self.caches[name], block), expected, f"{name} {block}")
                         else:
                             self.assertTrue(torch.equal(after[block], before[name][block]), f"{name} {block}")
-                self.assertTrue(all(allocation.waits for allocation, _ in sources))
+
+    def test_load_scatter_checks_every_source_before_the_launch(self):
+        size = self.plane.block_bytes
+        before = snapshot(self.caches)
+        short = HostAllocation(size - 8)
+        closed = HostAllocation(size)
+        closed.closed = True
+        cases = {"outside its allocation": [(HostAllocation(size), 0), (short, 0)],
+                 "closed": [(HostAllocation(size), 0), (closed, 0)],
+                 "negative offset": [(HostAllocation(2 * size), -8), (HostAllocation(size), 0)]}
+        for reason, sources in cases.items():
+            with self.subTest(reason), patch("kvsnap.connector.dataplane.copy_host_blocks") as launch:
+                with self.assertRaises((ValueError, RuntimeError)):
+                    self.plane.load_scatter([1, 2], sources)
+                launch.assert_not_called()
+        for name in self.names:
+            self.assertTrue(torch.equal(bits(self.caches[name]), before[name]))
+
+    def test_a_failed_launch_drains_the_copy_stream_before_the_sources_can_be_released(self):
+        self.plane._load_tables()
+        self.plane._copy_stream = Mock()
+        sources = targets_for("staging", 2, self.plane.block_bytes)
+        with patch("kvsnap.connector.dataplane.copy_host_blocks", side_effect=RuntimeError("launch failed")):
+            with self.assertRaisesRegex(RuntimeError, "launch failed"):
+                self.plane.load_scatter([1, 2], sources)
+        self.plane._copy_stream.synchronize.assert_called_once_with()
 
     def test_a_saved_snapshot_restores_into_other_blocks(self):
-        # The default 64 MiB chunk holds all five blocks: one gather, one scatter.
+        # The default 64 MiB chunk holds all five blocks: one gather; one launch restores them.
         saved, tokens = [3, 4, 5, 8, 11], 5 * BLOCK_SIZE
         restored = [0, 1, 2, 6, 7]
         size = self.plane.block_bytes
@@ -218,6 +268,7 @@ class Qwen3EightBGeometry(unittest.TestCase):
 
 
 @unittest.skipIf(torch is None, "needs torch (CPU tensors only)")
+@restore_kernel
 class OtherLayouts(unittest.TestCase):
     """Dense [B,H,N,C] and [B,N,H,C] blocks, alone or interleaved with another layer's."""
 

@@ -185,6 +185,7 @@ class KvsnapConnector(KVConnectorBase_V1):
 
     def register_kv_caches(self, kv_caches):
         self.dataplane = TorchBlockDataPlane(kv_caches, self.block_size, self.capacity)
+        self.dataplane.warm_up()       # compile the restore kernel now, not on the first restore
         self.volatile = VolatileOwner(self.root, self.capacity)
         if self.runtime_id:
             from kvsnap.connector.runtime import publish_runtime_identity
