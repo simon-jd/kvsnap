@@ -60,6 +60,8 @@ part_exact() {
     --batch-invariant --store-dir "$scratch" --output "$out/exact-qwen3-1.7b.json"
   gpu "$raw/exact-perturbed.log" "$python" -m bench.restore_ttft "${small[@]}" --lengths 2048 8192 --reps 3 \
     --batch-invariant --perturb --store-dir "$scratch" --output "$out/exact-perturbed-qwen3-1.7b.json"
+  gpu "$raw/exact-8b.log" "$python" -m bench.restore_ttft "${large[@]}" --lengths 8192 --reps 3 \
+    --batch-invariant --store-dir "$scratch" --output "$out/exact-qwen3-8b.json"
 }
 
 part_under-load() {

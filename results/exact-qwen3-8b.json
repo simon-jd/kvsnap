@@ -1,0 +1,333 @@
+{
+ "model": "Qwen/Qwen3-8B",
+ "revision": "b968826d9c46dd6066d109eabc6255188de91218",
+ "batch_invariant": true,
+ "cudagraph_mode": null,
+ "async_load": true,
+ "perturb": false,
+ "max_num_batched_tokens": 8448,
+ "kv_cache_gib": 2,
+ "suffix_tokens": 64,
+ "output_tokens": 16,
+ "seed": 1,
+ "rows": [
+  {
+   "context_tokens": 8192,
+   "arm": "recompute",
+   "n": 9,
+   "ttft_ms_median": 906.3744528684765,
+   "ttft_ms_min": 895.0915110763162,
+   "ttft_ms_max": 921.9231728930026,
+   "ttft_ms": [
+    895.0915110763162,
+    907.6697770506144,
+    911.0780989285558,
+    895.637143868953,
+    921.9231728930026,
+    906.3744528684765,
+    896.8246451113373,
+    905.7282111607492,
+    910.2941399905831
+   ],
+   "samples": [
+    {
+     "ttft_ms": 895.0915110763162
+    },
+    {
+     "ttft_ms": 907.6697770506144
+    },
+    {
+     "ttft_ms": 911.0780989285558
+    },
+    {
+     "ttft_ms": 895.637143868953
+    },
+    {
+     "ttft_ms": 921.9231728930026
+    },
+    {
+     "ttft_ms": 906.3744528684765
+    },
+    {
+     "ttft_ms": 896.8246451113373
+    },
+    {
+     "ttft_ms": 905.7282111607492
+    },
+    {
+     "ttft_ms": 910.2941399905831
+    }
+   ]
+  },
+  {
+   "context_tokens": 8192,
+   "arm": "restore-cold",
+   "n": 3,
+   "ttft_ms_median": 611.1788360867649,
+   "ttft_ms_min": 605.8320230804384,
+   "ttft_ms_max": 618.3345869649202,
+   "ttft_ms": [
+    618.3345869649202,
+    605.8320230804384,
+    611.1788360867649
+   ],
+   "save_ms_median": 1974.3387380149215,
+   "admit_ms_median": 26.477579,
+   "read_ms_median": 463.832689,
+   "h2d_ms_median": 72.130324,
+   "after_ms_median": 47.256313,
+   "bytes_median": 1207959552,
+   "copies_median": 19,
+   "tokens_match": 3,
+   "logprobs_equal": 3,
+   "max_logprob_delta": 0.0,
+   "samples": [
+    {
+     "ttft_ms": 618.3345869649202,
+     "save_ms": 1942.6678491290659,
+     "match": true,
+     "logprobs_equal": true,
+     "max_logprob_delta": 0.0,
+     "recompute_ttft_ms": 911.0780989285558,
+     "admit_ms": 26.477579,
+     "read_ms": 472.471055,
+     "h2d_ms": 72.130324,
+     "after_ms": 47.256313,
+     "bytes": 1207959552,
+     "copies": 19
+    },
+    {
+     "ttft_ms": 605.8320230804384,
+     "save_ms": 1974.8388689476997,
+     "match": true,
+     "logprobs_equal": true,
+     "max_logprob_delta": 0.0,
+     "recompute_ttft_ms": 906.3744528684765,
+     "admit_ms": 26.354838,
+     "read_ms": 458.533069,
+     "h2d_ms": 73.118967,
+     "after_ms": 47.825869,
+     "bytes": 1207959552,
+     "copies": 19
+    },
+    {
+     "ttft_ms": 611.1788360867649,
+     "save_ms": 1974.3387380149215,
+     "match": true,
+     "logprobs_equal": true,
+     "max_logprob_delta": 0.0,
+     "recompute_ttft_ms": 910.2941399905831,
+     "admit_ms": 29.610168,
+     "read_ms": 463.832689,
+     "h2d_ms": 71.901733,
+     "after_ms": 45.834972,
+     "bytes": 1207959552,
+     "copies": 19
+    }
+   ]
+  },
+  {
+   "context_tokens": 8192,
+   "arm": "restore-disk",
+   "n": 3,
+   "ttft_ms_median": 248.85663110762835,
+   "ttft_ms_min": 240.22312415763736,
+   "ttft_ms_max": 267.08431099541485,
+   "ttft_ms": [
+    240.22312415763736,
+    267.08431099541485,
+    248.85663110762835
+   ],
+   "save_ms_median": 1971.3809019885957,
+   "admit_ms_median": 27.316819,
+   "read_ms_median": 105.117646,
+   "h2d_ms_median": 71.924349,
+   "after_ms_median": 46.070235,
+   "bytes_median": 1207959552,
+   "copies_median": 19,
+   "tokens_match": 3,
+   "logprobs_equal": 3,
+   "max_logprob_delta": 0.0,
+   "samples": [
+    {
+     "ttft_ms": 240.22312415763736,
+     "save_ms": 2160.603617085144,
+     "match": true,
+     "logprobs_equal": true,
+     "max_logprob_delta": 0.0,
+     "recompute_ttft_ms": 907.6697770506144,
+     "admit_ms": 27.316819,
+     "read_ms": 94.928382,
+     "h2d_ms": 72.238668,
+     "after_ms": 45.740203,
+     "bytes": 1207959552,
+     "copies": 19
+    },
+    {
+     "ttft_ms": 267.08431099541485,
+     "save_ms": 1971.3809019885957,
+     "match": true,
+     "logprobs_equal": true,
+     "max_logprob_delta": 0.0,
+     "recompute_ttft_ms": 921.9231728930026,
+     "admit_ms": 37.99787,
+     "read_ms": 111.092629,
+     "h2d_ms": 71.924349,
+     "after_ms": 46.070235,
+     "bytes": 1207959552,
+     "copies": 19
+    },
+    {
+     "ttft_ms": 248.85663110762835,
+     "save_ms": 1897.5874870084226,
+     "match": true,
+     "logprobs_equal": true,
+     "max_logprob_delta": 0.0,
+     "recompute_ttft_ms": 905.7282111607492,
+     "admit_ms": 25.74062,
+     "read_ms": 105.117646,
+     "h2d_ms": 71.855402,
+     "after_ms": 46.14374,
+     "bytes": 1207959552,
+     "copies": 19
+    }
+   ]
+  },
+  {
+   "context_tokens": 8192,
+   "arm": "restore-host",
+   "n": 3,
+   "ttft_ms_median": 130.12815406545997,
+   "ttft_ms_min": 129.6199921052903,
+   "ttft_ms_max": 158.08707103133202,
+   "ttft_ms": [
+    129.6199921052903,
+    130.12815406545997,
+    158.08707103133202
+   ],
+   "save_ms_median": 293.4783580712974,
+   "admit_ms_median": 9.706757,
+   "read_ms_median": 1.18752,
+   "h2d_ms_median": 73.648115,
+   "after_ms_median": 45.864683,
+   "bytes_median": 1207959552,
+   "copies_median": 512,
+   "tokens_match": 3,
+   "logprobs_equal": 3,
+   "max_logprob_delta": 0.0,
+   "samples": [
+    {
+     "ttft_ms": 129.6199921052903,
+     "save_ms": 292.4450170248747,
+     "match": true,
+     "logprobs_equal": true,
+     "max_logprob_delta": 0.0,
+     "recompute_ttft_ms": 895.0915110763162,
+     "admit_ms": 9.416904,
+     "read_ms": 1.18752,
+     "h2d_ms": 73.648115,
+     "after_ms": 45.36825,
+     "bytes": 1207959552,
+     "copies": 512
+    },
+    {
+     "ttft_ms": 130.12815406545997,
+     "save_ms": 306.59968801774085,
+     "match": true,
+     "logprobs_equal": true,
+     "max_logprob_delta": 0.0,
+     "recompute_ttft_ms": 895.637143868953,
+     "admit_ms": 10.248296,
+     "read_ms": 1.025256,
+     "h2d_ms": 72.990642,
+     "after_ms": 45.864683,
+     "bytes": 1207959552,
+     "copies": 512
+    },
+    {
+     "ttft_ms": 158.08707103133202,
+     "save_ms": 293.4783580712974,
+     "match": true,
+     "logprobs_equal": true,
+     "max_logprob_delta": 0.0,
+     "recompute_ttft_ms": 896.8246451113373,
+     "admit_ms": 9.706757,
+     "read_ms": 1.465205,
+     "h2d_ms": 73.99313,
+     "after_ms": 72.92262,
+     "bytes": 1207959552,
+     "copies": 512
+    }
+   ]
+  }
+ ],
+ "environment": {
+  "gpu_at_start": {
+   "name": "NVIDIA GeForce RTX 4090",
+   "driver_version": "595.99.02",
+   "clocks.sm": "2790 MHz",
+   "clocks.mem": "10501 MHz",
+   "clocks.max.sm": "3105 MHz",
+   "clocks.max.mem": "10501 MHz",
+   "pcie.link.gen.current": "4",
+   "pcie.link.gen.max": "4",
+   "pcie.link.width.current": "16",
+   "pcie.link.width.max": "16",
+   "power.limit": "450.00 W",
+   "temperature.gpu": "53",
+   "memory.used": "303 MiB",
+   "memory.total": "24564 MiB",
+   "host_load_average_1_5_15": [
+    1.9,
+    1.55,
+    1.4
+   ]
+  },
+  "git": {
+   "commit": "dbae296f39f19edbb4c442357dd69d2040aa6a74",
+   "dirty": false
+  },
+  "host": {
+   "cpu": "13th Gen Intel(R) Core(TM) i9-13900K",
+   "cpus": 32,
+   "memory_gib": 123.2,
+   "kernel": "7.0.0-38-generic",
+   "load_average_1_5_15": [
+    1.9,
+    1.55,
+    1.4
+   ]
+  },
+  "storage": {
+   "device": "nvme1n1",
+   "model_transport": "Samsung SSD 980 PRO 2TB nvme"
+  },
+  "software": {
+   "python": "3.12.15",
+   "vllm": "0.31.0",
+   "torch": "2.13.0+cu130",
+   "torch_cuda": "13.0"
+  },
+  "gpu_at_measurement": {
+   "name": "NVIDIA GeForce RTX 4090",
+   "driver_version": "595.99.02",
+   "clocks.sm": "2790 MHz",
+   "clocks.mem": "10251 MHz",
+   "clocks.max.sm": "3105 MHz",
+   "clocks.max.mem": "10501 MHz",
+   "pcie.link.gen.current": "4",
+   "pcie.link.gen.max": "4",
+   "pcie.link.width.current": "16",
+   "pcie.link.width.max": "16",
+   "power.limit": "450.00 W",
+   "temperature.gpu": "49",
+   "memory.used": "20539 MiB",
+   "memory.total": "24564 MiB",
+   "host_load_average_1_5_15": [
+    6.35,
+    3.19,
+    2.0
+   ]
+  }
+ }
+}
