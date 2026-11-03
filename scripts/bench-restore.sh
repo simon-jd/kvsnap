@@ -102,7 +102,7 @@ part_lmcache() {
 part_trace() {
   rm -rf "$raw/trace"
   gpu "$raw/trace.log" "$python" -m bench.restore_under_load "${small[@]}" --engines async \
-    --trace-dir "$raw/trace" --store-dir "$scratch" --output "$raw/trace/result.json"
+    --trace-dir "$raw/trace" --probes --store-dir "$scratch" --output "$raw/trace/result.json"
   "$python" -m bench.trace_summary --trace "published=$raw/trace" \
     --code "published=the code in this repository, at the commit in its environment" \
     --output "$out/turn-end-trace.json"

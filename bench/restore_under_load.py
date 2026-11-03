@@ -77,7 +77,7 @@ async def run_engine(args, mode: str) -> dict:
     offloader = mode in OFFLOADERS
     root = Path(tempfile.mkdtemp(prefix="kvsnap-load-", dir=args.store_dir))
     os.environ["KVSNAP_EVENT_DIR"] = str(root / "events")
-    if args.trace_dir:
+    if args.probes:
         os.environ["KVSNAP_GIL_PROBE"] = "1"
     (root / "events").mkdir()
     from vllm import SamplingParams
@@ -195,8 +195,8 @@ async def run_engine(args, mode: str) -> dict:
                 if took > 5_000_000:
                     gc_pauses.append({"t0": gc_started[0], "ms": took / 1e6, "generation": info["generation"]})
 
-        prober = asyncio.create_task(lag_probe()) if args.trace_dir else None
-        if args.trace_dir:
+        prober = asyncio.create_task(lag_probe()) if args.probes else None
+        if args.probes:
             gc.callbacks.append(gc_probe)
         results = {}
         for arm in (mode,) if offloader else ("recompute", mode):
@@ -317,6 +317,9 @@ def main() -> None:
                         help="async skips the engine that loads inside start_load_kv; an offloader runs alone")
     parser.add_argument("--trace-dir", type=Path, default=None,
                         help="keep connector events and every decode gap over 20 ms, with timestamps")
+    parser.add_argument("--probes", action="store_true",
+                        help="also run the GIL, event-loop and GC probes; they wake every millisecond, "
+                             "so they slow the run they observe")
     parser.add_argument("--combine", type=Path, nargs="+", metavar="RUN_JSON",
                         help="merge these per-run outputs into --output instead of running")
     args = parser.parse_args()
