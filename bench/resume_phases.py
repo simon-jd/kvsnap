@@ -26,7 +26,9 @@ Where a mark is missing (a sync load has no report or schedule mark), the
 phases on either side of it are reported as one, e.g. ``report+schedule+prefill``,
 so each resume's phases always sum to its total. Connector events
 carry ``monotonic_ns`` and the benchmark ``perf_counter_ns``; both read
-CLOCK_MONOTONIC on Linux.
+CLOCK_MONOTONIC on Linux. Each engine also gets the copy's rate (bytes over
+``queued`` to ``copy``) and how many loads were reported before their copy
+completed, warm-up included, and the run's decode gaps from its result.json.
 """
 from __future__ import annotations
 
@@ -91,8 +93,16 @@ def summarize(directory: Path) -> dict:
         arm = directory / f"{engine}-{engine}.json"
         if not arm.is_file():
             continue
-        rows = resume_phases(json.loads(arm.read_text())["turns"], load_events(directory / f"events-{engine}"))
+        events = load_events(directory / f"events-{engine}")
+        rows = resume_phases(json.loads(arm.read_text())["turns"], events)
+        # The copy's rate: bytes over the time from the queued work's end to the copy's.
+        rates = [e["bytes"] / (e["monotonic_ns"] - e["ready_ns"]) for e in events
+                 if e["event"] == "h2d_completed" and "ready_ns" in e]
         result[engine] = {"resumes": len(rows), "total_ms": describe([r["total_ms"] for r in rows]),
+                          "copy_gb_per_s": describe(rates) if rates else None,
+                          "loads_reported_early": sum(1 for e in events
+                                                      if e["event"] == "load_reported" and e.get("early")),
+                          "loads_reported": sum(1 for e in events if e["event"] == "load_reported"),
                           "phases_ms": {p: describe([r[p] for r in rows if p in r])
                                         for p in dict.fromkeys(k for r in rows for k in r if k != "total_ms")}}
     return result
@@ -110,6 +120,10 @@ def main() -> None:
         if (Path(directory) / "result.json").is_file():
             run = json.loads((Path(directory) / "result.json").read_text())
             result[label]["environment"] = run.get("environment")
+            for engine in ("sync", "async"):
+                if engine in result[label] and engine in run:
+                    # The same run's decode gaps, so a phase change can be read against them.
+                    result[label][engine]["decode_gap_ms"] = run[engine][engine]["decode_gap_ms"]
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, indent=1) + "\n")
     print(args.output)
