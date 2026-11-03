@@ -24,8 +24,16 @@ def import_connector():
     fake_vllm.__version__ = "0.31.0"
     base_name = "vllm.distributed.kv_transfer.kv_connector.v1.base"
     fake_base = ModuleType(base_name)
-    for name in ("KVConnectorBase_V1", "KVConnectorMetadata", "KVConnectorWorkerMetadata"):
+    for name in ("KVConnectorMetadata", "KVConnectorWorkerMetadata"):
         setattr(fake_base, name, type(name, (), {}))
+
+    class KVConnectorBase_V1:
+        def bind_connector_metadata(self, connector_metadata):
+            self._connector_metadata = connector_metadata
+
+        def _get_connector_metadata(self):
+            return self._connector_metadata
+    fake_base.KVConnectorBase_V1 = KVConnectorBase_V1
     fake_base.KVConnectorRole = SimpleNamespace(SCHEDULER="scheduler", WORKER="worker")
     name = "_kvsnap_stubbed_connector"
     spec = importlib.util.spec_from_file_location(name, Path(__file__).resolve().parents[2] / "kvsnap/connector/vllm.py")
@@ -178,6 +186,25 @@ class WorkerLoadTests(unittest.TestCase):
         self.assertEqual(produced.invalid_snapshots, ["snapshot"])
         self.assertEqual(produced.failed_loads, ["request"])
         worker.dataplane.load_scatter.assert_not_called()
+
+    def test_an_async_load_waits_for_the_work_queued_before_the_forward_not_the_forward(self):
+        for async_load in (True, False):
+            with self.subTest(async_load=async_load):
+                worker = connector(self.module, async_load=async_load)
+                order = Mock()
+                worker.dataplane.producer_event.side_effect = lambda: order.event(len(order.mock_calls))
+                worker.dataplane.load_scatter.side_effect = lambda *args: order.copy()
+                transfer = self.module.Transfer("request", [11], {"snapshot_id": "snapshot", "num_kv_tokens": 1,
+                                                "durability": "durable", "segments": [{}]}, lease_id="lease")
+                worker.bind_connector_metadata(self.module.KvsnapMetadata(loads=[transfer]))
+                order.forward()        # an async load starts after the forward; a sync one before it
+                worker.start_load_kv(None)
+                recorded = [c for c in order.mock_calls if c[0] == "event"]
+                # The async load's event was recorded before the forward (no calls yet), the sync one after.
+                self.assertEqual(recorded, [call.event(0 if async_load else 1)])
+                self.assertEqual(order.mock_calls[-2:][1], call.copy())
+                worker.bind_connector_metadata(self.module.KvsnapMetadata())
+                self.assertEqual(worker.dataplane.producer_event.call_count, 1)   # no loads, no event
 
     def test_load_copies_only_after_the_engine_streams_queued_work(self):
         worker = connector(self.module)

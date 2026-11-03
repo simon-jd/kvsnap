@@ -377,13 +377,24 @@ class KvsnapConnector(KVConnectorBase_V1):
         if manifest["identity"]["kv_layout"] != actual:
             raise ContractError("actual registered KV layout differs from snapshot identity")
 
+    def bind_connector_metadata(self, connector_metadata):
+        super().bind_connector_metadata(connector_metadata)
+        # vLLM binds the metadata before the forward but calls start_load_kv
+        # after it when every load is asynchronous. An async load's blocks
+        # belong to a request this forward does not run, so its copies need
+        # only the work queued before the forward (whatever last used the
+        # freed blocks), not the forward itself: record that point here.
+        self._queued_before_forward = (self.dataplane.producer_event()
+                                       if self.async_load and getattr(connector_metadata, "loads", None) else None)
+
     def start_load_kv(self, forward_context, **kwargs):
         loads = self._get_connector_metadata().loads
         if not loads:
             return
         # Newly allocated blocks may have been freed this step by requests
-        # whose kernels are still queued; loads wait for this point first.
-        ready = self.dataplane.producer_event()
+        # whose kernels are still queued; loads wait for that work first.
+        ready = getattr(self, "_queued_before_forward", None) or self.dataplane.producer_event()
+        self._queued_before_forward = None
         for transfer in loads:
             if self.async_load:
                 self.load_jobs[transfer.request_id] = (self.loader.submit(self._load, transfer, ready), transfer)
