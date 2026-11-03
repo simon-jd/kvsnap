@@ -3,8 +3,9 @@
 # machine-wide GPU lock for its own duration only, so other jobs can run in
 # between. Each configuration runs KVSNAP_RUNS times (default 3) in fresh
 # processes with different seeds; the runs land in results/raw/suite/ and are
-# merged into results/*.json. About two hours on one RTX 4090, plus any wait
-# for the lock.
+# merged into results/*.json. About two hours on one RTX 4090 before the 8B
+# exact, LMCache-disk and offloader under-load runs were added (they were not
+# timed apart from the lock wait), plus any wait for the lock.
 #   scripts/bench-restore.sh             all of it
 #   scripts/bench-restore.sh smoke       one short sample of each benchmark
 #   scripts/bench-restore.sh PART...     only these parts: h2d ttft-small ttft-large exact

@@ -484,7 +484,7 @@ scripts/install.sh gpu                 # .venv-gpu: vLLM 0.31.0, torch 2.13.0 (C
 scripts/install.sh lmcache             # optional .venv-lmcache: LMCache 0.5.6 for its baseline
 scripts/download-models.sh             # Qwen3-1.7B and Qwen3-8B at the pinned revisions, about 20 GB
 scripts/bench-restore.sh smoke         # one short sample of each benchmark
-scripts/bench-restore.sh               # everything in Results: about two hours of GPU time
+scripts/bench-restore.sh               # everything in Results: over two hours of GPU time
 ```
 
 `bench-restore.sh` runs each timed configuration three times in fresh
