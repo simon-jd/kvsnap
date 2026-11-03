@@ -48,6 +48,8 @@ class Session:
     num_kv_tokens: int = 0
     outputs: list[OutputToken] = field(default_factory=list)
     snapshot_id: str | None = None
+    # snapshot_id's manifest as this gateway committed or recovered it.
+    manifest: SnapshotManifest | None = field(default=None, repr=False)
     request: EngineRequest | None = None
     task: asyncio.Task | None = field(default=None, repr=False)
     lock: asyncio.Lock = field(default_factory=asyncio.Lock, repr=False)
@@ -269,6 +271,7 @@ class SessionGateway:
                 await self.engine.release(request.request_id)
             async with session.lock:
                 session.snapshot_id = committed.snapshot_id
+                session.manifest = committed
                 session.state = SessionState.PAUSED
                 session.request = None
             return committed
@@ -293,7 +296,7 @@ class SessionGateway:
                           manifest.seed, manifest.remaining_max_tokens, manifest.durability,
                           generation=generation, state=SessionState.PAUSED,
                           token_ids=list(manifest.token_ids), num_kv_tokens=manifest.num_kv_tokens,
-                          outputs=list(manifest.outputs), snapshot_id=manifest.snapshot_id,
+                          outputs=list(manifest.outputs), snapshot_id=manifest.snapshot_id, manifest=manifest,
                           stop_reached=manifest.stopped or bool(manifest.outputs and manifest.outputs[-1].token_id in manifest.sampling.stop_token_ids))
         self.sessions[session.session_id] = session
         return session
@@ -312,8 +315,15 @@ class SessionGateway:
                 raise ContractError("ack_seq exceeds the committed output sequence")
             # An evicted host-memory snapshot still describes the session; the
             # engine then misses and recomputes the prompt.
-            manifest = SnapshotManifest.from_dict(
-                await asyncio.to_thread(self.store.get_manifest, session.snapshot_id, include_invalid=True))
+            manifest = session.manifest
+            if (manifest is None or manifest.snapshot_id != session.snapshot_id
+                    or getattr(self.engine, "restore_needs_payload", True)):
+                manifest = SnapshotManifest.from_dict(
+                    await asyncio.to_thread(self.store.get_manifest, session.snapshot_id, include_invalid=True))
+            # Otherwise a snapshot's content never changes, only its state, and
+            # an engine that loads the KV itself checks that state when it
+            # admits the request, recomputing on a miss. Reading the store here
+            # was a thread hop that cost about 7 ms under load.
             target_identity = identity or session.identity
             prompt = tuple(manifest.token_ids) + append
             manifest.identity.require_match(target_identity)

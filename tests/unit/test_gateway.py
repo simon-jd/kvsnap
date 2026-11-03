@@ -49,6 +49,37 @@ class GatewayTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(len(manifest.pending_tokens), 1)
             self.assertEqual(session.remaining_max_tokens, 0)
 
+    async def test_an_engine_that_loads_the_kv_itself_resumes_without_another_store_read(self):
+        class SelfLoading(DeterministicEngine):
+            restore_needs_payload = False
+
+            async def restore(self, request, blocks):
+                self.requests[request.request_id] = request
+                self.histories[request.request_id] = list(request.token_ids)
+                self.restored = request
+
+        self.engine = SelfLoading()
+        self.gateway = SessionGateway(self.engine, self.store)
+        session, manifest, first = await self.create_paused()
+        reads = []
+        original = self.store.get_manifest
+        self.store.get_manifest = lambda *args, **kwargs: reads.append(args) or original(*args, **kwargs)
+        rest = await collect(await self.gateway.resume(session.session_id, expected_generation=1, ack_seq=4))
+        self.assertEqual(reads, [])
+        self.assertEqual(self.engine.restored.token_ids, manifest.token_ids)
+        self.assertEqual(self.engine.restored.external_num_tokens, manifest.num_kv_tokens)
+        reference = await self.gateway.create(self.identity, seed=42, max_tokens=12)
+        oracle = await collect(await self.gateway.start_turn(reference.session_id, [1, 2, 3], expected_generation=0))
+        self.assertEqual(first + rest, oracle)
+
+    async def test_an_engine_given_the_kv_bytes_resumes_from_a_fresh_store_read(self):
+        session, _, _ = await self.create_paused()
+        reads = []
+        original = self.store.get_manifest
+        self.store.get_manifest = lambda *args, **kwargs: reads.append(args) or original(*args, **kwargs)
+        await collect(await self.gateway.resume(session.session_id, expected_generation=1, ack_seq=4))
+        self.assertEqual(reads, [(session.snapshot_id,)])
+
     async def test_ack_replays_committed_outputs_before_new_tokens(self):
         session, _, first = await self.create_paused()
         replay_and_new = await collect(await self.gateway.resume(session.session_id, expected_generation=1, ack_seq=2, max_tokens=2))
