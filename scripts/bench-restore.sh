@@ -9,7 +9,7 @@
 #   scripts/bench-restore.sh             all of it
 #   scripts/bench-restore.sh smoke       one short sample of each benchmark
 #   scripts/bench-restore.sh PART...     only these parts: h2d ttft-small ttft-large exact
-#                                        under-load restart baselines lmcache trace
+#                                        under-load restart baselines lmcache trace phases
 set -euo pipefail
 cd "$(dirname "$0")/.."
 python=${KVSNAP_PYTHON:-.venv-gpu/bin/python}
@@ -108,6 +108,24 @@ part_trace() {
     --output "$out/turn-end-trace.json"
 }
 
+# Where a resumed turn's time goes: traced under-load runs without probes, cut
+# into phases by bench/resume_phases.py. KVSNAP_PHASES_BASELINE may name a
+# checkout of an earlier commit, native libraries built, to trace first.
+part_phases() {
+  local traces=() trace=(bench.restore_under_load "${small[@]}" --seed 1 --store-dir "$scratch")
+  if [[ -n ${KVSNAP_PHASES_BASELINE:-} ]]; then
+    local dir py
+    dir=$(realpath "$raw")/phases-baseline py=$(realpath "$python")
+    rm -rf "$dir"
+    (cd "$KVSNAP_PHASES_BASELINE" && export PYTHONPATH=$PWD && gpu "$dir.log" "$py" -m "${trace[@]}" \
+      --trace-dir "$dir" --output "$dir/result.json")
+    traces+=(--trace "baseline=$dir")
+  fi
+  rm -rf "$raw/phases"
+  gpu "$raw/phases.log" "$python" -m "${trace[@]}" --trace-dir "$raw/phases" --output "$raw/phases/result.json"
+  "$python" -m bench.resume_phases "${traces[@]}" --trace "current=$raw/phases" --output "$out/resume-phases.json"
+}
+
 smoke() {
   local s=$raw/smoke
   mkdir -p "$s"
@@ -127,7 +145,7 @@ if [[ ${1:-} == smoke ]]; then
   exit
 fi
 parts=("$@")
-[[ ${#parts[@]} -gt 0 ]] || parts=(h2d ttft-small ttft-large exact under-load restart baselines lmcache trace)
+[[ ${#parts[@]} -gt 0 ]] || parts=(h2d ttft-small ttft-large exact under-load restart baselines lmcache trace phases)
 for part in "${parts[@]}"; do
   if [[ $part == lmcache && ! -x $lmcache_python ]]; then
     echo "skipping lmcache: $lmcache_python not found (scripts/install.sh lmcache)" >&2
