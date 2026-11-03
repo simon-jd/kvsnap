@@ -26,7 +26,7 @@
    "length": 8192,
    "session": 0,
    "round": 0,
-   "ttft_ms": 173.1956119183451,
+   "ttft_ms": 184.28457411937416,
    "prompt_tokens": 8257,
    "num_cached_tokens": 8192,
    "run": 0
@@ -35,7 +35,7 @@
    "length": 8192,
    "session": 1,
    "round": 0,
-   "ttft_ms": 109.03697507455945,
+   "ttft_ms": 116.95248098112643,
    "prompt_tokens": 8257,
    "num_cached_tokens": 8192,
    "run": 0
@@ -44,7 +44,7 @@
    "length": 8192,
    "session": 2,
    "round": 0,
-   "ttft_ms": 105.95722519792616,
+   "ttft_ms": 139.80035879649222,
    "prompt_tokens": 8257,
    "num_cached_tokens": 8192,
    "run": 0
@@ -53,7 +53,7 @@
    "length": 8192,
    "session": 3,
    "round": 0,
-   "ttft_ms": 101.85005399398506,
+   "ttft_ms": 115.79968687146902,
    "prompt_tokens": 8257,
    "num_cached_tokens": 8192,
    "run": 0
@@ -62,7 +62,7 @@
    "length": 8192,
    "session": 0,
    "round": 1,
-   "ttft_ms": 107.577595859766,
+   "ttft_ms": 142.9348331876099,
    "prompt_tokens": 8337,
    "num_cached_tokens": 8256,
    "run": 0
@@ -71,7 +71,7 @@
    "length": 8192,
    "session": 1,
    "round": 1,
-   "ttft_ms": 108.51931408978999,
+   "ttft_ms": 138.32651101984084,
    "prompt_tokens": 8337,
    "num_cached_tokens": 8256,
    "run": 0
@@ -80,7 +80,7 @@
    "length": 8192,
    "session": 2,
    "round": 1,
-   "ttft_ms": 107.07952408120036,
+   "ttft_ms": 134.57457395270467,
    "prompt_tokens": 8337,
    "num_cached_tokens": 8256,
    "run": 0
@@ -89,52 +89,52 @@
    "length": 8192,
    "session": 3,
    "round": 1,
-   "ttft_ms": 116.1521750036627,
+   "ttft_ms": 138.18200887180865,
    "prompt_tokens": 8337,
    "num_cached_tokens": 8256,
-   "run": 0
-  },
-  {
-   "length": 8192,
-   "session": 0,
-   "round": 2,
-   "ttft_ms": 108.10208995826542,
-   "prompt_tokens": 8417,
-   "num_cached_tokens": 8336,
-   "run": 0
-  },
-  {
-   "length": 8192,
-   "session": 1,
-   "round": 2,
-   "ttft_ms": 108.12878399156034,
-   "prompt_tokens": 8417,
-   "num_cached_tokens": 8336,
-   "run": 0
-  },
-  {
-   "length": 8192,
-   "session": 2,
-   "round": 2,
-   "ttft_ms": 106.40660021454096,
-   "prompt_tokens": 8417,
-   "num_cached_tokens": 8336,
-   "run": 0
-  },
-  {
-   "length": 8192,
-   "session": 3,
-   "round": 2,
-   "ttft_ms": 108.00110013224185,
-   "prompt_tokens": 8417,
-   "num_cached_tokens": 8336,
    "run": 0
   },
   {
    "length": 8192,
    "session": 0,
+   "round": 2,
+   "ttft_ms": 140.7034790609032,
+   "prompt_tokens": 8417,
+   "num_cached_tokens": 8336,
+   "run": 0
+  },
+  {
+   "length": 8192,
+   "session": 1,
+   "round": 2,
+   "ttft_ms": 135.23943698965013,
+   "prompt_tokens": 8417,
+   "num_cached_tokens": 8336,
+   "run": 0
+  },
+  {
+   "length": 8192,
+   "session": 2,
+   "round": 2,
+   "ttft_ms": 140.89509891346097,
+   "prompt_tokens": 8417,
+   "num_cached_tokens": 8336,
+   "run": 0
+  },
+  {
+   "length": 8192,
+   "session": 3,
+   "round": 2,
+   "ttft_ms": 130.21085783839226,
+   "prompt_tokens": 8417,
+   "num_cached_tokens": 8336,
+   "run": 0
+  },
+  {
+   "length": 8192,
+   "session": 0,
    "round": 0,
-   "ttft_ms": 173.21130307391286,
+   "ttft_ms": 184.87002793699503,
    "prompt_tokens": 8257,
    "num_cached_tokens": 8192,
    "run": 1
@@ -143,7 +143,7 @@
    "length": 8192,
    "session": 1,
    "round": 0,
-   "ttft_ms": 107.32007003389299,
+   "ttft_ms": 137.4956020154059,
    "prompt_tokens": 8257,
    "num_cached_tokens": 8192,
    "run": 1
@@ -152,7 +152,7 @@
    "length": 8192,
    "session": 2,
    "round": 0,
-   "ttft_ms": 104.79478910565376,
+   "ttft_ms": 135.84771985188127,
    "prompt_tokens": 8257,
    "num_cached_tokens": 8192,
    "run": 1
@@ -161,7 +161,7 @@
    "length": 8192,
    "session": 3,
    "round": 0,
-   "ttft_ms": 102.84299496561289,
+   "ttft_ms": 129.78046387434006,
    "prompt_tokens": 8257,
    "num_cached_tokens": 8192,
    "run": 1
@@ -170,7 +170,7 @@
    "length": 8192,
    "session": 0,
    "round": 1,
-   "ttft_ms": 106.9034799002111,
+   "ttft_ms": 138.00200214609504,
    "prompt_tokens": 8337,
    "num_cached_tokens": 8256,
    "run": 1
@@ -179,7 +179,7 @@
    "length": 8192,
    "session": 1,
    "round": 1,
-   "ttft_ms": 105.377531144768,
+   "ttft_ms": 106.40013893134892,
    "prompt_tokens": 8337,
    "num_cached_tokens": 8256,
    "run": 1
@@ -188,7 +188,7 @@
    "length": 8192,
    "session": 2,
    "round": 1,
-   "ttft_ms": 102.7373829856515,
+   "ttft_ms": 107.9188990406692,
    "prompt_tokens": 8337,
    "num_cached_tokens": 8256,
    "run": 1
@@ -197,7 +197,7 @@
    "length": 8192,
    "session": 3,
    "round": 1,
-   "ttft_ms": 110.13314104638994,
+   "ttft_ms": 107.01994807459414,
    "prompt_tokens": 8337,
    "num_cached_tokens": 8256,
    "run": 1
@@ -206,7 +206,7 @@
    "length": 8192,
    "session": 0,
    "round": 2,
-   "ttft_ms": 106.50188405998051,
+   "ttft_ms": 122.5041151046753,
    "prompt_tokens": 8417,
    "num_cached_tokens": 8336,
    "run": 1
@@ -215,7 +215,7 @@
    "length": 8192,
    "session": 1,
    "round": 2,
-   "ttft_ms": 106.1920439824462,
+   "ttft_ms": 111.40427202917635,
    "prompt_tokens": 8417,
    "num_cached_tokens": 8336,
    "run": 1
@@ -224,7 +224,7 @@
    "length": 8192,
    "session": 2,
    "round": 2,
-   "ttft_ms": 107.23214689642191,
+   "ttft_ms": 128.91171290539205,
    "prompt_tokens": 8417,
    "num_cached_tokens": 8336,
    "run": 1
@@ -233,7 +233,7 @@
    "length": 8192,
    "session": 3,
    "round": 2,
-   "ttft_ms": 108.3049550652504,
+   "ttft_ms": 115.03013083711267,
    "prompt_tokens": 8417,
    "num_cached_tokens": 8336,
    "run": 1
@@ -242,7 +242,7 @@
    "length": 8192,
    "session": 0,
    "round": 0,
-   "ttft_ms": 172.04804415814579,
+   "ttft_ms": 192.75785493664443,
    "prompt_tokens": 8257,
    "num_cached_tokens": 8192,
    "run": 2
@@ -251,7 +251,7 @@
    "length": 8192,
    "session": 1,
    "round": 0,
-   "ttft_ms": 104.8541811760515,
+   "ttft_ms": 139.23811400309205,
    "prompt_tokens": 8257,
    "num_cached_tokens": 8192,
    "run": 2
@@ -260,7 +260,7 @@
    "length": 8192,
    "session": 2,
    "round": 0,
-   "ttft_ms": 104.9672041554004,
+   "ttft_ms": 138.01610097289085,
    "prompt_tokens": 8257,
    "num_cached_tokens": 8192,
    "run": 2
@@ -269,7 +269,7 @@
    "length": 8192,
    "session": 3,
    "round": 0,
-   "ttft_ms": 104.28082710132003,
+   "ttft_ms": 131.93573686294258,
    "prompt_tokens": 8257,
    "num_cached_tokens": 8192,
    "run": 2
@@ -278,7 +278,7 @@
    "length": 8192,
    "session": 0,
    "round": 1,
-   "ttft_ms": 106.03643604554236,
+   "ttft_ms": 141.1054350901395,
    "prompt_tokens": 8337,
    "num_cached_tokens": 8256,
    "run": 2
@@ -287,7 +287,7 @@
    "length": 8192,
    "session": 1,
    "round": 1,
-   "ttft_ms": 133.25883797369897,
+   "ttft_ms": 104.88171316683292,
    "prompt_tokens": 8337,
    "num_cached_tokens": 8256,
    "run": 2
@@ -296,7 +296,7 @@
    "length": 8192,
    "session": 2,
    "round": 1,
-   "ttft_ms": 104.77107996121049,
+   "ttft_ms": 121.06493604369462,
    "prompt_tokens": 8337,
    "num_cached_tokens": 8256,
    "run": 2
@@ -305,7 +305,7 @@
    "length": 8192,
    "session": 3,
    "round": 1,
-   "ttft_ms": 109.23111392185092,
+   "ttft_ms": 137.30347785167396,
    "prompt_tokens": 8337,
    "num_cached_tokens": 8256,
    "run": 2
@@ -314,7 +314,7 @@
    "length": 8192,
    "session": 0,
    "round": 2,
-   "ttft_ms": 106.83902213349938,
+   "ttft_ms": 124.7270388994366,
    "prompt_tokens": 8417,
    "num_cached_tokens": 8336,
    "run": 2
@@ -323,7 +323,7 @@
    "length": 8192,
    "session": 1,
    "round": 2,
-   "ttft_ms": 105.7024837937206,
+   "ttft_ms": 131.96389703080058,
    "prompt_tokens": 8417,
    "num_cached_tokens": 8336,
    "run": 2
@@ -332,7 +332,7 @@
    "length": 8192,
    "session": 2,
    "round": 2,
-   "ttft_ms": 110.43419199995697,
+   "ttft_ms": 141.65392983704805,
    "prompt_tokens": 8417,
    "num_cached_tokens": 8336,
    "run": 2
@@ -341,7 +341,7 @@
    "length": 8192,
    "session": 3,
    "round": 2,
-   "ttft_ms": 107.77164599858224,
+   "ttft_ms": 140.924311010167,
    "prompt_tokens": 8417,
    "num_cached_tokens": 8336,
    "run": 2
@@ -351,13 +351,13 @@
   {
    "context_tokens": 8192,
    "n": 36,
-   "ttft_ms_median": 107.15583548881114,
-   "ttft_ms_min": 101.85005399398506,
-   "ttft_ms_max": 173.21130307391286,
+   "ttft_ms_median": 135.5435784207657,
+   "ttft_ms_min": 104.88171316683292,
+   "ttft_ms_max": 192.75785493664443,
    "ttft_ms_median_by_run": [
-    108.05159504525363,
-    106.7026819800958,
-    106.43772908952087
+    138.25425994582474,
+    125.70791400503367,
+    137.6597894122824
    ],
    "num_cached_tokens_median": 8256.0,
    "prompt_tokens_median": 8337.0
@@ -368,7 +368,7 @@
    "gpu_at_start": {
     "name": "NVIDIA GeForce RTX 4090",
     "driver_version": "595.99.02",
-    "clocks.sm": "2775 MHz",
+    "clocks.sm": "2790 MHz",
     "clocks.mem": "10501 MHz",
     "clocks.max.sm": "3105 MHz",
     "clocks.max.mem": "10501 MHz",
@@ -377,18 +377,18 @@
     "pcie.link.width.current": "16",
     "pcie.link.width.max": "16",
     "power.limit": "450.00 W",
-    "temperature.gpu": "64",
-    "memory.used": "695 MiB",
+    "temperature.gpu": "56",
+    "memory.used": "303 MiB",
     "memory.total": "24564 MiB",
     "host_load_average_1_5_15": [
-     5.8,
-     5.98,
-     5.96
+     3.43,
+     4.88,
+     4.45
     ]
    },
    "git": {
-    "commit": "eceed3997cef1fdc2cf6ee92e67c2695445d3c5e",
-    "dirty": true
+    "commit": "b22a2f4e5dc574065b93f4a4c3df9d2812237958",
+    "dirty": false
    },
    "host": {
     "cpu": "13th Gen Intel(R) Core(TM) i9-13900K",
@@ -396,9 +396,9 @@
     "memory_gib": 123.2,
     "kernel": "7.0.0-38-generic",
     "load_average_1_5_15": [
-     5.8,
-     5.98,
-     5.96
+     3.43,
+     4.88,
+     4.45
     ]
    },
    "storage": {
@@ -423,13 +423,13 @@
     "pcie.link.width.current": "16",
     "pcie.link.width.max": "16",
     "power.limit": "450.00 W",
-    "temperature.gpu": "65",
-    "memory.used": "20394 MiB",
+    "temperature.gpu": "62",
+    "memory.used": "20003 MiB",
     "memory.total": "24564 MiB",
     "host_load_average_1_5_15": [
-     6.05,
-     6.04,
-     5.98
+     3.04,
+     4.72,
+     4.4
     ]
    }
   },
@@ -446,18 +446,18 @@
     "pcie.link.width.current": "16",
     "pcie.link.width.max": "16",
     "power.limit": "450.00 W",
-    "temperature.gpu": "59",
-    "memory.used": "693 MiB",
+    "temperature.gpu": "52",
+    "memory.used": "303 MiB",
     "memory.total": "24564 MiB",
     "host_load_average_1_5_15": [
-     5.81,
-     5.98,
-     5.97
+     1.61,
+     3.72,
+     4.08
     ]
    },
    "git": {
-    "commit": "eceed3997cef1fdc2cf6ee92e67c2695445d3c5e",
-    "dirty": true
+    "commit": "b22a2f4e5dc574065b93f4a4c3df9d2812237958",
+    "dirty": false
    },
    "host": {
     "cpu": "13th Gen Intel(R) Core(TM) i9-13900K",
@@ -465,9 +465,9 @@
     "memory_gib": 123.2,
     "kernel": "7.0.0-38-generic",
     "load_average_1_5_15": [
-     5.81,
-     5.98,
-     5.97
+     1.61,
+     3.72,
+     4.08
     ]
    },
    "storage": {
@@ -483,7 +483,7 @@
    "gpu_at_measurement": {
     "name": "NVIDIA GeForce RTX 4090",
     "driver_version": "595.99.02",
-    "clocks.sm": "2775 MHz",
+    "clocks.sm": "2790 MHz",
     "clocks.mem": "10251 MHz",
     "clocks.max.sm": "3105 MHz",
     "clocks.max.mem": "10501 MHz",
@@ -492,13 +492,13 @@
     "pcie.link.width.current": "16",
     "pcie.link.width.max": "16",
     "power.limit": "450.00 W",
-    "temperature.gpu": "65",
-    "memory.used": "20395 MiB",
+    "temperature.gpu": "53",
+    "memory.used": "20003 MiB",
     "memory.total": "24564 MiB",
     "host_load_average_1_5_15": [
-     6.07,
-     6.05,
-     5.99
+     1.71,
+     3.41,
+     3.95
     ]
    }
   },
@@ -506,7 +506,7 @@
    "gpu_at_start": {
     "name": "NVIDIA GeForce RTX 4090",
     "driver_version": "595.99.02",
-    "clocks.sm": "2775 MHz",
+    "clocks.sm": "2790 MHz",
     "clocks.mem": "10501 MHz",
     "clocks.max.sm": "3105 MHz",
     "clocks.max.mem": "10501 MHz",
@@ -515,18 +515,18 @@
     "pcie.link.width.current": "16",
     "pcie.link.width.max": "16",
     "power.limit": "450.00 W",
-    "temperature.gpu": "59",
-    "memory.used": "695 MiB",
+    "temperature.gpu": "49",
+    "memory.used": "303 MiB",
     "memory.total": "24564 MiB",
     "host_load_average_1_5_15": [
-     5.84,
-     6.0,
-     5.97
+     2.06,
+     3.03,
+     3.75
     ]
    },
    "git": {
-    "commit": "eceed3997cef1fdc2cf6ee92e67c2695445d3c5e",
-    "dirty": true
+    "commit": "b22a2f4e5dc574065b93f4a4c3df9d2812237958",
+    "dirty": false
    },
    "host": {
     "cpu": "13th Gen Intel(R) Core(TM) i9-13900K",
@@ -534,9 +534,9 @@
     "memory_gib": 123.2,
     "kernel": "7.0.0-38-generic",
     "load_average_1_5_15": [
-     5.84,
-     6.0,
-     5.97
+     2.06,
+     3.03,
+     3.75
     ]
    },
    "storage": {
@@ -552,7 +552,7 @@
    "gpu_at_measurement": {
     "name": "NVIDIA GeForce RTX 4090",
     "driver_version": "595.99.02",
-    "clocks.sm": "2775 MHz",
+    "clocks.sm": "2790 MHz",
     "clocks.mem": "10251 MHz",
     "clocks.max.sm": "3105 MHz",
     "clocks.max.mem": "10501 MHz",
@@ -561,13 +561,13 @@
     "pcie.link.width.current": "16",
     "pcie.link.width.max": "16",
     "power.limit": "450.00 W",
-    "temperature.gpu": "64",
-    "memory.used": "20393 MiB",
+    "temperature.gpu": "54",
+    "memory.used": "20004 MiB",
     "memory.total": "24564 MiB",
     "host_load_average_1_5_15": [
-     5.78,
-     5.98,
-     5.97
+     1.85,
+     2.82,
+     3.63
     ]
    }
   }

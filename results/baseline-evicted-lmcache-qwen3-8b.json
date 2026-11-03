@@ -26,7 +26,7 @@
    "length": 8192,
    "session": 0,
    "round": 0,
-   "ttft_ms": 72.57753098383546,
+   "ttft_ms": 71.6900888364762,
    "prompt_tokens": 8257,
    "num_cached_tokens": 8192,
    "run": 0
@@ -35,7 +35,7 @@
    "length": 8192,
    "session": 1,
    "round": 0,
-   "ttft_ms": 71.2338900193572,
+   "ttft_ms": 82.89715694263577,
    "prompt_tokens": 8257,
    "num_cached_tokens": 8192,
    "run": 0
@@ -44,7 +44,7 @@
    "length": 8192,
    "session": 2,
    "round": 0,
-   "ttft_ms": 73.30625411123037,
+   "ttft_ms": 81.54484909027815,
    "prompt_tokens": 8257,
    "num_cached_tokens": 8192,
    "run": 0
@@ -53,7 +53,7 @@
    "length": 8192,
    "session": 3,
    "round": 0,
-   "ttft_ms": 72.48974102549255,
+   "ttft_ms": 82.86876091733575,
    "prompt_tokens": 8257,
    "num_cached_tokens": 8192,
    "run": 0
@@ -62,7 +62,7 @@
    "length": 8192,
    "session": 0,
    "round": 1,
-   "ttft_ms": 74.10176610574126,
+   "ttft_ms": 86.13642887212336,
    "prompt_tokens": 8337,
    "num_cached_tokens": 8192,
    "run": 0
@@ -71,7 +71,7 @@
    "length": 8192,
    "session": 1,
    "round": 1,
-   "ttft_ms": 73.59790708869696,
+   "ttft_ms": 84.8236158490181,
    "prompt_tokens": 8337,
    "num_cached_tokens": 8192,
    "run": 0
@@ -80,7 +80,7 @@
    "length": 8192,
    "session": 2,
    "round": 1,
-   "ttft_ms": 73.94275488331914,
+   "ttft_ms": 84.7383860964328,
    "prompt_tokens": 8337,
    "num_cached_tokens": 8192,
    "run": 0
@@ -89,52 +89,52 @@
    "length": 8192,
    "session": 3,
    "round": 1,
-   "ttft_ms": 73.22202995419502,
+   "ttft_ms": 84.46695492602885,
    "prompt_tokens": 8337,
-   "num_cached_tokens": 8192,
-   "run": 0
-  },
-  {
-   "length": 8192,
-   "session": 0,
-   "round": 2,
-   "ttft_ms": 77.28494214825332,
-   "prompt_tokens": 8417,
-   "num_cached_tokens": 8192,
-   "run": 0
-  },
-  {
-   "length": 8192,
-   "session": 1,
-   "round": 2,
-   "ttft_ms": 76.4609589241445,
-   "prompt_tokens": 8417,
-   "num_cached_tokens": 8192,
-   "run": 0
-  },
-  {
-   "length": 8192,
-   "session": 2,
-   "round": 2,
-   "ttft_ms": 76.35870389640331,
-   "prompt_tokens": 8417,
-   "num_cached_tokens": 8192,
-   "run": 0
-  },
-  {
-   "length": 8192,
-   "session": 3,
-   "round": 2,
-   "ttft_ms": 78.80739914253354,
-   "prompt_tokens": 8417,
    "num_cached_tokens": 8192,
    "run": 0
   },
   {
    "length": 8192,
    "session": 0,
+   "round": 2,
+   "ttft_ms": 87.83372095786035,
+   "prompt_tokens": 8417,
+   "num_cached_tokens": 8192,
+   "run": 0
+  },
+  {
+   "length": 8192,
+   "session": 1,
+   "round": 2,
+   "ttft_ms": 86.62201394326985,
+   "prompt_tokens": 8417,
+   "num_cached_tokens": 8192,
+   "run": 0
+  },
+  {
+   "length": 8192,
+   "session": 2,
+   "round": 2,
+   "ttft_ms": 87.68492611125112,
+   "prompt_tokens": 8417,
+   "num_cached_tokens": 8192,
+   "run": 0
+  },
+  {
+   "length": 8192,
+   "session": 3,
+   "round": 2,
+   "ttft_ms": 75.35947998985648,
+   "prompt_tokens": 8417,
+   "num_cached_tokens": 8192,
+   "run": 0
+  },
+  {
+   "length": 8192,
+   "session": 0,
    "round": 0,
-   "ttft_ms": 73.39270319789648,
+   "ttft_ms": 72.30727304704487,
    "prompt_tokens": 8257,
    "num_cached_tokens": 8192,
    "run": 1
@@ -143,7 +143,7 @@
    "length": 8192,
    "session": 1,
    "round": 0,
-   "ttft_ms": 72.74831086397171,
+   "ttft_ms": 86.89222484827042,
    "prompt_tokens": 8257,
    "num_cached_tokens": 8192,
    "run": 1
@@ -152,7 +152,7 @@
    "length": 8192,
    "session": 2,
    "round": 0,
-   "ttft_ms": 72.13260186836123,
+   "ttft_ms": 70.59107604436576,
    "prompt_tokens": 8257,
    "num_cached_tokens": 8192,
    "run": 1
@@ -161,7 +161,7 @@
    "length": 8192,
    "session": 3,
    "round": 0,
-   "ttft_ms": 74.44447814486921,
+   "ttft_ms": 70.84102998487651,
    "prompt_tokens": 8257,
    "num_cached_tokens": 8192,
    "run": 1
@@ -170,7 +170,7 @@
    "length": 8192,
    "session": 0,
    "round": 1,
-   "ttft_ms": 79.54883598722517,
+   "ttft_ms": 72.69690604880452,
    "prompt_tokens": 8337,
    "num_cached_tokens": 8192,
    "run": 1
@@ -179,7 +179,7 @@
    "length": 8192,
    "session": 1,
    "round": 1,
-   "ttft_ms": 78.89110292308033,
+   "ttft_ms": 75.10495302267373,
    "prompt_tokens": 8337,
    "num_cached_tokens": 8192,
    "run": 1
@@ -188,7 +188,7 @@
    "length": 8192,
    "session": 2,
    "round": 1,
-   "ttft_ms": 77.33325310982764,
+   "ttft_ms": 89.40460882149637,
    "prompt_tokens": 8337,
    "num_cached_tokens": 8192,
    "run": 1
@@ -197,7 +197,7 @@
    "length": 8192,
    "session": 3,
    "round": 1,
-   "ttft_ms": 77.27271411567926,
+   "ttft_ms": 90.03674401901662,
    "prompt_tokens": 8337,
    "num_cached_tokens": 8192,
    "run": 1
@@ -206,7 +206,7 @@
    "length": 8192,
    "session": 0,
    "round": 2,
-   "ttft_ms": 85.02206299453974,
+   "ttft_ms": 90.15521500259638,
    "prompt_tokens": 8417,
    "num_cached_tokens": 8192,
    "run": 1
@@ -215,7 +215,7 @@
    "length": 8192,
    "session": 1,
    "round": 2,
-   "ttft_ms": 83.97302287630737,
+   "ttft_ms": 89.64915596880019,
    "prompt_tokens": 8417,
    "num_cached_tokens": 8192,
    "run": 1
@@ -224,7 +224,7 @@
    "length": 8192,
    "session": 2,
    "round": 2,
-   "ttft_ms": 79.21168999746442,
+   "ttft_ms": 88.38627114892006,
    "prompt_tokens": 8417,
    "num_cached_tokens": 8192,
    "run": 1
@@ -233,7 +233,7 @@
    "length": 8192,
    "session": 3,
    "round": 2,
-   "ttft_ms": 76.69787900522351,
+   "ttft_ms": 87.34070393256843,
    "prompt_tokens": 8417,
    "num_cached_tokens": 8192,
    "run": 1
@@ -242,7 +242,7 @@
    "length": 8192,
    "session": 0,
    "round": 0,
-   "ttft_ms": 71.54361205175519,
+   "ttft_ms": 71.80242310278118,
    "prompt_tokens": 8257,
    "num_cached_tokens": 8192,
    "run": 2
@@ -251,7 +251,7 @@
    "length": 8192,
    "session": 1,
    "round": 0,
-   "ttft_ms": 72.84035882912576,
+   "ttft_ms": 83.19983794353902,
    "prompt_tokens": 8257,
    "num_cached_tokens": 8192,
    "run": 2
@@ -260,7 +260,7 @@
    "length": 8192,
    "session": 2,
    "round": 0,
-   "ttft_ms": 71.92778191529214,
+   "ttft_ms": 85.6938420329243,
    "prompt_tokens": 8257,
    "num_cached_tokens": 8192,
    "run": 2
@@ -269,7 +269,7 @@
    "length": 8192,
    "session": 3,
    "round": 0,
-   "ttft_ms": 71.28805411048234,
+   "ttft_ms": 84.8892298527062,
    "prompt_tokens": 8257,
    "num_cached_tokens": 8192,
    "run": 2
@@ -278,7 +278,7 @@
    "length": 8192,
    "session": 0,
    "round": 1,
-   "ttft_ms": 73.76560498960316,
+   "ttft_ms": 76.93751202896237,
    "prompt_tokens": 8337,
    "num_cached_tokens": 8192,
    "run": 2
@@ -287,7 +287,7 @@
    "length": 8192,
    "session": 1,
    "round": 1,
-   "ttft_ms": 77.09644292481244,
+   "ttft_ms": 87.8081638365984,
    "prompt_tokens": 8337,
    "num_cached_tokens": 8192,
    "run": 2
@@ -296,7 +296,7 @@
    "length": 8192,
    "session": 2,
    "round": 1,
-   "ttft_ms": 75.45584021136165,
+   "ttft_ms": 76.61134679801762,
    "prompt_tokens": 8337,
    "num_cached_tokens": 8192,
    "run": 2
@@ -305,7 +305,7 @@
    "length": 8192,
    "session": 3,
    "round": 1,
-   "ttft_ms": 74.95571812614799,
+   "ttft_ms": 75.70785097777843,
    "prompt_tokens": 8337,
    "num_cached_tokens": 8192,
    "run": 2
@@ -314,7 +314,7 @@
    "length": 8192,
    "session": 0,
    "round": 2,
-   "ttft_ms": 77.79028709046543,
+   "ttft_ms": 76.70503295958042,
    "prompt_tokens": 8417,
    "num_cached_tokens": 8192,
    "run": 2
@@ -323,7 +323,7 @@
    "length": 8192,
    "session": 1,
    "round": 2,
-   "ttft_ms": 78.3565251622349,
+   "ttft_ms": 79.93596885353327,
    "prompt_tokens": 8417,
    "num_cached_tokens": 8192,
    "run": 2
@@ -332,7 +332,7 @@
    "length": 8192,
    "session": 2,
    "round": 2,
-   "ttft_ms": 76.30872400477529,
+   "ttft_ms": 77.93580112047493,
    "prompt_tokens": 8417,
    "num_cached_tokens": 8192,
    "run": 2
@@ -341,7 +341,7 @@
    "length": 8192,
    "session": 3,
    "round": 2,
-   "ttft_ms": 78.6825839895755,
+   "ttft_ms": 77.09461497142911,
    "prompt_tokens": 8417,
    "num_cached_tokens": 8192,
    "run": 2
@@ -351,13 +351,13 @@
   {
    "context_tokens": 8192,
    "n": 36,
-   "ttft_ms_median": 75.20577916875482,
-   "ttft_ms_min": 71.2338900193572,
-   "ttft_ms_max": 85.02206299453974,
+   "ttft_ms_median": 83.0484974430874,
+   "ttft_ms_min": 70.59107604436576,
+   "ttft_ms_max": 90.15521500259638,
    "ttft_ms_median_by_run": [
-    73.77033098600805,
-    77.30298361275345,
-    75.20577916875482
+    84.60267051123083,
+    87.11646439041942,
+    77.51520804595202
    ],
    "num_cached_tokens_median": 8192.0,
    "prompt_tokens_median": 8337.0
@@ -377,18 +377,18 @@
     "pcie.link.width.current": "16",
     "pcie.link.width.max": "16",
     "power.limit": "450.00 W",
-    "temperature.gpu": "56",
-    "memory.used": "695 MiB",
+    "temperature.gpu": "55",
+    "memory.used": "303 MiB",
     "memory.total": "24564 MiB",
     "host_load_average_1_5_15": [
-     6.36,
-     5.97,
-     5.95
+     2.53,
+     4.35,
+     4.29
     ]
    },
    "git": {
-    "commit": "eceed3997cef1fdc2cf6ee92e67c2695445d3c5e",
-    "dirty": true
+    "commit": "b22a2f4e5dc574065b93f4a4c3df9d2812237958",
+    "dirty": false
    },
    "host": {
     "cpu": "13th Gen Intel(R) Core(TM) i9-13900K",
@@ -396,9 +396,9 @@
     "memory_gib": 123.2,
     "kernel": "7.0.0-38-generic",
     "load_average_1_5_15": [
-     6.36,
-     5.97,
-     5.95
+     2.53,
+     4.35,
+     4.29
     ]
    },
    "storage": {
@@ -424,13 +424,13 @@
     "pcie.link.width.current": "16",
     "pcie.link.width.max": "16",
     "power.limit": "450.00 W",
-    "temperature.gpu": "56",
-    "memory.used": "20445 MiB",
+    "temperature.gpu": "58",
+    "memory.used": "20053 MiB",
     "memory.total": "24564 MiB",
     "host_load_average_1_5_15": [
-     5.68,
-     5.85,
-     5.91
+     1.89,
+     3.88,
+     4.13
     ]
    }
   },
@@ -447,18 +447,18 @@
     "pcie.link.width.current": "16",
     "pcie.link.width.max": "16",
     "power.limit": "450.00 W",
-    "temperature.gpu": "52",
-    "memory.used": "693 MiB",
+    "temperature.gpu": "51",
+    "memory.used": "304 MiB",
     "memory.total": "24564 MiB",
     "host_load_average_1_5_15": [
-     5.3,
-     5.76,
-     5.88
+     1.86,
+     3.22,
+     3.86
     ]
    },
    "git": {
-    "commit": "eceed3997cef1fdc2cf6ee92e67c2695445d3c5e",
-    "dirty": true
+    "commit": "b22a2f4e5dc574065b93f4a4c3df9d2812237958",
+    "dirty": false
    },
    "host": {
     "cpu": "13th Gen Intel(R) Core(TM) i9-13900K",
@@ -466,9 +466,9 @@
     "memory_gib": 123.2,
     "kernel": "7.0.0-38-generic",
     "load_average_1_5_15": [
-     5.3,
-     5.76,
-     5.88
+     1.86,
+     3.22,
+     3.86
     ]
    },
    "storage": {
@@ -494,13 +494,13 @@
     "pcie.link.width.current": "16",
     "pcie.link.width.max": "16",
     "power.limit": "450.00 W",
-    "temperature.gpu": "60",
-    "memory.used": "20445 MiB",
+    "temperature.gpu": "55",
+    "memory.used": "20054 MiB",
     "memory.total": "24564 MiB",
     "host_load_average_1_5_15": [
-     5.32,
-     5.74,
-     5.87
+     2.26,
+     3.12,
+     3.79
     ]
    }
   },
@@ -517,18 +517,18 @@
     "pcie.link.width.current": "16",
     "pcie.link.width.max": "16",
     "power.limit": "450.00 W",
-    "temperature.gpu": "53",
-    "memory.used": "695 MiB",
+    "temperature.gpu": "50",
+    "memory.used": "303 MiB",
     "memory.total": "24564 MiB",
     "host_load_average_1_5_15": [
-     5.42,
-     5.75,
-     5.87
+     2.33,
+     2.76,
+     3.57
     ]
    },
    "git": {
-    "commit": "eceed3997cef1fdc2cf6ee92e67c2695445d3c5e",
-    "dirty": true
+    "commit": "b22a2f4e5dc574065b93f4a4c3df9d2812237958",
+    "dirty": false
    },
    "host": {
     "cpu": "13th Gen Intel(R) Core(TM) i9-13900K",
@@ -536,9 +536,9 @@
     "memory_gib": 123.2,
     "kernel": "7.0.0-38-generic",
     "load_average_1_5_15": [
-     5.42,
-     5.75,
-     5.87
+     2.33,
+     2.76,
+     3.57
     ]
    },
    "storage": {
@@ -564,13 +564,13 @@
     "pcie.link.width.current": "16",
     "pcie.link.width.max": "16",
     "power.limit": "450.00 W",
-    "temperature.gpu": "61",
-    "memory.used": "20445 MiB",
+    "temperature.gpu": "54",
+    "memory.used": "20054 MiB",
     "memory.total": "24564 MiB",
     "host_load_average_1_5_15": [
-     5.16,
-     5.67,
-     5.84
+     1.95,
+     2.59,
+     3.46
     ]
    }
   }

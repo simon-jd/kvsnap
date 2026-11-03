@@ -15,47 +15,47 @@
    "context_tokens": 8192,
    "arm": "recompute",
    "n": 9,
-   "ttft_ms_median": 906.3744528684765,
-   "ttft_ms_min": 895.0915110763162,
-   "ttft_ms_max": 921.9231728930026,
+   "ttft_ms_median": 906.0223379638046,
+   "ttft_ms_min": 895.5796060618013,
+   "ttft_ms_max": 916.8051211163402,
    "ttft_ms": [
-    895.0915110763162,
-    907.6697770506144,
-    911.0780989285558,
-    895.637143868953,
-    921.9231728930026,
-    906.3744528684765,
-    896.8246451113373,
-    905.7282111607492,
-    910.2941399905831
+    895.5796060618013,
+    916.8051211163402,
+    904.0038029197603,
+    896.556420950219,
+    908.255262998864,
+    906.7628500051796,
+    896.7550231609493,
+    906.0223379638046,
+    914.5734838675708
    ],
    "samples": [
     {
-     "ttft_ms": 895.0915110763162
+     "ttft_ms": 895.5796060618013
     },
     {
-     "ttft_ms": 907.6697770506144
+     "ttft_ms": 916.8051211163402
     },
     {
-     "ttft_ms": 911.0780989285558
+     "ttft_ms": 904.0038029197603
     },
     {
-     "ttft_ms": 895.637143868953
+     "ttft_ms": 896.556420950219
     },
     {
-     "ttft_ms": 921.9231728930026
+     "ttft_ms": 908.255262998864
     },
     {
-     "ttft_ms": 906.3744528684765
+     "ttft_ms": 906.7628500051796
     },
     {
-     "ttft_ms": 896.8246451113373
+     "ttft_ms": 896.7550231609493
     },
     {
-     "ttft_ms": 905.7282111607492
+     "ttft_ms": 906.0223379638046
     },
     {
-     "ttft_ms": 910.2941399905831
+     "ttft_ms": 914.5734838675708
     }
    ]
   },
@@ -63,19 +63,19 @@
    "context_tokens": 8192,
    "arm": "restore-cold",
    "n": 3,
-   "ttft_ms_median": 611.1788360867649,
-   "ttft_ms_min": 605.8320230804384,
-   "ttft_ms_max": 618.3345869649202,
+   "ttft_ms_median": 568.1565899867564,
+   "ttft_ms_min": 566.3869520649314,
+   "ttft_ms_max": 570.3878169879317,
    "ttft_ms": [
-    618.3345869649202,
-    605.8320230804384,
-    611.1788360867649
+    566.3869520649314,
+    568.1565899867564,
+    570.3878169879317
    ],
-   "save_ms_median": 1974.3387380149215,
-   "admit_ms_median": 26.477579,
-   "read_ms_median": 463.832689,
-   "h2d_ms_median": 72.130324,
-   "after_ms_median": 47.256313,
+   "save_ms_median": 1960.934774018824,
+   "admit_ms_median": 23.189117,
+   "read_ms_median": 447.949369,
+   "h2d_ms_median": 54.115154,
+   "after_ms_median": 42.482838,
    "bytes_median": 1207959552,
    "copies_median": 19,
    "tokens_match": 3,
@@ -83,44 +83,44 @@
    "max_logprob_delta": 0.0,
    "samples": [
     {
-     "ttft_ms": 618.3345869649202,
-     "save_ms": 1942.6678491290659,
+     "ttft_ms": 566.3869520649314,
+     "save_ms": 1980.697276070714,
      "match": true,
      "logprobs_equal": true,
      "max_logprob_delta": 0.0,
-     "recompute_ttft_ms": 911.0780989285558,
-     "admit_ms": 26.477579,
-     "read_ms": 472.471055,
-     "h2d_ms": 72.130324,
-     "after_ms": 47.256313,
+     "recompute_ttft_ms": 904.0038029197603,
+     "admit_ms": 22.741138,
+     "read_ms": 446.758435,
+     "h2d_ms": 54.115154,
+     "after_ms": 42.772781,
      "bytes": 1207959552,
      "copies": 19
     },
     {
-     "ttft_ms": 605.8320230804384,
-     "save_ms": 1974.8388689476997,
+     "ttft_ms": 568.1565899867564,
+     "save_ms": 1913.4994349442422,
      "match": true,
      "logprobs_equal": true,
      "max_logprob_delta": 0.0,
-     "recompute_ttft_ms": 906.3744528684765,
-     "admit_ms": 26.354838,
-     "read_ms": 458.533069,
-     "h2d_ms": 73.118967,
-     "after_ms": 47.825869,
+     "recompute_ttft_ms": 906.7628500051796,
+     "admit_ms": 23.638098,
+     "read_ms": 447.949369,
+     "h2d_ms": 54.274295,
+     "after_ms": 42.29567,
      "bytes": 1207959552,
      "copies": 19
     },
     {
-     "ttft_ms": 611.1788360867649,
-     "save_ms": 1974.3387380149215,
+     "ttft_ms": 570.3878169879317,
+     "save_ms": 1960.934774018824,
      "match": true,
      "logprobs_equal": true,
      "max_logprob_delta": 0.0,
-     "recompute_ttft_ms": 910.2941399905831,
-     "admit_ms": 29.610168,
-     "read_ms": 463.832689,
-     "h2d_ms": 71.901733,
-     "after_ms": 45.834972,
+     "recompute_ttft_ms": 914.5734838675708,
+     "admit_ms": 23.189117,
+     "read_ms": 451.34022,
+     "h2d_ms": 53.376106,
+     "after_ms": 42.482838,
      "bytes": 1207959552,
      "copies": 19
     }
@@ -130,19 +130,19 @@
    "context_tokens": 8192,
    "arm": "restore-disk",
    "n": 3,
-   "ttft_ms_median": 248.85663110762835,
-   "ttft_ms_min": 240.22312415763736,
-   "ttft_ms_max": 267.08431099541485,
+   "ttft_ms_median": 213.32085598260164,
+   "ttft_ms_min": 208.57325196266174,
+   "ttft_ms_max": 214.4262408837676,
    "ttft_ms": [
-    240.22312415763736,
-    267.08431099541485,
-    248.85663110762835
+    208.57325196266174,
+    214.4262408837676,
+    213.32085598260164
    ],
-   "save_ms_median": 1971.3809019885957,
-   "admit_ms_median": 27.316819,
-   "read_ms_median": 105.117646,
-   "h2d_ms_median": 71.924349,
-   "after_ms_median": 46.070235,
+   "save_ms_median": 2197.4142850376666,
+   "admit_ms_median": 24.855798,
+   "read_ms_median": 90.556721,
+   "h2d_ms_median": 54.323438,
+   "after_ms_median": 42.771373,
    "bytes_median": 1207959552,
    "copies_median": 19,
    "tokens_match": 3,
@@ -150,44 +150,44 @@
    "max_logprob_delta": 0.0,
    "samples": [
     {
-     "ttft_ms": 240.22312415763736,
-     "save_ms": 2160.603617085144,
+     "ttft_ms": 208.57325196266174,
+     "save_ms": 2250.390605069697,
      "match": true,
      "logprobs_equal": true,
      "max_logprob_delta": 0.0,
-     "recompute_ttft_ms": 907.6697770506144,
-     "admit_ms": 27.316819,
-     "read_ms": 94.928382,
-     "h2d_ms": 72.238668,
-     "after_ms": 45.740203,
+     "recompute_ttft_ms": 916.8051211163402,
+     "admit_ms": 23.030353,
+     "read_ms": 88.265426,
+     "h2d_ms": 54.506515,
+     "after_ms": 42.771373,
      "bytes": 1207959552,
      "copies": 19
     },
     {
-     "ttft_ms": 267.08431099541485,
-     "save_ms": 1971.3809019885957,
+     "ttft_ms": 214.4262408837676,
+     "save_ms": 2197.4142850376666,
      "match": true,
      "logprobs_equal": true,
      "max_logprob_delta": 0.0,
-     "recompute_ttft_ms": 921.9231728930026,
-     "admit_ms": 37.99787,
-     "read_ms": 111.092629,
-     "h2d_ms": 71.924349,
-     "after_ms": 46.070235,
+     "recompute_ttft_ms": 908.255262998864,
+     "admit_ms": 25.264697,
+     "read_ms": 92.144537,
+     "h2d_ms": 54.323438,
+     "after_ms": 42.69423,
      "bytes": 1207959552,
      "copies": 19
     },
     {
-     "ttft_ms": 248.85663110762835,
-     "save_ms": 1897.5874870084226,
+     "ttft_ms": 213.32085598260164,
+     "save_ms": 1966.30356204696,
      "match": true,
      "logprobs_equal": true,
      "max_logprob_delta": 0.0,
-     "recompute_ttft_ms": 905.7282111607492,
-     "admit_ms": 25.74062,
-     "read_ms": 105.117646,
-     "h2d_ms": 71.855402,
-     "after_ms": 46.14374,
+     "recompute_ttft_ms": 906.0223379638046,
+     "admit_ms": 24.855798,
+     "read_ms": 90.556721,
+     "h2d_ms": 54.31297,
+     "after_ms": 43.595906,
      "bytes": 1207959552,
      "copies": 19
     }
@@ -197,66 +197,66 @@
    "context_tokens": 8192,
    "arm": "restore-host",
    "n": 3,
-   "ttft_ms_median": 130.12815406545997,
-   "ttft_ms_min": 129.6199921052903,
-   "ttft_ms_max": 158.08707103133202,
+   "ttft_ms_median": 104.84329122118652,
+   "ttft_ms_min": 102.87212394177914,
+   "ttft_ms_max": 105.72670004330575,
    "ttft_ms": [
-    129.6199921052903,
-    130.12815406545997,
-    158.08707103133202
+    102.87212394177914,
+    105.72670004330575,
+    104.84329122118652
    ],
-   "save_ms_median": 293.4783580712974,
-   "admit_ms_median": 9.706757,
-   "read_ms_median": 1.18752,
-   "h2d_ms_median": 73.648115,
-   "after_ms_median": 45.864683,
+   "save_ms_median": 274.59303801879287,
+   "admit_ms_median": 8.180817,
+   "read_ms_median": 0.90008,
+   "h2d_ms_median": 53.133125,
+   "after_ms_median": 42.538122,
    "bytes_median": 1207959552,
-   "copies_median": 512,
+   "copies_median": 19,
    "tokens_match": 3,
    "logprobs_equal": 3,
    "max_logprob_delta": 0.0,
    "samples": [
     {
-     "ttft_ms": 129.6199921052903,
-     "save_ms": 292.4450170248747,
+     "ttft_ms": 102.87212394177914,
+     "save_ms": 272.7627020794898,
      "match": true,
      "logprobs_equal": true,
      "max_logprob_delta": 0.0,
-     "recompute_ttft_ms": 895.0915110763162,
-     "admit_ms": 9.416904,
-     "read_ms": 1.18752,
-     "h2d_ms": 73.648115,
-     "after_ms": 45.36825,
+     "recompute_ttft_ms": 895.5796060618013,
+     "admit_ms": 6.394467,
+     "read_ms": 0.90008,
+     "h2d_ms": 53.039986,
+     "after_ms": 42.538122,
      "bytes": 1207959552,
-     "copies": 512
+     "copies": 19
     },
     {
-     "ttft_ms": 130.12815406545997,
-     "save_ms": 306.59968801774085,
+     "ttft_ms": 105.72670004330575,
+     "save_ms": 284.61956698447466,
      "match": true,
      "logprobs_equal": true,
      "max_logprob_delta": 0.0,
-     "recompute_ttft_ms": 895.637143868953,
-     "admit_ms": 10.248296,
-     "read_ms": 1.025256,
-     "h2d_ms": 72.990642,
-     "after_ms": 45.864683,
+     "recompute_ttft_ms": 896.556420950219,
+     "admit_ms": 8.97157,
+     "read_ms": 1.200601,
+     "h2d_ms": 53.133125,
+     "after_ms": 42.421768,
      "bytes": 1207959552,
-     "copies": 512
+     "copies": 19
     },
     {
-     "ttft_ms": 158.08707103133202,
-     "save_ms": 293.4783580712974,
+     "ttft_ms": 104.84329122118652,
+     "save_ms": 274.59303801879287,
      "match": true,
      "logprobs_equal": true,
      "max_logprob_delta": 0.0,
-     "recompute_ttft_ms": 896.8246451113373,
-     "admit_ms": 9.706757,
-     "read_ms": 1.465205,
-     "h2d_ms": 73.99313,
-     "after_ms": 72.92262,
+     "recompute_ttft_ms": 896.7550231609493,
+     "admit_ms": 8.180817,
+     "read_ms": 0.807168,
+     "h2d_ms": 53.301852,
+     "after_ms": 42.554007,
      "bytes": 1207959552,
-     "copies": 512
+     "copies": 19
     }
    ]
   }
@@ -274,17 +274,17 @@
    "pcie.link.width.current": "16",
    "pcie.link.width.max": "16",
    "power.limit": "450.00 W",
-   "temperature.gpu": "53",
+   "temperature.gpu": "54",
    "memory.used": "303 MiB",
    "memory.total": "24564 MiB",
    "host_load_average_1_5_15": [
-    1.9,
-    1.55,
-    1.4
+    5.88,
+    4.91,
+    4.18
    ]
   },
   "git": {
-   "commit": "dbae296f39f19edbb4c442357dd69d2040aa6a74",
+   "commit": "b22a2f4e5dc574065b93f4a4c3df9d2812237958",
    "dirty": false
   },
   "host": {
@@ -293,9 +293,9 @@
    "memory_gib": 123.2,
    "kernel": "7.0.0-38-generic",
    "load_average_1_5_15": [
-    1.9,
-    1.55,
-    1.4
+    5.88,
+    4.91,
+    4.18
    ]
   },
   "storage": {
@@ -320,13 +320,13 @@
    "pcie.link.width.current": "16",
    "pcie.link.width.max": "16",
    "power.limit": "450.00 W",
-   "temperature.gpu": "49",
+   "temperature.gpu": "55",
    "memory.used": "20539 MiB",
    "memory.total": "24564 MiB",
    "host_load_average_1_5_15": [
-    6.35,
-    3.19,
-    2.0
+    6.73,
+    5.31,
+    4.35
    ]
   }
  }
