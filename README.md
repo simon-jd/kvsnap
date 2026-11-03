@@ -14,7 +14,9 @@ offloaders (vLLM's own CPU offloading, LMCache):
   checksummed blocks behind an SQLite WAL manifest. After a restart, turn 2
   of an 8k-token Qwen3-8B session starts in 247 ms from the page cache and
   596 ms from a cold disk, against 884 ms to recompute it. Any tier that
-  lives in host memory, including kvsnap's own, starts empty.
+  lives in host memory, including kvsnap's own, starts empty. LMCache's
+  local-disk backend kept the 7.5 GB it had written, but the restarted
+  engine found none of it and recomputed every token (955 ms).
 - **A resume gets exactly the saved KV, or misses loudly.** The snapshot is
   matched by id, model identity and tokens, not by whichever prefix blocks
   survived a shared LRU. A generation number fences a stale gateway or a
@@ -29,6 +31,11 @@ session's KV still in GPU memory, vLLM's prefix cache serves turn 2 in
 35 ms. Once four 8k sessions have pushed each other out of GPU memory,
 LMCache's CPU backend restored them faster than kvsnap's host tier did
 (75 vs 121 ms), and vLLM's own CPU offloading came in between (107 ms).
+With 16 other requests decoding, LMCache resumed an 8k session in 61 ms and
+vLLM's CPU offloading in 112 ms, against 116 ms for kvsnap's default async load;
+LMCache paid for it with a p99 decode gap of 58 – 60 ms for the running
+requests during resumes, against 18 – 20 ms for kvsnap and 19 – 20 ms for
+vLLM's offloading.
 
 **Turn 2 of an 8k-token Qwen3-8B session on one RTX 4090** (median TTFT;
 3 runs per cell; turn 2 appends 64 tokens and generates 16; vLLM's default
@@ -40,6 +47,7 @@ kernels and CUDA graphs; 2 GiB of GPU KV, about 14k tokens):
 | vLLM prefix cache | **35 ms** | 899 ms (misses) | misses |
 | vLLM CPU offloading (`--kv-offloading-size`) | | 107 ms | starts empty |
 | LMCache 0.5.6, CPU backend | | **75 ms** | starts empty |
+| LMCache 0.5.6, CPU and local-disk backends | | | 955 ms (finds nothing) |
 | kvsnap, host memory | | 121 ms | starts empty |
 | kvsnap, disk, page cache warm | | 247 ms | **247 ms** |
 | kvsnap, disk, page cache dropped | | 602 ms | 596 ms |
@@ -51,8 +59,18 @@ four 8k sessions rotating through GPU memory
 kvsnap's disk tiers from `results/restore-qwen3-8b.json`, where nothing stays
 on the GPU; kvsnap's host tier measured 118 ms there. kvsnap runs with
 prefix caching off, so it has no entry for a KV that is still resident. The
-restart column is `results/restart-qwen3-8b.json`. Every recompute here runs
+restart column is `results/restart-qwen3-8b.json`, and LMCache's disk row
+`results/restart-lmcache-disk-qwen3-8b.json`. Every recompute here runs
 with vLLM's prefix caching off.
+
+**These restores are not bit-exact.** With the default kernels used above,
+160 of the 180 Qwen3-8B restores in `results/restore-qwen3-8b.json` produced
+recompute's 16 greedy tokens, and their logprobs differed from recompute's by
+up to 3.5 nats (see [Correctness](#correctness-and-durability)). With
+batch-invariant kernels (`VLLM_BATCH_INVARIANT=1`), all 9 Qwen3-8B restores at
+8k, three per tier, matched recompute's tokens and logprobs bit for bit, in
+130 ms from host memory, 249 ms from a warm disk and 611 ms from a cold one,
+against 906 ms to recompute (`results/exact-qwen3-8b.json`, one run).
 
 ![Turn-2 TTFT against context length, Qwen3-8B](docs/ttft-qwen3-8b.svg)
 
@@ -64,9 +82,13 @@ sessions resuming one every 2 s; 3 runs of 54 resumes per arm):
 | Recompute (prefill alongside the decodes) | 47.0 – 47.3 / 70 – 71 ms | 265 – 267 / 281 – 295 ms |
 | Restore, synchronous load | 7.9 – 8.4 / 97 – 109 ms | 94 / 131 ms |
 | **Restore, async load (default)** | **7.6 – 7.7 / 18 – 20 ms** | 116 / 210 ms |
+| vLLM CPU offloading, prefix caching on | 9.1 – 9.3 / 19 – 20 ms | 112 / 141 ms |
+| LMCache 0.5.6, CPU backend, prefix caching on | 9.5 – 9.6 / 58 – 60 ms | **61** / 78 ms |
 
 Outside resume windows the gap is 7.0 – 7.1 ms at the median and 9 – 11 ms at
-p99 (`results/under-load-qwen3-1.7b.json`).
+p99 on kvsnap's engines (`results/under-load-qwen3-1.7b.json`), and 8.0 –
+8.7 ms and 11 – 12 ms on the two offloaders' engines
+(`results/under-load-{native-offload,lmcache}-qwen3-1.7b.json`).
 
 ## How it works
 
@@ -268,7 +290,9 @@ scheduling, default kernels):
 LMCache needs its own environment: version 0.5.6 pins older numpy, protobuf
 and OpenTelemetry than a plain vLLM 0.31.0 install picks, and
 `scripts/install.sh lmcache` resolves them together. Neither offloader keeps
-its CPU copy across an engine restart.
+its CPU copy across an engine restart, and LMCache finds none of its disk
+backend's files after one (see
+[Resume after an engine restart](#resume-after-an-engine-restart)).
 
 ### Interference with running requests
 
@@ -286,10 +310,15 @@ its CPU copy across an engine restart.
 | Recompute (chunked 8k prefill in the batch) | 47.0 – 47.3 / 70 – 71 ms | 265 – 267 / 281 – 295 / 289 – 337 ms |
 | Restore, load inside `start_load_kv` (sync) | 7.9 – 8.4 / 97 – 109 ms | 94 / 131 / 132 ms |
 | Restore, loader thread (async) | 7.6 – 7.7 / 18 – 20 ms | 116 / 210 / 284 ms |
+| vLLM CPU offloading (`--engines native-offload`) | 9.1 – 9.3 / 19 – 20 ms | 112 / 141 / 176 ms |
+| LMCache, CPU backend (`--engines lmcache`) | 9.5 – 9.6 / 58 – 60 ms | 61 / 78 / 81 ms |
 
-Decode-gap ranges are over the three runs (each has 4,000 – 13,300 gaps
+Decode-gap ranges are over the three runs (each has 2,900 – 13,300 gaps
 during resumes). TTFT pools the 162 resumes of each arm; recompute ran on
-both engines.
+both kvsnap engines. The offloader arms run one engine without kvsnap, with
+prefix caching and that offloader on (14 GiB of CPU memory), and send each
+turn's whole prompt to it. On every resume vLLM computed none of the
+session's 8,192 tokens (`num_cached_tokens` is at least 8192).
 
 - **Recompute** sends the whole prompt straight to the engine and puts 8k
   tokens of prefill into the batch, which slows every running request.
@@ -298,6 +327,14 @@ both engines.
 - **The async load** leaves the median decode gap at its baseline. It costs
   the restored request one engine step to be reported: its TTFT median is
   22 ms above the synchronous load's.
+- **LMCache resumes fastest** (61 ms median, 55 ms sooner than the async
+  load), but its p99 decode gap during resumes is 58 – 60 ms, against
+  18 – 20 ms for the async load and 97 – 109 ms for the synchronous one.
+- **vLLM's CPU offloading** keeps the p99 gap at 19 – 20 ms, next to the
+  async load's 18 – 20 ms, and resumes 5 ms sooner (112 ms).
+- **Both offloaders' engines decode more slowly outside resumes too:** their
+  median gap there is 8.0 – 8.7 ms, against 7.0 – 7.1 ms on kvsnap's
+  engines, so their during-resume medians start from a higher baseline.
 
 ### Turn-end stalls
 
@@ -339,6 +376,19 @@ Six sessions per cell, two per run:
 | 2k | 95 [92–102] ms | 189 [183–242] ms | 210 [209–211] ms |
 | 8k | 247 [233–315] ms | 596 [593–598] ms | 884 [881–887] ms |
 
+**LMCache's local-disk backend across the same restart**
+(`--engine lmcache-disk`, `results/restart-lmcache-disk-qwen3-8b.json`, 3 runs
+of four sessions per length). An engine without kvsnap, with prefix caching
+on and LMCache's CPU (8 GiB) and local-disk (40 GiB) backends, prefills each
+session. Once the disk directory stops growing, at 7.5 GB in every run, a new
+engine starts on the same directory (11 s) and is sent each session's turn-2
+prompt whole. It recovered nothing: vLLM reported 0 cached prompt tokens on
+all 24 resumes, and turn 2 took a full prefill, 234 [225–238] ms at 2k and
+955 [946–961] ms at 8k. LMCache 0.5.6 keeps its index of the disk backend's
+files in process memory (`LocalDiskBackend` starts with an empty one and
+does not scan the directory), so a new engine's lookups miss even though
+the files are still there.
+
 ### Store scaling
 
 [`bench/store_stress.py`](bench/store_stress.py) fills a store with 500
@@ -366,8 +416,9 @@ is still walks every host block (see [Limitations](#limitations)).
 - **Bit-exact restore, with a negative control.**
   - With batch-invariant kernels (`VLLM_BATCH_INVARIANT=1`), the restored
     turn's 16 logprobs equal recompute's bit for bit. This held for all 18
-    restores (Qwen3-1.7B, 2k and 8k, all three tiers, CUDA graphs on;
-    `results/exact-qwen3-1.7b.json`).
+    restores on Qwen3-1.7B (2k and 8k, all three tiers, CUDA graphs on;
+    `results/exact-qwen3-1.7b.json`) and all 9 on Qwen3-8B (8k, all three
+    tiers; `results/exact-qwen3-8b.json`).
   - The control flips the sign of one head's key vector for one token in
     each disk snapshot, with checksums fixed so the load accepts it. Then
     all 12 disk restores' logprobs differ, while 11 of 12 still produce the
@@ -376,7 +427,8 @@ is still walks every host block (see [Limitations](#limitations)).
   - With vLLM's default kernels, prefilling a 64-token suffix and prefilling
     the whole prompt are different floating-point computations. Logprobs
     then differ by up to 3.5 nats, and greedy tokens matched in 368 of 405
-    restores. A prefix-cache hit prefills the same suffix, and so differs
+    restores: 160 of 180 on Qwen3-8B and 208 of 225 on Qwen3-1.7B
+    (`results/restore-*.json`). A prefix-cache hit prefills the same suffix, and so differs
     from a full prefill in the same way.
 - **Crash safety.**
   - `tests/crash` SIGKILLs a real writer process at eight boundaries of a
@@ -474,6 +526,8 @@ it can share a GPU with other jobs that use the same lock.
   IDs only; there is no tokenizer or chat template in front of it.
 - **Slower than LMCache from host memory.** In the rotation above, LMCache's
   CPU backend restored an 8k session 46 ms sooner than kvsnap's host tier.
+  Under load it resumed 55 ms sooner than kvsnap's async load, at a higher
+  p99 decode gap for the running requests.
   kvsnap's restore is mostly a 73 ms H2D copy plus an engine step to report
   the load, and nothing overlaps the copy with the prefill; LMCache's own
   phases were not measured.
