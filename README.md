@@ -646,7 +646,7 @@ it can share a GPU with other jobs that use the same lock.
   thread. The lease and an eviction are writes, so they wait for a commit in
   flight. An eviction measures the host tier, which walks every host block.
 - **Durable saves are slow.** `pause` on an 8k-token Qwen3-8B session
-  returns after about 2.2 s for a disk snapshot, against about 0.26 s for
+  returns after about 2.2 s for a disk snapshot, against about 0.29 s for
   host memory.
 - **Disk restores** read every block before the first copy.
 - **Saves rehash every block** to deduplicate. Unchanged blocks are not
