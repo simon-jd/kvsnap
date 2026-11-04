@@ -90,6 +90,17 @@ TTFT median is 11 ms above the synchronous load's (README). Reporting a load
 while its last 128 MiB is still in flight, with the next forward waiting for
 it on the GPU, removed part of that wait; the rest is the step itself.
 
+**How the offloaders load.** LMCache reaches its first token sooner by the
+synchronous route (its source: `lmcache/integration/vllm/vllm_v1_adapter.py`
+and `lmcache/v1/gpu_connector/gpu_connectors.py`). It reports no async load,
+so vLLM schedules the request at once. `start_load_kv` then retrieves the KV
+inside that step, one kernel per 256-token chunk reading pinned memory, and
+waits for it. There is no parked step and no poll, and every running request
+waits for the copy: that is its p99 decode gap of 57 – 60 ms (README).
+vLLM's CPU offloading parks the request and polls once a step as kvsnap
+does, with one batched swap on a side stream
+(`vllm/v1/kv_offload/cpu/gpu_worker.py`).
+
 ## A restore kernel that reads pinned memory, never the copy engine
 
 **Decision.** A load is one Triton kernel per 64 MiB of blocks that reads

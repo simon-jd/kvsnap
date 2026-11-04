@@ -1,128 +1,63 @@
 # kvsnap: session KV-cache snapshots for vLLM
 
-kvsnap gives every chat session a **named, fenced snapshot of its KV cache**.
-When a turn ends, the session's KV is saved to pinned host memory or to disk
-as a snapshot with an id and a generation number. The next turn resumes from
-that id: kvsnap copies the blocks into freshly allocated GPU blocks, and vLLM
-computes only the new tokens. It is an out-of-tree KV connector for vLLM
-0.31.0 (`KVConnectorBase_V1`); vLLM is not modified.
+kvsnap saves a chat session's KV cache as a named snapshot when a turn ends,
+in pinned host memory or on disk. The next turn resumes from that snapshot,
+so vLLM computes only the new tokens. Unlike vLLM's prefix cache and the
+prefix-hash offloaders, a snapshot survives an engine restart, and a resume
+gets exactly the saved KV or misses loudly.
 
-What a named snapshot buys over vLLM's prefix cache and the prefix-hash
-offloaders (vLLM's own CPU offloading, LMCache):
+**Scope:** one RTX 4090; vLLM 0.31.0 with an out-of-tree KV connector
+(`KVConnectorBase_V1`; vLLM is not modified); Qwen3-8B and Qwen3-1.7B;
+synthetic sessions of random tokens.
+
+Turn 2 of an 8k-token session, median TTFT over 3 runs; bold marks the faster side:
+
+| Setting | kvsnap | Baseline |
+|---|---|---|
+| Qwen3-8B, KV evicted from the GPU | **115 ms**, host memory | 897 ms, recompute |
+| Qwen3-8B, after an engine restart | **212 ms**, disk (page cache warm) | 881 ms, recompute |
+| Qwen3-8B, after an engine restart | **212 ms**, disk (page cache warm) | 955 ms, LMCache disk backend (recovers nothing) |
+| Qwen3-8B, four sessions rotating through GPU memory | 109 ms, host memory | **83 ms**, LMCache CPU backend |
+| Qwen3-1.7B, 16 other requests decoding | 101 ms | **62 ms**, LMCache CPU backend |
+| Same, p99 decode gap of the running requests during resumes, worst run | 26 ms | **19 ms**, vLLM CPU offloading |
+
+Rows come from `results/`: `restore-qwen3-8b.json`, `restart-qwen3-8b.json`,
+`restart-lmcache-disk-qwen3-8b.json`, `baseline-evicted-{kvsnap,lmcache}-qwen3-8b.json`,
+and `under-load-{,lmcache-,native-offload-}qwen3-1.7b.json`.
+
+**Limitations**
+- Slower than LMCache's CPU backend from host memory (rows 4 and 5).
+  LMCache pays for it under load: its p99 decode gap during resumes was
+  57 – 60 ms, against 23 – 26 ms for kvsnap.
+- With the KV still on the GPU, vLLM's prefix cache serves turn 2 in 35 ms.
+  kvsnap runs with prefix caching off, so it has no entry for that case.
+- With vLLM's default kernels, restores are not bit-exact: 160 of 180
+  Qwen3-8B restores produced recompute's 16 greedy tokens.
+- Durable saves are slow: `pause` takes about 2.2 s for an 8k-token
+  Qwen3-8B disk snapshot.
+- Pinned to vLLM 0.31.0, TP=1 and synchronous scheduling, on one GPU.
+
+[How it works](#how-it-works) ·
+[Design trade-offs](docs/design-tradeoffs.md) ·
+[Full results](#results) ([what each file holds](results/README.md)) ·
+[Reproduce](#reproduce) · [All limitations](#limitations)
+
+## What a named snapshot buys
 
 - **It survives an engine restart.** Disk snapshots are fdatasync'd,
-  checksummed blocks behind an SQLite WAL manifest. After a restart, turn 2
-  of an 8k-token Qwen3-8B session starts in 212 ms from the page cache and
-  559 ms from a cold disk, against 881 ms to recompute it. Any tier that
-  lives in host memory, including kvsnap's own, starts empty. LMCache's
-  local-disk backend kept the 7.5 GB it had written, but the restarted
-  engine found none of it and recomputed every token (955 ms).
+  checksummed blocks behind an SQLite WAL manifest. Any tier that lives in
+  host memory, including kvsnap's own, starts empty after a restart.
+  LMCache's local-disk backend kept the 7.5 GB it had written, but the
+  restarted engine found none of it and recomputed every token.
 - **A resume gets exactly the saved KV, or misses loudly.** The snapshot is
   matched by id, model identity and tokens, not by whichever prefix blocks
   survived a shared LRU. A generation number fences a stale gateway or a
-  late save from a superseded turn, a failed save fails the session's
-  `pause` at once, and with batch-invariant kernels a restored turn is
-  bit-identical to recompute.
+  late save from a superseded turn. A failed save fails the session's
+  `pause` at once. With batch-invariant kernels, a restored turn is
+  bit-identical to recompute (see
+  [Correctness](#correctness-and-durability)).
 - **Sessions fork.** Blocks are content-addressed, so a fork and the next
   turn share every unchanged block with their parent.
-
-What it does not buy: speed over LMCache, or over vLLM's prefix cache when
-the KV is still on the GPU. With the session's KV still in GPU memory,
-vLLM's prefix cache serves turn 2 in 35 ms. Once four 8k sessions have
-pushed each other out of GPU memory, LMCache's CPU backend restored them
-faster than kvsnap's host tier (83 vs 109 ms), and vLLM's own CPU offloading
-was slower than both (136 ms). With 16 other requests decoding, LMCache
-resumed an 8k session in 62 ms, against 101 ms for kvsnap's default async
-load and 105 ms for vLLM's CPU offloading. LMCache paid for it with a p99
-decode gap of 57 – 60 ms for the running requests during resumes, against
-23 – 26 ms for kvsnap and 17 – 19 ms for vLLM's offloading.
-
-**Turn 2 of an 8k-token Qwen3-8B session on one RTX 4090** (median TTFT;
-3 runs per cell; turn 2 appends 64 tokens and generates 16; vLLM's default
-kernels and CUDA graphs; 2 GiB of GPU KV, about 14k tokens):
-
-| Turn 2 served by | KV still on the GPU | KV evicted from the GPU | After an engine restart |
-|---|---|---|---|
-| Recompute, prefix caching off | 897 ms | 897 ms | 881 ms |
-| vLLM prefix cache | **35 ms** | 899 ms (misses) | misses |
-| vLLM CPU offloading (`--kv-offloading-size`) | | 136 ms | starts empty |
-| LMCache 0.5.6, CPU backend | | **83 ms** | starts empty |
-| LMCache 0.5.6, CPU and local-disk backends | | | 955 ms (finds nothing) |
-| kvsnap, host memory | | 109 ms | starts empty |
-| kvsnap, disk, page cache warm | | 240 ms | **212 ms** |
-| kvsnap, disk, page cache dropped | | 590 ms | 559 ms |
-
-The resident column is `results/baseline-resident-prefix-cache-qwen3-8b.json`.
-In the evicted column the three CPU tiers and the prefix-cache miss come from
-four 8k sessions rotating through GPU memory
-(`results/baseline-evicted-*-qwen3-8b.json`, 36 turns each), and recompute and
-kvsnap's disk tiers from `results/restore-qwen3-8b.json`, where nothing stays
-on the GPU; kvsnap's host tier measured 115 ms there. kvsnap runs with
-prefix caching off, so it has no entry for a KV that is still resident. The
-restart column is `results/restart-qwen3-8b.json`, and LMCache's disk row
-`results/restart-lmcache-disk-qwen3-8b.json`. Every recompute here runs
-with vLLM's prefix caching off. The resident column, the prefix cache's
-miss and LMCache's disk restart ran on an earlier version of kvsnap's load
-path, which they do not use; every other cell ran on the current one
-([`results/README.md`](results/README.md) has the commits).
-
-**These restores are not bit-exact.** With the default kernels used above,
-160 of the 180 Qwen3-8B restores in `results/restore-qwen3-8b.json` produced
-recompute's 16 greedy tokens, and their logprobs differed from recompute's by
-up to 3.5 nats (see [Correctness](#correctness-and-durability)). With
-batch-invariant kernels (`VLLM_BATCH_INVARIANT=1`), all 9 Qwen3-8B restores at
-8k, three per tier, matched recompute's tokens and logprobs bit for bit, in
-105 ms from host memory, 213 ms from a warm disk and 568 ms from a cold one,
-against 906 ms to recompute (`results/exact-qwen3-8b.json`, one run).
-
-![Turn-2 TTFT against context length, Qwen3-8B](docs/ttft-qwen3-8b.svg)
-
-**While other requests are running** (Qwen3-1.7B, 16 decode streams, 8k-token
-sessions resuming one every 2 s; 3 runs of 54 resumes per arm, all five arms
-in one session, interleaved run by run):
-
-| Turn 2 served by | Decode gap of running requests during a resume, p50 / p99 | Turn-2 TTFT, median / p99 |
-|---|---|---|
-| Recompute (prefill alongside the decodes) | 47.1 – 50.0 / 72 – 73 ms | 277 – 281 / 305 – 306 ms |
-| Restore, synchronous load | 9.3 – 9.5 / 78 – 129 ms | 90 / 144 ms |
-| **Restore, async load (default)** | **8.3 – 8.6 / 23 – 26 ms** | 101 / 156 ms |
-| vLLM CPU offloading, prefix caching on | 7.7 – 9.0 / 17 – 19 ms | 105 / 129 ms |
-| LMCache 0.5.6, CPU backend, prefix caching on | 9.4 – 9.7 / 57 – 60 ms | **62** / 76 ms |
-
-Outside resume windows the gap is 7.5 – 8.6 ms at the median and 11 – 13 ms
-at p99 on kvsnap's engines (`results/under-load-qwen3-1.7b.json`), 7.0 –
-8.7 ms and 10 – 12 ms on vLLM's offloading engine and 8.5 – 8.6 ms and
-11 – 12 ms on LMCache's
-(`results/under-load-{native-offload,lmcache}-qwen3-1.7b.json`).
-
-**Where the async resume's time goes** (`results/resume-phases.json`: one
-traced run each of the load path before this version, `cb933b0`, and of
-this one, back to back, 54 resumes, medians in ms):
-
-| Phase | Before | Now | What it is |
-|---|---|---|---|
-| gateway | 13.2 | 3.3 | `resume()` until the request reaches vLLM; before, a manifest read on a worker thread and the generation claim |
-| admission | 14.0 | 14.6 | input processing, IPC, the wait for the running step to end, the scheduler's manifest lookup |
-| lease | 4.8 | 4.8 | blocks allocated, the snapshot leased, host locations read |
-| dispatch | 1.9 | 2.1 | the loader holds its sources |
-| queued | 4.9 | 0.1 | waiting for engine work; before, the step's whole forward |
-| copy | 61.6 | 47.2 | about 1 GB: 16 GB/s with DMA and a scatter, 21 GB/s with the restore kernel beside the batch |
-| report | 2.8 | 0.0 | until `get_finished` returns the load; now 27 of 55 loads are reported with up to 128 MiB still in flight |
-| schedule | 6.4 | 6.6 | the rest of the step that was running when vLLM asked |
-| prefill | 16.4 | 16.2 | the suffix's prefill step and its first output reaching the adapter |
-| **TTFT** | **127.4** | **102.9** | |
-
-The same traces put the decode gap during resumes at 7.7 / 24 ms (p50 /
-p99) before and 8.7 / 27 ms now: the kernel shares the GPU's SMs with the
-decoding batch, which DMA did not. LMCache reaches its first token sooner by
-a different route (its source, `lmcache/integration/vllm/vllm_v1_adapter.py`
-and `lmcache/v1/gpu_connector/gpu_connectors.py`): it reports no async load,
-so vLLM schedules the request at once, and `start_load_kv` retrieves the KV
-inside that step, one kernel per 256-token chunk reading pinned memory, then
-waits for it. There is no parked step and no poll, and every running request
-waits for the copy: that is its p99. vLLM's CPU offloading parks the request
-and polls once a step as kvsnap does, with one batched swap on a side stream
-(`vllm/v1/kv_offload/cpu/gpu_worker.py`).
 
 ## How it works
 
@@ -217,6 +152,50 @@ tables give the median over all samples, with `[min–max]` where shown. The
 machine ran other work at the same time (host load averages of 1.5 – 6.4
 are recorded with the runs of the latest session, 5 – 9 with earlier ones).
 
+### Every tier, one 8k-token Qwen3-8B session
+
+Median turn-2 TTFT on one RTX 4090; 3 runs per cell; turn 2 appends 64
+tokens and generates 16; vLLM's default kernels and CUDA graphs; 2 GiB of
+GPU KV, about 14k tokens:
+
+| Turn 2 served by | KV still on the GPU | KV evicted from the GPU | After an engine restart |
+|---|---|---|---|
+| Recompute, prefix caching off | 897 ms | 897 ms | 881 ms |
+| vLLM prefix cache | **35 ms** | 899 ms (misses) | misses |
+| vLLM CPU offloading (`--kv-offloading-size`) | | 136 ms | starts empty |
+| LMCache 0.5.6, CPU backend | | **83 ms** | starts empty |
+| LMCache 0.5.6, CPU and local-disk backends | | | 955 ms (finds nothing) |
+| kvsnap, host memory | | 109 ms | starts empty |
+| kvsnap, disk, page cache warm | | 240 ms | **212 ms** |
+| kvsnap, disk, page cache dropped | | 590 ms | 559 ms |
+
+Where each column comes from:
+- Resident: `results/baseline-resident-prefix-cache-qwen3-8b.json`.
+- Evicted, the three CPU tiers and the prefix cache's miss: four 8k
+  sessions rotating through GPU memory, 36 turns each
+  (`results/baseline-evicted-*-qwen3-8b.json`).
+- Evicted, recompute and kvsnap's disk tiers: `results/restore-qwen3-8b.json`,
+  where nothing stays on the GPU. kvsnap's host tier measured 115 ms there.
+- Restart: `results/restart-qwen3-8b.json`, and LMCache's disk row
+  `results/restart-lmcache-disk-qwen3-8b.json`.
+
+kvsnap runs with prefix caching off, so it has no entry for a KV that is
+still resident. Every recompute here also runs with prefix caching off.
+
+The resident column, the prefix cache's miss and LMCache's disk restart ran
+on an earlier version of kvsnap's load path, which they do not use. Every
+other cell ran on the current one. [`results/README.md`](results/README.md)
+has the commits.
+
+**These restores are not bit-exact.** With the default kernels used above,
+160 of the 180 Qwen3-8B restores in `results/restore-qwen3-8b.json` produced
+recompute's 16 greedy tokens. Their logprobs differed from recompute's by up
+to 3.5 nats (see [Correctness](#correctness-and-durability)). With
+batch-invariant kernels (`VLLM_BATCH_INVARIANT=1`), all 9 Qwen3-8B restores
+at 8k, three per tier, matched recompute's tokens and logprobs bit for bit.
+They took 105 ms from host memory, 213 ms from a warm disk and 568 ms from a
+cold one, against 906 ms to recompute (`results/exact-qwen3-8b.json`, one run).
+
 ### Restore against recompute
 
 For each sample, [`bench/restore_ttft.py`](bench/restore_ttft.py) creates a
@@ -275,6 +254,8 @@ Runs varied more than in earlier sessions: each run's median stayed within
 6% of the pooled one in 20 of the 36 cells, and differed by up to 23% in the
 rest, mostly short disk and host restores; `ttft_ms_median_by_run` has them
 all. Host load averages of 1.7 – 5.9 are recorded with these runs.
+
+![Turn-2 TTFT against context length, Qwen3-8B](docs/ttft-qwen3-8b.svg)
 
 What the numbers show:
 
@@ -373,6 +354,14 @@ caching and that offloader on (14 GiB of CPU memory), and send each turn's
 whole prompt to it. On every resume vLLM computed none of the session's
 8,192 tokens (`num_cached_tokens` is at least 8192).
 
+Outside resume windows, the gap is about the same on every engine:
+
+| Engine | Gap outside resumes, p50 / p99 | File |
+|---|---|---|
+| kvsnap | 7.5 – 8.6 / 11 – 13 ms | `results/under-load-qwen3-1.7b.json` |
+| vLLM CPU offloading | 7.0 – 8.7 / 10 – 12 ms | `results/under-load-native-offload-qwen3-1.7b.json` |
+| LMCache | 8.5 – 8.6 / 11 – 12 ms | `results/under-load-lmcache-qwen3-1.7b.json` |
+
 - **Recompute** sends the whole prompt straight to the engine and puts 8k
   tokens of prefill into the batch, which slows every running request.
 - **A synchronous load** stalls the whole batch for the copy: that is its
@@ -390,6 +379,34 @@ whole prompt to it. On every resume vLLM computed none of the session's
 - **vLLM's CPU offloading** keeps the lowest p99 gap, 17 – 19 ms, and the
   lowest TTFT p99 (129 ms); its median TTFT is 4 ms above the async load's
   (105 against 101 ms).
+
+### Where an async resume's time goes
+
+`results/resume-phases.json` holds one traced under-load run of the previous
+load path and one of this one, back to back, 54 resumes each. Medians in ms:
+
+| Phase | Before | Now | What it is |
+|---|---|---|---|
+| gateway | 13.2 | 3.3 | `resume()` until the request reaches vLLM; before, a manifest read on a worker thread and the generation claim |
+| admission | 14.0 | 14.6 | input processing, IPC, the wait for the running step to end, the scheduler's manifest lookup |
+| lease | 4.8 | 4.8 | blocks allocated, the snapshot leased, host locations read |
+| dispatch | 1.9 | 2.1 | the loader holds its sources |
+| queued | 4.9 | 0.1 | waiting for engine work; before, the step's whole forward |
+| copy | 61.6 | 47.2 | about 1 GB: 16 GB/s with DMA and a scatter, 21 GB/s with the restore kernel beside the batch |
+| report | 2.8 | 0.0 | until `get_finished` returns the load; now 27 of 55 loads are reported with up to 128 MiB still in flight |
+| schedule | 6.4 | 6.6 | the rest of the step that was running when vLLM asked |
+| prefill | 16.4 | 16.2 | the suffix's prefill step and its first output reaching the adapter |
+| **TTFT** | **127.4** | **102.9** | |
+
+The same traces put the decode gap during resumes at 7.7 / 24 ms (p50 /
+p99) before and 8.7 / 27 ms now. The kernel shares the GPU's SMs with the
+decoding batch, which DMA did not.
+
+LMCache reaches its first token sooner by a different route. It loads
+inside the step that schedules the request, so there is no parked step and
+no poll, and every running request waits for the copy: that is its p99.
+[Design trade-offs](docs/design-tradeoffs.md#async-load-with-the-request-parked)
+traces how LMCache and vLLM's CPU offloading load, in their source.
 
 ### Turn-end stalls
 
