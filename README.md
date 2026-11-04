@@ -34,7 +34,8 @@ earlier commit; LMCache's path does not run kvsnap's load code
 - With the KV still on the GPU, vLLM's prefix cache serves turn 2 in 35 ms.
   kvsnap runs with prefix caching off, so it has no entry for that case.
 - With vLLM's default kernels, restores are not bit-exact: 160 of 180
-  Qwen3-8B restores produced recompute's 16 greedy tokens.
+  Qwen3-8B restores produced recompute's 16 greedy tokens. Batch-invariant
+  kernels made all 9 Qwen3-8B restores of one run bit-exact, a small sample.
 - Durable saves are slow: `pause` takes about 2.2 s for an 8k-token
   Qwen3-8B disk snapshot.
 - Pinned to vLLM 0.31.0, TP=1 and synchronous scheduling, on one GPU.
@@ -55,8 +56,9 @@ earlier commit; LMCache's path does not run kvsnap's load code
   matched by id, model identity and tokens, not by whichever prefix blocks
   survived a shared LRU. A generation number fences a stale gateway or a
   late save from a superseded turn. A failed save fails the session's
-  `pause` at once. With batch-invariant kernels, a restored turn is
-  bit-identical to recompute (see
+  `pause` at once. With batch-invariant kernels, every restored turn
+  tested was bit-identical to recompute. That is one run per model: 9
+  restores on Qwen3-8B and 18 on Qwen3-1.7B (see
   [Correctness](#correctness-and-durability)).
 - **Sessions fork.** Blocks are content-addressed, so a fork and the next
   turn share every unchanged block with their parent.
@@ -195,9 +197,10 @@ they do not use. Every other cell ran on the current one.
 recompute's 16 greedy tokens. Their logprobs differed from recompute's by up
 to 3.5 nats (see [Correctness](#correctness-and-durability)). With
 batch-invariant kernels (`VLLM_BATCH_INVARIANT=1`), all 9 Qwen3-8B restores
-at 8k, three per tier, matched recompute's tokens and logprobs bit for bit.
+at 8k in one run (n=9, three per tier) matched recompute's tokens and
+logprobs bit for bit.
 They took 105 ms from host memory, 213 ms from a warm disk and 568 ms from a
-cold one, against 906 ms to recompute (`results/exact-qwen3-8b.json`, one run).
+cold one, against 906 ms to recompute (`results/exact-qwen3-8b.json`).
 
 ### Restore against recompute
 
@@ -503,7 +506,9 @@ is still walks every host block (see [Limitations](#limitations)).
     turn's 16 logprobs equal recompute's bit for bit. This held for all 18
     restores on Qwen3-1.7B (2k and 8k, all three tiers, CUDA graphs on;
     `results/exact-qwen3-1.7b.json`) and all 9 on Qwen3-8B (8k, all three
-    tiers; `results/exact-qwen3-8b.json`).
+    tiers; `results/exact-qwen3-8b.json`). Each file is one run with one
+    seed, three restores per tier and length, so this shows exactness on
+    these prompts, not a rate.
   - The control flips the sign of one head's key vector for one token in
     each disk snapshot, with checksums fixed so the load accepts it. Then
     all 12 disk restores' logprobs differ, while 11 of 12 still produce the
