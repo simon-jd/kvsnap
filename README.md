@@ -442,12 +442,18 @@ in `results/turn-end-traces.json` (see `results/README.md`):
 4. Once the resumed turn's own durable save has finished, the same prompt is
    recomputed on the new engine (prefix caching off).
 
-Six sessions per cell, two per run:
+Six sessions per cell, two per run (`results/restart-qwen3-8b.json`). Each
+restore cell also counts the restores whose 16 greedy tokens equal the
+recompute's:
 
 | L | Restore, page cache warm | Restore, page cache dropped | Recompute on the new engine |
 |---|---|---|---|
-| 2k | 86 [82–113] ms | 189 [167–216] ms | 209 [208–216] ms |
-| 8k | 212 [195–231] ms | 559 [553–589] ms | 881 [879–890] ms |
+| 2k | 86 [82–113] ms; tokens match in **5 of 6** | 189 [167–216] ms; 6 of 6 | 209 [208–216] ms |
+| 8k | 212 [195–231] ms; 6 of 6 | 559 [553–589] ms; tokens match in **5 of 6** | 881 [879–890] ms |
+
+Two of the 24 restores, both in the third run (`"run": 2`), produced
+different tokens from the recompute. These runs use vLLM's default kernels, so a restore is not
+bit-exact (see [Correctness](#correctness-and-durability)).
 
 **LMCache's local-disk backend across the same restart**
 (`--engine lmcache-disk`, `results/restart-lmcache-disk-qwen3-8b.json`, 3 runs
@@ -501,8 +507,10 @@ is still walks every host block (see [Limitations](#limitations)).
     the whole prompt are different floating-point computations. Logprobs
     then differ by up to 3.5 nats, and greedy tokens matched in 368 of 405
     restores: 160 of 180 on Qwen3-8B and 208 of 225 on Qwen3-1.7B
-    (`results/restore-*.json`), the same counts as on the previous load path. A prefix-cache hit prefills the same suffix, and so differs
-    from a full prefill in the same way.
+    (`results/restore-*.json`), the same counts as on the previous load
+    path. After an engine restart, 22 of 24 Qwen3-8B restores matched
+    (`results/restart-qwen3-8b.json`). A prefix-cache hit prefills the same
+    suffix, and so differs from a full prefill in the same way.
 - **Crash safety.**
   - `tests/crash` SIGKILLs a real writer process at eight boundaries of a
     store commit, for both the process and durable levels: after D2H,
