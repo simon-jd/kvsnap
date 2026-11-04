@@ -31,10 +31,12 @@ earlier commit; LMCache's path does not run kvsnap's load code
 - Slower than LMCache's CPU backend from host memory (rows 4 and 5).
   LMCache pays for it under load: its p99 decode gap during resumes was
   57 – 60 ms, against 23 – 26 ms for kvsnap.
-- With the KV still on the GPU, vLLM's prefix cache serves turn 2 in 35 ms.
-  kvsnap runs with prefix caching off, so it has no entry for that case.
+- With the KV still on the GPU, vLLM's prefix cache serves turn 2 in
+  35 ms †. kvsnap runs with prefix caching off, so it has no entry for
+  that case.
 - With vLLM's default kernels, restores are not bit-exact: 160 of 180
-  Qwen3-8B restores produced recompute's 16 greedy tokens. Batch-invariant
+  Qwen3-8B restores, and 22 of 24 after a restart, produced recompute's 16
+  greedy tokens. Batch-invariant
   kernels made all 9 Qwen3-8B restores of one run bit-exact, a small sample.
 - Durable saves are slow: `pause` takes about 2.2 s for an 8k-token
   Qwen3-8B disk snapshot.
