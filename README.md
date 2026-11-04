@@ -16,14 +16,16 @@ Turn 2 of an 8k-token session, median TTFT over 3 runs; bold marks the faster si
 |---|---|---|
 | Qwen3-8B, KV evicted from the GPU | **115 ms**, host memory | 897 ms, recompute |
 | Qwen3-8B, after an engine restart | **212 ms**, disk (page cache warm) | 881 ms, recompute |
-| Qwen3-8B, after an engine restart | **212 ms**, disk (page cache warm) | 955 ms, LMCache disk backend (recovers nothing) |
+| Qwen3-8B, after an engine restart | **212 ms**, disk (page cache warm) | 955 ms, LMCache disk backend (recovers nothing) † |
 | Qwen3-8B, four sessions rotating through GPU memory | 109 ms, host memory | **83 ms**, LMCache CPU backend |
 | Qwen3-1.7B, 16 other requests decoding | 101 ms | **62 ms**, LMCache CPU backend |
 | Same, p99 decode gap of the running requests during resumes, worst run | 26 ms | **19 ms**, vLLM CPU offloading |
 
 Rows come from `results/`: `restore-qwen3-8b.json`, `restart-qwen3-8b.json`,
 `restart-lmcache-disk-qwen3-8b.json`, `baseline-evicted-{kvsnap,lmcache}-qwen3-8b.json`,
-and `under-load-{,lmcache-,native-offload-}qwen3-1.7b.json`.
+and `under-load-{,lmcache-,native-offload-}qwen3-1.7b.json`. † ran at an
+earlier commit; LMCache's path does not run kvsnap's load code
+([`results/README.md`](results/README.md) has every file's commit).
 
 **Limitations**
 - Slower than LMCache's CPU backend from host memory (rows 4 and 5).
@@ -161,10 +163,12 @@ GPU KV, about 14k tokens:
 | Turn 2 served by | KV still on the GPU | KV evicted from the GPU | After an engine restart |
 |---|---|---|---|
 | Recompute, prefix caching off | 897 ms | 897 ms | 881 ms |
-| vLLM prefix cache | **35 ms** | 899 ms (misses) | misses |
+| vLLM prefix cache | **35 ms** † | 899 ms (misses) † | misses |
 | vLLM CPU offloading (`--kv-offloading-size`) | | 136 ms | starts empty |
 | LMCache 0.5.6, CPU backend | | **83 ms** | starts empty |
-| LMCache 0.5.6, CPU and local-disk backends | | | 955 ms (finds nothing) |
+| LMCache 0.5.6, CPU and local-disk backends | | | 955 ms (finds nothing) † |
+
+† Ran at an earlier commit than the other cells.
 | kvsnap, host memory | | 109 ms | starts empty |
 | kvsnap, disk, page cache warm | | 240 ms | **212 ms** |
 | kvsnap, disk, page cache dropped | | 590 ms | 559 ms |
@@ -182,10 +186,9 @@ Where each column comes from:
 kvsnap runs with prefix caching off, so it has no entry for a KV that is
 still resident. Every recompute here also runs with prefix caching off.
 
-The resident column, the prefix cache's miss and LMCache's disk restart ran
-on an earlier version of kvsnap's load path, which they do not use. Every
-other cell ran on the current one. [`results/README.md`](results/README.md)
-has the commits.
+The cells marked † ran on an earlier version of kvsnap's load path, which
+they do not use. Every other cell ran on the current one.
+[`results/README.md`](results/README.md) has the commits.
 
 **These restores are not bit-exact.** With the default kernels used above,
 160 of the 180 Qwen3-8B restores in `results/restore-qwen3-8b.json` produced
@@ -302,7 +305,7 @@ scheduling, default kernels):
   LMCache each get 8 GiB of CPU memory, enough for all four sessions;
   kvsnap's host tier gets 6 GiB.
 
-| L | Prefix cache, resident | Recompute |
+| L | Prefix cache, resident † | Recompute |
 |---|---|---|
 | 1k | 25 [24–26] | 118 |
 | 2k | 26 [26–27] | 216 |
@@ -311,10 +314,12 @@ scheduling, default kernels):
 
 | Evicted, 8k, n=36 | TTFT | Prompt tokens vLLM did not recompute |
 |---|---|---|
-| vLLM prefix cache alone | 899 [888–908] | 0 of 8337 |
+| vLLM prefix cache alone † | 899 [888–908] | 0 of 8337 |
 | vLLM CPU offloading | 136 [105–193] | 8256 |
 | LMCache, CPU backend | **83** [71–90] | 8192 |
 | kvsnap, host memory | 109 [92–154] | (restored by kvsnap) |
+
+† Ran at an earlier commit, in an earlier session.
 
 The three CPU tiers ran in one session, interleaved run by run; the
 prefix cache alone ran earlier, and recompute comes from the restore runs
@@ -410,7 +415,7 @@ traces how LMCache and vLLM's CPU offloading load, in their source.
 
 ### Turn-end stalls
 
-A traced run at `eceed39`, whose save path this version keeps
+A traced run at an earlier commit, whose save path this version keeps
 (`bench/restore_under_load.py --trace-dir --probes`,
 summarized by [`bench/trace_summary.py`](bench/trace_summary.py) in
 `results/turn-end-trace.json`) shows what a save costs the running batch.
@@ -457,7 +462,7 @@ bit-exact (see [Correctness](#correctness-and-durability)).
 
 **LMCache's local-disk backend across the same restart**
 (`--engine lmcache-disk`, `results/restart-lmcache-disk-qwen3-8b.json`, 3 runs
-of four sessions per length). An engine without kvsnap, with prefix caching
+of four sessions per length, at an earlier commit). An engine without kvsnap, with prefix caching
 on and LMCache's CPU (8 GiB) and local-disk (40 GiB) backends, prefills each
 session. Once the disk directory stops growing, at 7.5 GB in every run, a new
 engine starts on the same directory (11 s) and is sent each session's turn-2
@@ -473,7 +478,8 @@ the files are still there.
 [`bench/store_stress.py`](bench/store_stress.py) fills a store with 500
 sessions and times what a turn does to it, on the store before and after its
 scaling changes, back to back (`results/store-stress.json`; 64 blocks per
-snapshot, half of them in host memory; medians of 5):
+snapshot, half of them in host memory; medians of 5; both columns ran at
+earlier commits than the GPU results):
 
 | Operation, 500 sessions | Before | After |
 |---|---|---|
