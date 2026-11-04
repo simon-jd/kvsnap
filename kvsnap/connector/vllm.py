@@ -442,6 +442,7 @@ class KvsnapConnector(KVConnectorBase_V1):
             try:
                 copies = self.dataplane.load_scatter(targets, sources, progress=progress)
             except Exception as exc:
+                # Not swallowed: _finish_load and get_finished re-raise DMAUnknown.
                 raise DMAUnknown("kvsnap H2D completion could not be proven") from exc
         self._event("h2d_completed", transfer=transfer, lease_id=transfer.lease_id, block_ids=targets,
                     skip_blocks=first, bytes=size * len(targets), copies=copies, ready_ns=ready_ns)
@@ -536,7 +537,8 @@ class KvsnapConnector(KVConnectorBase_V1):
         try:
             self.dataplane.save_gather(transfer.block_ids, targets, manifest["num_kv_tokens"])
         except Exception as exc:
-            # Keep the pinned memory: the DMA engine may still write it.
+            # Not swallowed: get_finished re-raises DMAUnknown, which stops the engine.
+            # Keep the pinned memory and leave fenced unset: the DMA engine may still be using both.
             raise DMAUnknown("kvsnap D2H completion could not be proven") from exc
         fenced.set()
         preparing = time.monotonic_ns()
