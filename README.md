@@ -6,9 +6,11 @@ so vLLM computes only the new tokens. Unlike vLLM's prefix cache and the
 prefix-hash offloaders, a snapshot survives an engine restart, and a resume
 gets exactly the saved KV or misses loudly.
 
-**Scope:** one RTX 4090; vLLM 0.31.0 with an out-of-tree KV connector
-(`KVConnectorBase_V1`; vLLM is not modified); Qwen3-8B and Qwen3-1.7B;
-synthetic sessions of random tokens.
+**Scope:** one RTX 4090, and for tensor parallelism two NVIDIA A10-24Q
+vGPUs (sm_86) in one node of a Snowflake trial compute pool, driver 570 with
+the CUDA 13.2 forward-compatibility driver; vLLM 0.31.0 with an out-of-tree
+KV connector (`KVConnectorBase_V1`; vLLM is not modified); Qwen3-8B and
+Qwen3-1.7B; synthetic sessions of random tokens.
 
 Turn 2 of an 8k-token session, median TTFT over 3 runs; bold marks the faster side:
 
@@ -16,14 +18,18 @@ Turn 2 of an 8k-token session, median TTFT over 3 runs; bold marks the faster si
 |---|---|---|
 | Qwen3-8B, KV evicted from the GPU | **115 ms**, host memory | 897 ms, recompute |
 | Qwen3-8B, after an engine restart | **212 ms**, disk (page cache warm) | 881 ms, recompute |
-| Qwen3-8B, after an engine restart | **212 ms**, disk (page cache warm) | 955 ms, LMCache disk backend (recovers nothing) † |
+| Qwen3-8B at TP=2 on the two A10-24Q vGPUs, KV evicted | **109 ms**, host memory | 3,144 ms, recompute |
 | Qwen3-8B, four sessions rotating through GPU memory | 109 ms, host memory | **83 ms**, LMCache CPU backend |
 | Qwen3-1.7B, 16 other requests decoding | 101 ms | **62 ms**, LMCache CPU backend |
 | Same, p99 decode gap of the running requests during resumes, worst run | 26 ms | **19 ms**, vLLM CPU offloading |
 
+After the same restart, LMCache's disk backend recovered nothing, and turn 2
+took 955 ms †.
+
 Rows come from `results/`: `restore-qwen3-8b.json`, `restart-qwen3-8b.json`,
-`restart-lmcache-disk-qwen3-8b.json`, `baseline-evicted-{kvsnap,lmcache}-qwen3-8b.json`,
-and `under-load-{,lmcache-,native-offload-}qwen3-1.7b.json`. † ran at an
+`restore-tp2-qwen3-8b-a10.json`, `baseline-evicted-{kvsnap,lmcache}-qwen3-8b.json`
+and `under-load-{,lmcache-,native-offload-}qwen3-1.7b.json`; the LMCache
+restart from `restart-lmcache-disk-qwen3-8b.json`. † ran at an
 earlier commit; LMCache's path does not run kvsnap's load code
 ([`results/README.md`](results/README.md) has every file's commit).
 
@@ -35,14 +41,20 @@ earlier commit; LMCache's path does not run kvsnap's load code
   35 ms †. kvsnap runs with prefix caching off, so it has no entry for
   that case.
 - With vLLM's default kernels, restores are not bit-exact: 160 of 180
-  Qwen3-8B restores, and 22 of 24 after a restart, produced recompute's 16
-  greedy tokens. Batch-invariant
+  Qwen3-8B restores and 22 of 24 after a restart produced recompute's 16
+  greedy tokens; at TP=2, 80 of 90 and 20 of 24. Batch-invariant
   kernels made all 9 Qwen3-8B restores of one run bit-exact, a small sample.
 - Durable saves are slow: `pause` takes about 2.2 s for an 8k-token
-  Qwen3-8B disk snapshot.
-- Pinned to vLLM 0.31.0, TP=1 and synchronous scheduling, on one GPU.
+  Qwen3-8B disk snapshot on the 4090's NVMe, and 7.9 s at TP=2 on the A10
+  node's container disk.
+- TP=2 ran only on two vGPUs without peer access. There, recompute was
+  slower than at TP=1 on one of them (3,144 against 1,982 ms at 8k). Host
+  restores gained 4 ms at 8k (109 against 113 ms) and lost 6 ms at 2k (67
+  against 61 ms). After a restart, 2 of 6 cold 8k restores took longer
+  than recompute. Pinned to vLLM 0.31.0 and synchronous scheduling.
 
 [How it works](#how-it-works) ·
+[Tensor parallelism](#tensor-parallelism-on-two-a10-24q-vgpus) ·
 [Design trade-offs](docs/design-tradeoffs.md) ·
 [Full results](#results) ([what each file holds](results/README.md)) ·
 [Reproduce](#reproduce) · [All limitations](#limitations)
@@ -151,7 +163,8 @@ durability and the data plane in detail.
 ## Results
 
 [`scripts/bench-restore.sh`](scripts/bench-restore.sh) produces every file
-in `results/` (see [Reproduce](#reproduce)), and
+in `results/` but the `-a10` ones, which ran as Snowflake jobs (see
+[Reproduce](#reproduce)), and
 [`results/README.md`](results/README.md) lists what each one holds. Each
 timed configuration ran three times in fresh processes with different seeds;
 tables give the median over all samples, with `[min–max]` where shown. The
@@ -478,6 +491,111 @@ files in process memory (`LocalDiskBackend` starts with an empty one and
 does not scan the directory), so a new engine's lookups miss even though
 the files are still there.
 
+### Tensor parallelism on two A10-24Q vGPUs
+
+At TP=2 each rank's worker saves and restores its own shard of the KV cache.
+Qwen3-8B's 8 KV heads split 4 and 4, so an 8k-token snapshot is two 0.6 GB
+shards under one snapshot name:
+- The manifest lists each rank's segments, and the scheduler commits it only
+  once both ranks have prepared their shard.
+- A restore's lease is held until both ranks have read their shard.
+- The TP size is part of the KV identity. A snapshot taken at one TP size
+  misses at another, and a manifest with a shard missing is never loaded.
+
+**Hardware.** Two NVIDIA A10-24Q vGPUs (sm_86) in one node of a Snowflake
+trial compute pool, driver 570 with the CUDA 13.2 forward-compatibility
+driver. The node has an AMD EPYC 74F3 (72 vCPUs) and 866 GiB of RAM, and the
+snapshot store sat on the container's overlay filesystem. The two vGPUs
+have no NVLink and no peer access (`nvidia-smi topo`: SYS, P2P not
+supported). So vLLM turns its custom all-reduce off, and NCCL's all-reduce
+goes through host shared memory.
+
+NCCL ran with its defaults. With `NCCL_SHM_USE_CUDA_MEMCPY=1`, which another
+project measured at about four times the all-reduce bandwidth on this node,
+the TP=2 engine with CUDA graphs printed nothing for 20 minutes and was
+killed. That was not diagnosed (`results/a10x2/20261105T015320Z-kvsnap-smoke/`).
+
+**Method.** The same benchmark as [Restore against recompute](#restore-against-recompute),
+with `--tensor-parallel-size 2` and 1 GiB of KV per rank: 2 GiB in all, as at
+TP=1. The TP=1 reference ran on one of the two vGPUs of the same node with
+2 GiB. Both use CUDA graphs in vLLM's default mode and vLLM's default
+kernels. Each cell pools 3 runs of 5 sessions; recompute has 45 samples.
+
+| L | Arm | TP=2 | TP=1, one vGPU |
+|---|---|---|---|
+| 2k | Recompute | 786 [778–793] | 447 [443–452] |
+| 2k | Host | 67 [65–69] | **61** [60–65] |
+| 2k | Disk (warm) | 100 [98–111] | **96** [94–97] |
+| 2k | Disk (cold) | **146** [134–540] | 154 [151–173] |
+| 8k | Recompute | 3,144 [3,122–3,168] | 1,982 [1,953–2,005] |
+| 8k | Host | **109** [105–118] | 113 [112–117] |
+| 8k | Disk (warm) | **222** [217–244] | 233 [229–238] |
+| 8k | Disk (cold) | 483 [401–1,674] | **473** [457–562] |
+
+Times are in ms: median [min–max]. Bold marks the faster restore of the
+two. Files: `results/restore-tp2-qwen3-8b-a10.json` and
+`results/restore-tp1-qwen3-8b-a10.json`.
+
+What the numbers show:
+- **Recompute is slower at TP=2 than on one vGPU** here: 3,144 against
+  1,982 ms at 8k. Each layer's two all-reduces go through host memory; how
+  the time splits was not profiled.
+- **Against recompute at the same TP size, the restore wins at every length
+  and tier.** At 8k it is 29 times faster from host memory (109 against
+  3,144 ms). Against TP=1 recompute on one vGPU, it is still 18 times
+  faster.
+- **TP=2 halves each rank's copy but not the restore.**
+  - The two ranks copy their 0.6 GB shards at the same time: 27 ms at 8k,
+    against 50 ms for the whole 1.2 GB at TP=1.
+  - The suffix prefill and first token take longer at TP=2 (58 against
+    51 ms), and admission takes 16 against 11 ms. So host restores gain
+    4 ms at 8k and lose 6 ms at 2k.
+  - Phases at 8k, host restores, admit / read / H2D / rest: 16 / 6.4 / 27 /
+    58 ms at TP=2, and 11 / 2.0 / 50 / 51 ms at TP=1.
+- **Cold reads varied more at TP=2.** Both ranks read their shard from the
+  same disk at once. The per-run medians at 8k were 418, 494 and 1,172 ms.
+  At TP=1 they were 465, 473 and 527 ms.
+- **Saves are slow on this disk.** A durable `pause` at 8k took 7.9 s at
+  TP=2 and 8.2 s at TP=1, against 2.2 s on the 4090's NVMe. A host-memory
+  `pause` took 0.62 s at TP=2 and 0.61 s at TP=1.
+
+**Greedy tokens.** With the default kernels, 80 of 90 TP=2 restores
+produced recompute's 16 greedy tokens: 38 of 45 at 2k and 42 of 45 at 8k.
+At TP=1 on one vGPU, 81 of 90 did. Logprobs differed from recompute's by up
+to 3.1 nats at TP=2 and 2.1 at TP=1. Batch-invariant kernels were not run at
+TP=2.
+
+**After an engine restart at TP=2.** [`bench/restart_resume.py`](bench/restart_resume.py)
+ran with `--tensor-parallel-size 2`, as in
+[Resume after an engine restart](#resume-after-an-engine-restart). The TP=2
+engine restarted in about 36 s. Six sessions per cell, two per run
+(`results/restart-tp2-qwen3-8b-a10.json`):
+
+| L | Restore, page cache warm | Restore, page cache dropped | Recompute on the new engine |
+|---|---|---|---|
+| 2k | 100 [98–122] ms; tokens match in **4 of 6** | 165 [150–773] ms; **5 of 6** | 782 [773–793] ms |
+| 8k | 226 [220–259] ms; 6 of 6 | 2,120 [412–3,571] ms; **5 of 6** | 3,114 [3,101–3,154] ms |
+
+The recompute column is the warm sessions' recompute; the dropped-cache
+sessions' was within 4 ms of it. 20 of the 24 restores produced
+recompute's tokens.
+
+**Cold restores after the restart lost twice.** Both 8k restores with the
+page cache dropped in the second run (`"run": 1`) took longer than
+recomputing: 3,541 and 3,571 ms, against 3,112 and 3,101 ms. The other
+four took 412 – 2,276 ms. The page cache is dropped with `posix_fadvise` on
+the container's overlay filesystem. What storage lies under it is not
+known, and its read speed was not measured separately.
+
+**Across TP sizes.** Engine A at TP=2 saved three 2k sessions durably, and
+engine B started on the same store at TP=1. All 3 resumes missed with
+`IdentityMismatch: incompatible KV identity: model_shape`. Nothing was
+loaded, and turn 2 was recomputed: 489 and 476 ms, against 485 and 480 ms
+recomputing directly. The tokens matched in both measured sessions. Each
+resumed turn's own save was refused, because the session's identity is
+engine A's. That is one run with three sessions, one of them the discarded
+warm-up (`results/restart-tp2-to-tp1-qwen3-8b-a10.json`).
+
 ### Store scaling
 
 [`bench/store_stress.py`](bench/store_stress.py) fills a store with 500
@@ -522,7 +640,9 @@ is still walks every host block (see [Limitations](#limitations)).
     restores: 160 of 180 on Qwen3-8B and 208 of 225 on Qwen3-1.7B
     (`results/restore-*.json`), the same counts as on the previous load
     path. After an engine restart, 22 of 24 Qwen3-8B restores matched
-    (`results/restart-qwen3-8b.json`). A prefix-cache hit prefills the same
+    (`results/restart-qwen3-8b.json`). On the A10 node, 80 of 90 restores
+    matched at TP=2 and 81 of 90 at TP=1 (`results/restore-tp*-qwen3-8b-a10.json`),
+    and 20 of 24 after a restart at TP=2 (`results/restart-tp2-qwen3-8b-a10.json`). A prefix-cache hit prefills the same
     suffix, and so differs from a full prefill in the same way.
 - **Crash safety.**
   - `tests/crash` SIGKILLs a real writer process at eight boundaries of a
@@ -548,11 +668,15 @@ is still walks every host block (see [Limitations](#limitations)).
   - An unprovable completion keeps the memory.
   - Tests compile the pool against a fault-injecting fake CUDA runtime.
 
-`pytest` runs 183 tests, all but one on CPU, covering:
+`pytest` runs 205 tests, all but one on CPU, covering:
 - the store, crash recovery, host-tier eviction and the store's reference
   counts and disk accounting;
 - the gateway, and its HTTP server over a loopback socket;
 - the connector's control flow and failure policy;
+- tensor parallelism: the per-rank shard layout, commits that need every
+  rank's shard, a lease held until every rank has read, a save and restore
+  through a scheduler and two rank workers on one store, and the misses
+  for a restore at another TP size or with a shard missing;
 - the native data plane, against the fake CUDA runtime;
 - block-layout geometry;
 - the GPU gather that every save runs and the restore kernel's address
@@ -565,7 +689,8 @@ GitHub Actions runs them, and the native library's own test, on every push
 
 ## Reproduce
 
-**Hardware.** Every number here comes from one machine: an RTX 4090 (24 GB,
+**Hardware.** Every number outside [Tensor parallelism](#tensor-parallelism-on-two-a10-24q-vgpus)
+comes from one machine: an RTX 4090 (24 GB,
 PCIe 4.0 x16, driver 595.99.02), an i9-13900K with 123 GiB of RAM, and a
 Samsung 980 PRO NVMe holding the snapshot store. Every results file records
 the GPU, driver, clocks, PCIe link, host load average and git commit of each
@@ -576,7 +701,7 @@ processes when each run started.
 
 ```sh
 scripts/install.sh cpu                 # .venv: the package and the CPU tests
-.venv/bin/python -m pytest             # 183 tests; .venv has no torch, so 9 skip
+.venv/bin/python -m pytest             # 205 tests; .venv has no torch, so 9 skip
 scripts/install.sh gpu                 # .venv-gpu: vLLM 0.31.0, torch 2.13.0 (CUDA 13.0), the pinned pool
 scripts/install.sh lmcache             # optional .venv-lmcache: LMCache 0.5.6 for its baseline
 scripts/download-models.sh             # Qwen3-1.7B and Qwen3-8B at the pinned revisions, about 20 GB
@@ -592,6 +717,18 @@ local Qwen3-8B snapshot directory instead. Snapshot stores go to
 `KVSNAP_BENCH_STORE` (default `.local-data/tmp`), which should be on an SSD.
 Each benchmark process takes `flock /var/tmp/rtx4090.lock` while it runs, so
 it can share a GPU with other jobs that use the same lock.
+
+**The TP=2 and A10 runs** were Snowflake ML Jobs, one node each, with no
+internet. Each job fetched its inputs from a stage and checked them against
+SHA-256 sums: the CUDA 13.2 compat driver, a frozen wheelhouse of the vLLM
+0.31.0 environment, Qwen3-8B at the pinned revision and a `git archive` of
+the commit under test. It installed them into a fresh venv and built the two
+native libraries with the node's g++. Then it ran the benchmarks above one
+process at a time, with `--tensor-parallel-size 2 --kv-cache-gib 1` for
+TP=2. The payloads are in `results/a10x2/payloads/`: `kvsnap_tp_bench.py`
+takes the archive name and a plan (`tp2-restore`, `tp1-restore`,
+`tp2-restart`). Each job's status trace, logs and per-run outputs are in
+`results/a10x2/<run id>/`.
 
 ## Repository layout
 
@@ -611,9 +748,15 @@ it can share a GPU with other jobs that use the same lock.
 
 ## Limitations
 
-- **Scope.** The connector is pinned to vLLM 0.31.0, TP=1, one full-attention
-  KV group and synchronous scheduling. It was measured with vLLM's prefix
+- **Scope.** The connector is pinned to vLLM 0.31.0, one full-attention
+  KV group and synchronous scheduling. It supports tensor parallelism, but
+  not pipeline or data parallelism. It was measured with vLLM's prefix
   caching off.
+- **TP=2 was measured on one kind of node only:** two A10-24Q vGPUs without
+  NVLink or peer access, where NCCL's all-reduce goes through host memory.
+  There, recompute and short host restores were slower at TP=2 than on one
+  vGPU, and `NCCL_SHM_USE_CUDA_MEMCPY=1` hung the engine. TP=2 was not run
+  with batch-invariant kernels, under load, or on the 4090.
 - **Turn boundaries only.** A snapshot is taken at the end of a turn.
   Pausing mid-generation is not supported.
 - **The bundled server is stricter than the benchmarks.**
@@ -647,12 +790,12 @@ it can share a GPU with other jobs that use the same lock.
   flight. An eviction measures the host tier, which walks every host block.
 - **Durable saves are slow.** `pause` on an 8k-token Qwen3-8B session
   returns after about 2.2 s for a disk snapshot, against about 0.29 s for
-  host memory.
+  host memory. On the A10 node's container disk it took 7.9 s at TP=2.
 - **Disk restores** read every block before the first copy.
 - **Saves rehash every block** to deduplicate. Unchanged blocks are not
   rewritten, but they are hashed again.
 - **Unreferenced blobs stay on disk** until something calls
   `collect_garbage()`; the serving path does not.
-- **Evaluation.** One GPU, two models, random token prompts, at most four
-  rotating sessions for the eviction workload, and no multi-turn traces from
-  real conversations.
+- **Evaluation.** One RTX 4090, plus one two-vGPU node for TP=2; two models,
+  random token prompts, at most four rotating sessions for the eviction
+  workload, and no multi-turn traces from real conversations.

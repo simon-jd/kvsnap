@@ -1,8 +1,11 @@
 # Results
 
 `scripts/bench-restore.sh` runs every benchmark here except the store stress
-test and the two history files. Everything ran on one RTX 4090 (PCIe 4.0
-x16) with TP=1, and every recompute runs with vLLM's prefix caching off.
+test, the two history files and the `-a10` files. Everything else ran on one
+RTX 4090 (PCIe 4.0 x16) with TP=1. The `-a10` files ran as Snowflake ML Jobs
+on two NVIDIA A10-24Q vGPUs (sm_86) in one node of a Snowflake trial compute
+pool, driver 570 with the CUDA 13.2 forward-compatibility driver, at TP=2 or
+at TP=1 on one of the two. Every recompute runs with vLLM's prefix caching off.
 Each file records, per run, the GPU, driver, clocks and PCIe link both at
 start and when measuring began, the host's load average, and the git commit
 (`environment` or `environment_by_run`).
@@ -19,6 +22,10 @@ start and when measuring began, the host's load average, and the git commit
 | `resume-phases.json` | `cb933b0` (`baseline`), `b22a2f4` (`current`) | 2026-11-03 | One traced under-load run (no probes) of the load path before `b22a2f4` and of `b22a2f4`, back to back; each async and sync resume cut into phases from submit to first token (`bench/resume_phases.py`), with the copy's rate, how many loads were reported early and the run's decode gaps | 1 x 54 resumes per arm and trace |
 | `restart-qwen3-8b.json` | `b22a2f4` | 2026-11-03 | Resume after an engine restart, against recompute on the new engine | 3 x 4 sessions per length |
 | `restart-lmcache-disk-qwen3-8b.json` | `dbae296` | 2026-11-02 | The same restart with LMCache's CPU and local-disk backends instead of kvsnap: turn-2 TTFT, `num_cached_tokens` (0 on every resume), the disk directory's size before the restart and the restart time | 3 x 4 sessions per length |
+| `restore-tp2-qwen3-8b-a10.json`, `restore-tp1-qwen3-8b-a10.json` | `4ba6e8b` | 2026-11-04 | Turn-2 TTFT of Qwen3-8B at 2k and 8k per arm on the A10 node: TP=2 with 1 GiB of KV per rank, and TP=1 on one vGPU with 2 GiB; `ranks` and the phases of the rank whose copy finished last | 3 runs x 5 sessions per cell; recompute 15 per run |
+| `restart-tp2-qwen3-8b-a10.json` | `4ba6e8b` | 2026-11-04 | Resume after an engine restart at TP=2 on the A10 node, against recompute on the new engine | 3 x 4 sessions per length |
+| `restart-tp2-to-tp1-qwen3-8b-a10.json` | `4ba6e8b` | 2026-11-04 | Engine A at TP=2 saves three 2k sessions durably, engine B starts at TP=1: `restore_misses`, `miss_reasons`, `loads_after_restart`, `turn2_saves_refused` | 1 x 3 sessions (one warm-up) |
+| `a10x2/<run id>/` | see below | 2026-11-04 | Each Snowflake job's `report.json` (status trace, every `RESULT` line, credit estimate), its instance log, and in `files/` every benchmark process's log and per-run output | one directory per job |
 | `h2d-patterns.json` | `b22a2f4` | 2026-11-03 | H2D bandwidth of each copy pattern, GB/s: the DMA paths, including the previous load path (`scatter`), and the restore kernel (`kernel`) | 3 rounds x median of 5 |
 | `turn-end-trace.json` | `eceed39` | 2026-11-01 | A traced under-load run of the current save path: engine steps over 20 ms at turn ends, event-loop stalls, save phases | 1 |
 | `store-stress.json` | `3b55430` (before), `eceed39` (after), in `code_commit` | 2026-11-01 | Store operations with 500 sessions, on the store before and after its scaling changes, run back to back | 5 or 20 per operation |
@@ -58,4 +65,19 @@ one long decode request per stream, and a recompute arm that invalidated
 the snapshot on the client's event loop just before each turn.
 
 **Raw output.** Per-run files, logs, connector event files and trace
-directories stay in `results/raw/`, which is not committed.
+directories stay in `results/raw/`, which is not committed. The A10 jobs'
+per-run files and logs are committed under `a10x2/`.
+
+**A10 jobs** (`a10x2/`, UTC run ids, credits as `run_job.py` estimated them):
+
+| Job | Source | What happened | Credits |
+|---|---|---|---|
+| `20261105T015320Z-kvsnap-smoke` | `7bb6471` plus the uncommitted TP changes | vLLM 0.31.0 at TP=2 with CUDA graphs came up with NCCL's defaults (8k prefill about 3.1 s). With `NCCL_SHM_USE_CUDA_MEMCPY=1` it printed nothing in 20 minutes and was killed, but its EngineCore and workers kept their GPU memory, so the job's kvsnap steps could not start | 1.93 |
+| `20261105T023433Z-kvsnap-tp2-restore` | `679a451` | The first TP=2 restore run stopped the engine at its first commit: the commit telemetry read a single preparation id. Fixed in `565aa59` | 0.76 |
+| `20261105T025128Z-kvsnap-tp2-restore-b` | `4ba6e8b` | `restore-tp2-qwen3-8b-a10.json` and `restart-tp2-to-tp1-qwen3-8b-a10.json` | 1.78 |
+| `20261105T061322Z-kvsnap-tp1-restore` | `4ba6e8b` | `restore-tp1-qwen3-8b-a10.json` | 1.51 |
+| `20261105T063935Z-kvsnap-tp2-restart` | `4ba6e8b` | `restart-tp2-qwen3-8b-a10.json` | 1.13 |
+
+The merged `-a10` files were made from these per-run files with each
+benchmark's `--combine`; `restart-tp2-to-tp1-qwen3-8b-a10.json` is the one
+run's file as written.
