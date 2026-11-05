@@ -1,0 +1,2234 @@
+{
+ "model": "Qwen/Qwen3-8B",
+ "revision": "b968826d9c46dd6066d109eabc6255188de91218",
+ "batch_invariant": false,
+ "cudagraph_mode": null,
+ "async_load": true,
+ "perturb": false,
+ "max_num_batched_tokens": 8448,
+ "kv_cache_gib": 2,
+ "suffix_tokens": 64,
+ "output_tokens": 16,
+ "runs": 3,
+ "seeds": [
+  1,
+  2,
+  3
+ ],
+ "rows": [
+  {
+   "context_tokens": 2048,
+   "arm": "recompute",
+   "n": 45,
+   "ttft_ms_median": 447.02825399997437,
+   "ttft_ms_min": 442.837940000004,
+   "ttft_ms_max": 452.0873559999927,
+   "ttft_ms": [
+    443.28342900007556,
+    442.837940000004,
+    442.94686199998523,
+    444.4343810000646,
+    444.5902699999351,
+    445.0150490000624,
+    446.27619200002755,
+    445.93136200001027,
+    447.00377299989213,
+    449.1082309999683,
+    448.388389999991,
+    448.3744489999708,
+    449.03749900004186,
+    444.88964399999986,
+    444.42169799992826,
+    447.38235099998747,
+    445.5812579999474,
+    446.52569900006256,
+    447.8518170000143,
+    446.28274100000453,
+    447.6728769999454,
+    447.39548400002604,
+    447.26919899994755,
+    447.02825399997437,
+    449.740191999922,
+    449.26775300007193,
+    447.155983000016,
+    450.8308729999726,
+    449.99335900001824,
+    446.8244129999448,
+    447.1883040000648,
+    446.1365570000453,
+    446.1579660001007,
+    445.9992009999496,
+    446.09126699992885,
+    446.0557150000568,
+    447.49012500005847,
+    445.88561600016874,
+    446.7873880000752,
+    448.39622499989673,
+    449.84560300008525,
+    448.2502770001702,
+    451.50544800003445,
+    450.16760099997555,
+    452.0873559999927
+   ],
+   "ttft_ms_median_by_run": [
+    445.0150490000624,
+    447.38235099998747,
+    447.1883040000648
+   ],
+   "samples": [
+    {
+     "ttft_ms": 443.28342900007556
+    },
+    {
+     "ttft_ms": 442.837940000004
+    },
+    {
+     "ttft_ms": 442.94686199998523
+    },
+    {
+     "ttft_ms": 444.4343810000646
+    },
+    {
+     "ttft_ms": 444.5902699999351
+    },
+    {
+     "ttft_ms": 445.0150490000624
+    },
+    {
+     "ttft_ms": 446.27619200002755
+    },
+    {
+     "ttft_ms": 445.93136200001027
+    },
+    {
+     "ttft_ms": 447.00377299989213
+    },
+    {
+     "ttft_ms": 449.1082309999683
+    },
+    {
+     "ttft_ms": 448.388389999991
+    },
+    {
+     "ttft_ms": 448.3744489999708
+    },
+    {
+     "ttft_ms": 449.03749900004186
+    },
+    {
+     "ttft_ms": 444.88964399999986
+    },
+    {
+     "ttft_ms": 444.42169799992826
+    },
+    {
+     "ttft_ms": 447.38235099998747
+    },
+    {
+     "ttft_ms": 445.5812579999474
+    },
+    {
+     "ttft_ms": 446.52569900006256
+    },
+    {
+     "ttft_ms": 447.8518170000143
+    },
+    {
+     "ttft_ms": 446.28274100000453
+    },
+    {
+     "ttft_ms": 447.6728769999454
+    },
+    {
+     "ttft_ms": 447.39548400002604
+    },
+    {
+     "ttft_ms": 447.26919899994755
+    },
+    {
+     "ttft_ms": 447.02825399997437
+    },
+    {
+     "ttft_ms": 449.740191999922
+    },
+    {
+     "ttft_ms": 449.26775300007193
+    },
+    {
+     "ttft_ms": 447.155983000016
+    },
+    {
+     "ttft_ms": 450.8308729999726
+    },
+    {
+     "ttft_ms": 449.99335900001824
+    },
+    {
+     "ttft_ms": 446.8244129999448
+    },
+    {
+     "ttft_ms": 447.1883040000648
+    },
+    {
+     "ttft_ms": 446.1365570000453
+    },
+    {
+     "ttft_ms": 446.1579660001007
+    },
+    {
+     "ttft_ms": 445.9992009999496
+    },
+    {
+     "ttft_ms": 446.09126699992885
+    },
+    {
+     "ttft_ms": 446.0557150000568
+    },
+    {
+     "ttft_ms": 447.49012500005847
+    },
+    {
+     "ttft_ms": 445.88561600016874
+    },
+    {
+     "ttft_ms": 446.7873880000752
+    },
+    {
+     "ttft_ms": 448.39622499989673
+    },
+    {
+     "ttft_ms": 449.84560300008525
+    },
+    {
+     "ttft_ms": 448.2502770001702
+    },
+    {
+     "ttft_ms": 451.50544800003445
+    },
+    {
+     "ttft_ms": 450.16760099997555
+    },
+    {
+     "ttft_ms": 452.0873559999927
+    }
+   ]
+  },
+  {
+   "context_tokens": 2048,
+   "arm": "restore-cold",
+   "n": 15,
+   "ttft_ms_median": 154.105884000046,
+   "ttft_ms_min": 150.56413299998894,
+   "ttft_ms_max": 172.7670739999212,
+   "ttft_ms": [
+    157.36347500001102,
+    171.48734800002785,
+    164.01914100003978,
+    153.59740500002772,
+    155.28986500009978,
+    156.63846799998282,
+    154.105884000046,
+    152.5315240000964,
+    172.7670739999212,
+    160.6259150000824,
+    150.7488239999475,
+    150.56413299998894,
+    152.38324999995712,
+    152.25761299984697,
+    152.56907799994224
+   ],
+   "ttft_ms_median_by_run": [
+    157.36347500001102,
+    156.63846799998282,
+    152.25761299984697
+   ],
+   "save_ms_median": 1997.3624750000454,
+   "admit_ms_median": 7.160491,
+   "read_ms_median": 90.851955,
+   "h2d_ms_median": 13.555895,
+   "after_ms_median": 42.359385,
+   "bytes_median": 301989888,
+   "copies_median": 5,
+   "ranks_median": 1,
+   "tokens_match": 13,
+   "logprobs_equal": 0,
+   "max_logprob_delta": 1.5537943840026855,
+   "samples": [
+    {
+     "ttft_ms": 157.36347500001102,
+     "save_ms": 1998.672721000048,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.0860673189163208,
+     "recompute_ttft_ms": 442.94686199998523,
+     "admit_ms": 7.389275,
+     "read_ms": 93.186231,
+     "h2d_ms": 14.310501,
+     "after_ms": 42.47843,
+     "bytes": 301989888,
+     "copies": 5,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 171.48734800002785,
+     "save_ms": 1964.4428039999866,
+     "match": false,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.43950963020324707,
+     "recompute_ttft_ms": 445.0150490000624,
+     "admit_ms": 7.164389,
+     "read_ms": 107.931304,
+     "h2d_ms": 13.991938,
+     "after_ms": 42.400168,
+     "bytes": 301989888,
+     "copies": 5,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 164.01914100003978,
+     "save_ms": 1989.8973219999334,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.09643268585205078,
+     "recompute_ttft_ms": 447.00377299989213,
+     "admit_ms": 10.275434,
+     "read_ms": 97.928815,
+     "h2d_ms": 13.447267,
+     "after_ms": 42.368005,
+     "bytes": 301989888,
+     "copies": 5,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 153.59740500002772,
+     "save_ms": 2010.6125710000242,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.06488215923309326,
+     "recompute_ttft_ms": 448.3744489999708,
+     "admit_ms": 6.768329,
+     "read_ms": 90.851955,
+     "h2d_ms": 13.719882,
+     "after_ms": 42.257779,
+     "bytes": 301989888,
+     "copies": 5,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 155.28986500009978,
+     "save_ms": 1982.7877080000462,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.0439240038394928,
+     "recompute_ttft_ms": 444.42169799992826,
+     "admit_ms": 10.426826,
+     "read_ms": 88.378936,
+     "h2d_ms": 13.858318,
+     "after_ms": 42.626296,
+     "bytes": 301989888,
+     "copies": 5,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 156.63846799998282,
+     "save_ms": 1999.8134499999196,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.05593705177307129,
+     "recompute_ttft_ms": 446.52569900006256,
+     "admit_ms": 6.606333,
+     "read_ms": 93.524274,
+     "h2d_ms": 13.44714,
+     "after_ms": 43.061193,
+     "bytes": 301989888,
+     "copies": 5,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 154.105884000046,
+     "save_ms": 1985.7080670000187,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.06212329864501953,
+     "recompute_ttft_ms": 447.6728769999454,
+     "admit_ms": 6.609004,
+     "read_ms": 91.59372,
+     "h2d_ms": 13.555895,
+     "after_ms": 42.347766,
+     "bytes": 301989888,
+     "copies": 5,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 152.5315240000964,
+     "save_ms": 2008.495958000026,
+     "match": false,
+     "logprobs_equal": false,
+     "max_logprob_delta": 1.5537943840026855,
+     "recompute_ttft_ms": 447.02825399997437,
+     "admit_ms": 7.160491,
+     "read_ms": 89.742738,
+     "h2d_ms": 13.269782,
+     "after_ms": 42.359385,
+     "bytes": 301989888,
+     "copies": 5,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 172.7670739999212,
+     "save_ms": 2005.5489919999445,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.04016399383544922,
+     "recompute_ttft_ms": 447.155983000016,
+     "admit_ms": 6.751307,
+     "read_ms": 109.593987,
+     "h2d_ms": 14.067014,
+     "after_ms": 42.355366,
+     "bytes": 301989888,
+     "copies": 5,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 160.6259150000824,
+     "save_ms": 1970.635643000037,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.038003772497177124,
+     "recompute_ttft_ms": 446.8244129999448,
+     "admit_ms": 8.829901,
+     "read_ms": 96.217133,
+     "h2d_ms": 13.329302,
+     "after_ms": 42.250351,
+     "bytes": 301989888,
+     "copies": 5,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 150.7488239999475,
+     "save_ms": 2078.709344000117,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.03858661651611328,
+     "recompute_ttft_ms": 446.1579660001007,
+     "admit_ms": 7.310908,
+     "read_ms": 87.569696,
+     "h2d_ms": 13.659636,
+     "after_ms": 42.208965,
+     "bytes": 301989888,
+     "copies": 5,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 150.56413299998894,
+     "save_ms": 1997.3624750000454,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.032329559326171875,
+     "recompute_ttft_ms": 446.0557150000568,
+     "admit_ms": 7.02935,
+     "read_ms": 87.480451,
+     "h2d_ms": 13.46249,
+     "after_ms": 42.592594,
+     "bytes": 301989888,
+     "copies": 5,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 152.38324999995712,
+     "save_ms": 1981.6753309999058,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.03125810623168945,
+     "recompute_ttft_ms": 446.7873880000752,
+     "admit_ms": 7.028188,
+     "read_ms": 90.001183,
+     "h2d_ms": 13.423507,
+     "after_ms": 41.930974,
+     "bytes": 301989888,
+     "copies": 5,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 152.25761299984697,
+     "save_ms": 2006.868827000062,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.07294732332229614,
+     "recompute_ttft_ms": 448.2502770001702,
+     "admit_ms": 7.109327,
+     "read_ms": 89.556745,
+     "h2d_ms": 13.342646,
+     "after_ms": 42.249265,
+     "bytes": 301989888,
+     "copies": 5,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 152.56907799994224,
+     "save_ms": 1989.233547999902,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.04429459571838379,
+     "recompute_ttft_ms": 452.0873559999927,
+     "admit_ms": 7.322553,
+     "read_ms": 89.223601,
+     "h2d_ms": 13.559558,
+     "after_ms": 42.463817,
+     "bytes": 301989888,
+     "copies": 5,
+     "ranks": 1
+    }
+   ]
+  },
+  {
+   "context_tokens": 2048,
+   "arm": "restore-disk",
+   "n": 15,
+   "ttft_ms_median": 96.37539000004836,
+   "ttft_ms_min": 94.37566199994762,
+   "ttft_ms_max": 97.4279160000151,
+   "ttft_ms": [
+    96.67438600001788,
+    97.4279160000151,
+    96.75040400009038,
+    96.35268900001392,
+    96.72199199997067,
+    95.11426699998538,
+    95.1403899999832,
+    96.37539000004836,
+    96.0440239999798,
+    96.21137100009491,
+    95.98570299999665,
+    96.76274799994644,
+    97.04859199996463,
+    94.37566199994762,
+    96.62596899988785
+   ],
+   "ttft_ms_median_by_run": [
+    96.72199199997067,
+    96.0440239999798,
+    96.62596899988785
+   ],
+   "save_ms_median": 1997.6766590000352,
+   "admit_ms_median": 7.057741,
+   "read_ms_median": 33.267361,
+   "h2d_ms_median": 13.548703,
+   "after_ms_median": 42.373412,
+   "bytes_median": 301989888,
+   "copies_median": 5,
+   "ranks_median": 1,
+   "tokens_match": 13,
+   "logprobs_equal": 0,
+   "max_logprob_delta": 1.0032000553110265,
+   "samples": [
+    {
+     "ttft_ms": 96.67438600001788,
+     "save_ms": 2017.0592679999118,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.045592546463012695,
+     "recompute_ttft_ms": 442.837940000004,
+     "admit_ms": 7.007827,
+     "read_ms": 33.723049,
+     "h2d_ms": 13.560476,
+     "after_ms": 42.383495,
+     "bytes": 301989888,
+     "copies": 5,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 97.4279160000151,
+     "save_ms": 1968.4939059999351,
+     "match": false,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.9365644454956055,
+     "recompute_ttft_ms": 444.5902699999351,
+     "admit_ms": 7.421968,
+     "read_ms": 33.451421,
+     "h2d_ms": 13.803728,
+     "after_ms": 42.75121,
+     "bytes": 301989888,
+     "copies": 5,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 96.75040400009038,
+     "save_ms": 2001.7198680000092,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.05408000946044922,
+     "recompute_ttft_ms": 445.93136200001027,
+     "admit_ms": 7.057741,
+     "read_ms": 33.362984,
+     "h2d_ms": 13.737615,
+     "after_ms": 42.592455,
+     "bytes": 301989888,
+     "copies": 5,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 96.35268900001392,
+     "save_ms": 1989.7409000000152,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.025920242071151733,
+     "recompute_ttft_ms": 448.388389999991,
+     "admit_ms": 6.939811,
+     "read_ms": 33.575703,
+     "h2d_ms": 13.495044,
+     "after_ms": 42.342552,
+     "bytes": 301989888,
+     "copies": 5,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 96.72199199997067,
+     "save_ms": 2044.68671799998,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.11316001415252686,
+     "recompute_ttft_ms": 444.88964399999986,
+     "admit_ms": 7.129177,
+     "read_ms": 32.983973,
+     "h2d_ms": 13.894488,
+     "after_ms": 42.714784,
+     "bytes": 301989888,
+     "copies": 5,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 95.11426699998538,
+     "save_ms": 1996.169114000054,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.07833218574523926,
+     "recompute_ttft_ms": 445.5812579999474,
+     "admit_ms": 6.681854,
+     "read_ms": 32.5541,
+     "h2d_ms": 13.548703,
+     "after_ms": 42.330002,
+     "bytes": 301989888,
+     "copies": 5,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 95.1403899999832,
+     "save_ms": 1979.6406919999754,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.042551517486572266,
+     "recompute_ttft_ms": 446.28274100000453,
+     "admit_ms": 6.533597,
+     "read_ms": 33.034906,
+     "h2d_ms": 13.375901,
+     "after_ms": 42.196366,
+     "bytes": 301989888,
+     "copies": 5,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 96.37539000004836,
+     "save_ms": 1997.6766590000352,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.06108999252319336,
+     "recompute_ttft_ms": 447.26919899994755,
+     "admit_ms": 6.612038,
+     "read_ms": 33.848448,
+     "h2d_ms": 13.432264,
+     "after_ms": 42.483311,
+     "bytes": 301989888,
+     "copies": 5,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 96.0440239999798,
+     "save_ms": 1977.5881690000006,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.048560500144958496,
+     "recompute_ttft_ms": 449.26775300007193,
+     "admit_ms": 7.074634,
+     "read_ms": 33.267361,
+     "h2d_ms": 13.686215,
+     "after_ms": 42.016184,
+     "bytes": 301989888,
+     "copies": 5,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 96.21137100009491,
+     "save_ms": 2001.1926419999782,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.040671586990356445,
+     "recompute_ttft_ms": 449.99335900001824,
+     "admit_ms": 6.952466,
+     "read_ms": 33.755625,
+     "h2d_ms": 13.310335,
+     "after_ms": 42.193637,
+     "bytes": 301989888,
+     "copies": 5,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 95.98570299999665,
+     "save_ms": 2079.7804589999487,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.06690835952758789,
+     "recompute_ttft_ms": 446.1365570000453,
+     "admit_ms": 7.112694,
+     "read_ms": 32.984529,
+     "h2d_ms": 13.515468,
+     "after_ms": 42.373412,
+     "bytes": 301989888,
+     "copies": 5,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 96.76274799994644,
+     "save_ms": 1986.4210329999423,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.05402815341949463,
+     "recompute_ttft_ms": 446.09126699992885,
+     "admit_ms": 8.253194,
+     "read_ms": 32.947144,
+     "h2d_ms": 13.493732,
+     "after_ms": 42.069149,
+     "bytes": 301989888,
+     "copies": 5,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 97.04859199996463,
+     "save_ms": 1999.1761770002086,
+     "match": false,
+     "logprobs_equal": false,
+     "max_logprob_delta": 1.0032000553110265,
+     "recompute_ttft_ms": 445.88561600016874,
+     "admit_ms": 7.740314,
+     "read_ms": 32.777917,
+     "h2d_ms": 13.868766,
+     "after_ms": 42.662196,
+     "bytes": 301989888,
+     "copies": 5,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 94.37566199994762,
+     "save_ms": 1983.3095559999947,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.10426831245422363,
+     "recompute_ttft_ms": 449.84560300008525,
+     "admit_ms": 7.031182,
+     "read_ms": 31.633855,
+     "h2d_ms": 13.378713,
+     "after_ms": 42.332322,
+     "bytes": 301989888,
+     "copies": 5,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 96.62596899988785,
+     "save_ms": 2013.4792700000617,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.0402071475982666,
+     "recompute_ttft_ms": 450.16760099997555,
+     "admit_ms": 7.089548,
+     "read_ms": 33.332254,
+     "h2d_ms": 13.581136,
+     "after_ms": 42.623392,
+     "bytes": 301989888,
+     "copies": 5,
+     "ranks": 1
+    }
+   ]
+  },
+  {
+   "context_tokens": 2048,
+   "arm": "restore-host",
+   "n": 15,
+   "ttft_ms_median": 61.416665000024295,
+   "ttft_ms_min": 60.00632400014183,
+   "ttft_ms_max": 65.04206100021293,
+   "ttft_ms": [
+    61.55512800000906,
+    64.4319699999869,
+    61.40531699998064,
+    61.74481699997614,
+    61.93362500005151,
+    60.957620999943174,
+    63.94200800002636,
+    61.416665000024295,
+    61.534094999956324,
+    60.71330800000396,
+    60.8585380000477,
+    65.04206100021293,
+    60.00632400014183,
+    60.408265999967625,
+    61.28684700001941
+   ],
+   "ttft_ms_median_by_run": [
+    61.74481699997614,
+    61.416665000024295,
+    60.8585380000477
+   ],
+   "save_ms_median": 165.48123799998393,
+   "admit_ms_median": 4.565868,
+   "read_ms_median": 1.061595,
+   "h2d_ms_median": 13.14564,
+   "after_ms_median": 42.478477,
+   "bytes_median": 301989888,
+   "copies_median": 5,
+   "ranks_median": 1,
+   "tokens_match": 14,
+   "logprobs_equal": 0,
+   "max_logprob_delta": 1.8464126214385033,
+   "samples": [
+    {
+     "ttft_ms": 61.55512800000906,
+     "save_ms": 163.2720809999455,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.03685629367828369,
+     "recompute_ttft_ms": 443.28342900007556,
+     "admit_ms": 4.774119,
+     "read_ms": 1.343755,
+     "h2d_ms": 13.12747,
+     "after_ms": 42.310144,
+     "bytes": 301989888,
+     "copies": 5,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 64.4319699999869,
+     "save_ms": 165.48123799998393,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.052457332611083984,
+     "recompute_ttft_ms": 444.4343810000646,
+     "admit_ms": 7.657035,
+     "read_ms": 1.078266,
+     "h2d_ms": 13.21879,
+     "after_ms": 42.47821,
+     "bytes": 301989888,
+     "copies": 5,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 61.40531699998064,
+     "save_ms": 167.7576949999775,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.07026958465576172,
+     "recompute_ttft_ms": 446.27619200002755,
+     "admit_ms": 4.565868,
+     "read_ms": 1.05583,
+     "h2d_ms": 13.147287,
+     "after_ms": 42.636672,
+     "bytes": 301989888,
+     "copies": 5,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 61.74481699997614,
+     "save_ms": 166.2033220000012,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.10845279693603516,
+     "recompute_ttft_ms": 449.1082309999683,
+     "admit_ms": 5.157271,
+     "read_ms": 0.976289,
+     "h2d_ms": 13.037334,
+     "after_ms": 42.574263,
+     "bytes": 301989888,
+     "copies": 5,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 61.93362500005151,
+     "save_ms": 164.28341100004218,
+     "match": false,
+     "logprobs_equal": false,
+     "max_logprob_delta": 1.8464126214385033,
+     "recompute_ttft_ms": 449.03749900004186,
+     "admit_ms": 4.874269,
+     "read_ms": 1.138044,
+     "h2d_ms": 13.344875,
+     "after_ms": 42.576787,
+     "bytes": 301989888,
+     "copies": 5,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 60.957620999943174,
+     "save_ms": 166.1430089999385,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.05492258071899414,
+     "recompute_ttft_ms": 447.38235099998747,
+     "admit_ms": 4.243579,
+     "read_ms": 1.061595,
+     "h2d_ms": 13.252312,
+     "after_ms": 42.400535,
+     "bytes": 301989888,
+     "copies": 5,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 63.94200800002636,
+     "save_ms": 155.15820099994926,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.04812312126159668,
+     "recompute_ttft_ms": 447.8518170000143,
+     "admit_ms": 7.181111,
+     "read_ms": 1.213554,
+     "h2d_ms": 13.28576,
+     "after_ms": 42.261924,
+     "bytes": 301989888,
+     "copies": 5,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 61.416665000024295,
+     "save_ms": 165.97936599998775,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.046469688415527344,
+     "recompute_ttft_ms": 447.39548400002604,
+     "admit_ms": 4.347804,
+     "read_ms": 1.125564,
+     "h2d_ms": 13.288185,
+     "after_ms": 42.655592,
+     "bytes": 301989888,
+     "copies": 5,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 61.534094999956324,
+     "save_ms": 166.243197999961,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.08893883228302002,
+     "recompute_ttft_ms": 449.740191999922,
+     "admit_ms": 4.092891,
+     "read_ms": 1.47495,
+     "h2d_ms": 13.488288,
+     "after_ms": 42.478477,
+     "bytes": 301989888,
+     "copies": 5,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 60.71330800000396,
+     "save_ms": 154.562167999984,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.04419076442718506,
+     "recompute_ttft_ms": 450.8308729999726,
+     "admit_ms": 4.388007,
+     "read_ms": 0.812829,
+     "h2d_ms": 12.862481,
+     "after_ms": 42.650423,
+     "bytes": 301989888,
+     "copies": 5,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 60.8585380000477,
+     "save_ms": 176.78638500001398,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.056636035442352295,
+     "recompute_ttft_ms": 447.1883040000648,
+     "admit_ms": 4.412447,
+     "read_ms": 0.94257,
+     "h2d_ms": 13.052376,
+     "after_ms": 42.451485,
+     "bytes": 301989888,
+     "copies": 5,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 65.04206100021293,
+     "save_ms": 165.71224299991627,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.06476926803588867,
+     "recompute_ttft_ms": 445.9992009999496,
+     "admit_ms": 8.312814,
+     "read_ms": 1.16044,
+     "h2d_ms": 13.14564,
+     "after_ms": 42.423539,
+     "bytes": 301989888,
+     "copies": 5,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 60.00632400014183,
+     "save_ms": 162.85258800007796,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.047771573066711426,
+     "recompute_ttft_ms": 447.49012500005847,
+     "admit_ms": 3.989126,
+     "read_ms": 0.80572,
+     "h2d_ms": 12.97409,
+     "after_ms": 42.237879,
+     "bytes": 301989888,
+     "copies": 5,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 60.408265999967625,
+     "save_ms": 163.8821960000314,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.03773510456085205,
+     "recompute_ttft_ms": 448.39622499989673,
+     "admit_ms": 4.168695,
+     "read_ms": 0.784005,
+     "h2d_ms": 12.971856,
+     "after_ms": 42.48407,
+     "bytes": 301989888,
+     "copies": 5,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 61.28684700001941,
+     "save_ms": 165.2391750001243,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.07543230056762695,
+     "recompute_ttft_ms": 451.50544800003445,
+     "admit_ms": 4.571625,
+     "read_ms": 0.926785,
+     "h2d_ms": 13.135159,
+     "after_ms": 42.653889,
+     "bytes": 301989888,
+     "copies": 5,
+     "ranks": 1
+    }
+   ]
+  },
+  {
+   "context_tokens": 8192,
+   "arm": "recompute",
+   "n": 45,
+   "ttft_ms_median": 1982.1984339998835,
+   "ttft_ms_min": 1953.4259600000041,
+   "ttft_ms_max": 2005.0536609999199,
+   "ttft_ms": [
+    1960.1436929999636,
+    1953.4259600000041,
+    1968.4443740000006,
+    1964.5144579999396,
+    1968.4358190000921,
+    1963.9006809999273,
+    1970.5579110000144,
+    1974.389871000085,
+    1976.510286000007,
+    1969.265164000035,
+    1977.2699679999732,
+    1963.800663000029,
+    1975.3205639999578,
+    1981.1188070000298,
+    1980.1600949999738,
+    1981.8541360000381,
+    1985.6203880000294,
+    1986.5333080000482,
+    1993.7347600000521,
+    1983.031381999922,
+    1984.0332669999725,
+    2005.0536609999199,
+    1992.704032000006,
+    1984.409750000168,
+    1991.7947060000643,
+    1971.3650640001106,
+    1970.3462950001267,
+    1981.1342599998625,
+    1982.1984339998835,
+    1987.2871360000772,
+    2001.768211999888,
+    1991.2606339999002,
+    1986.4163940001163,
+    1988.13326100003,
+    1987.4607829999604,
+    1979.1506230001232,
+    1996.4574830000856,
+    1989.3550310000592,
+    1983.5081060000448,
+    1992.466370000102,
+    1986.3034400000288,
+    1976.094046000071,
+    1983.503550000023,
+    1985.9294970001429,
+    1976.1538350001047
+   ],
+   "ttft_ms_median_by_run": [
+    1969.265164000035,
+    1984.409750000168,
+    1986.4163940001163
+   ],
+   "samples": [
+    {
+     "ttft_ms": 1960.1436929999636
+    },
+    {
+     "ttft_ms": 1953.4259600000041
+    },
+    {
+     "ttft_ms": 1968.4443740000006
+    },
+    {
+     "ttft_ms": 1964.5144579999396
+    },
+    {
+     "ttft_ms": 1968.4358190000921
+    },
+    {
+     "ttft_ms": 1963.9006809999273
+    },
+    {
+     "ttft_ms": 1970.5579110000144
+    },
+    {
+     "ttft_ms": 1974.389871000085
+    },
+    {
+     "ttft_ms": 1976.510286000007
+    },
+    {
+     "ttft_ms": 1969.265164000035
+    },
+    {
+     "ttft_ms": 1977.2699679999732
+    },
+    {
+     "ttft_ms": 1963.800663000029
+    },
+    {
+     "ttft_ms": 1975.3205639999578
+    },
+    {
+     "ttft_ms": 1981.1188070000298
+    },
+    {
+     "ttft_ms": 1980.1600949999738
+    },
+    {
+     "ttft_ms": 1981.8541360000381
+    },
+    {
+     "ttft_ms": 1985.6203880000294
+    },
+    {
+     "ttft_ms": 1986.5333080000482
+    },
+    {
+     "ttft_ms": 1993.7347600000521
+    },
+    {
+     "ttft_ms": 1983.031381999922
+    },
+    {
+     "ttft_ms": 1984.0332669999725
+    },
+    {
+     "ttft_ms": 2005.0536609999199
+    },
+    {
+     "ttft_ms": 1992.704032000006
+    },
+    {
+     "ttft_ms": 1984.409750000168
+    },
+    {
+     "ttft_ms": 1991.7947060000643
+    },
+    {
+     "ttft_ms": 1971.3650640001106
+    },
+    {
+     "ttft_ms": 1970.3462950001267
+    },
+    {
+     "ttft_ms": 1981.1342599998625
+    },
+    {
+     "ttft_ms": 1982.1984339998835
+    },
+    {
+     "ttft_ms": 1987.2871360000772
+    },
+    {
+     "ttft_ms": 2001.768211999888
+    },
+    {
+     "ttft_ms": 1991.2606339999002
+    },
+    {
+     "ttft_ms": 1986.4163940001163
+    },
+    {
+     "ttft_ms": 1988.13326100003
+    },
+    {
+     "ttft_ms": 1987.4607829999604
+    },
+    {
+     "ttft_ms": 1979.1506230001232
+    },
+    {
+     "ttft_ms": 1996.4574830000856
+    },
+    {
+     "ttft_ms": 1989.3550310000592
+    },
+    {
+     "ttft_ms": 1983.5081060000448
+    },
+    {
+     "ttft_ms": 1992.466370000102
+    },
+    {
+     "ttft_ms": 1986.3034400000288
+    },
+    {
+     "ttft_ms": 1976.094046000071
+    },
+    {
+     "ttft_ms": 1983.503550000023
+    },
+    {
+     "ttft_ms": 1985.9294970001429
+    },
+    {
+     "ttft_ms": 1976.1538350001047
+    }
+   ]
+  },
+  {
+   "context_tokens": 8192,
+   "arm": "restore-cold",
+   "n": 15,
+   "ttft_ms_median": 472.90244599980724,
+   "ttft_ms_min": 456.637819999969,
+   "ttft_ms_max": 562.102053999979,
+   "ttft_ms": [
+    457.5651769999922,
+    464.53815199993187,
+    562.102053999979,
+    558.9262390000158,
+    460.34801899998,
+    456.637819999969,
+    529.3306840000014,
+    472.90244599980724,
+    458.7305830000332,
+    520.700872000134,
+    465.9670080000069,
+    551.0977840001487,
+    556.7354900001646,
+    464.23374799996964,
+    526.8134600000849
+   ],
+   "ttft_ms_median_by_run": [
+    464.53815199993187,
+    472.90244599980724,
+    526.8134600000849
+   ],
+   "save_ms_median": 8170.367869000074,
+   "admit_ms_median": 12.188121,
+   "read_ms_median": 351.276682,
+   "h2d_ms_median": 50.062843,
+   "after_ms_median": 50.831658,
+   "bytes_median": 1207959552,
+   "copies_median": 19,
+   "ranks_median": 1,
+   "tokens_match": 14,
+   "logprobs_equal": 0,
+   "max_logprob_delta": 0.8480494022369385,
+   "samples": [
+    {
+     "ttft_ms": 457.5651769999922,
+     "save_ms": 8205.57716999997,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.015170425176620483,
+     "recompute_ttft_ms": 1968.4443740000006,
+     "admit_ms": 12.058104,
+     "read_ms": 344.390884,
+     "h2d_ms": 50.17433,
+     "after_ms": 50.94262,
+     "bytes": 1207959552,
+     "copies": 19,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 464.53815199993187,
+     "save_ms": 8188.378450000073,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.06173896789550781,
+     "recompute_ttft_ms": 1963.9006809999273,
+     "admit_ms": 12.188121,
+     "read_ms": 350.961467,
+     "h2d_ms": 50.010333,
+     "after_ms": 51.379252,
+     "bytes": 1207959552,
+     "copies": 19,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 562.102053999979,
+     "save_ms": 8170.367869000074,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.0417027473449707,
+     "recompute_ttft_ms": 1976.510286000007,
+     "admit_ms": 12.40015,
+     "read_ms": 436.289985,
+     "h2d_ms": 50.209204,
+     "after_ms": 63.203386,
+     "bytes": 1207959552,
+     "copies": 19,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 558.9262390000158,
+     "save_ms": 8104.466306999939,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.02280282974243164,
+     "recompute_ttft_ms": 1963.800663000029,
+     "admit_ms": 13.175308,
+     "read_ms": 445.385956,
+     "h2d_ms": 50.339305,
+     "after_ms": 50.026341,
+     "bytes": 1207959552,
+     "copies": 19,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 460.34801899998,
+     "save_ms": 8043.4905119999485,
+     "match": false,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.8480494022369385,
+     "recompute_ttft_ms": 1980.1600949999738,
+     "admit_ms": 12.75351,
+     "read_ms": 346.931975,
+     "h2d_ms": 50.012485,
+     "after_ms": 50.651271,
+     "bytes": 1207959552,
+     "copies": 19,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 456.637819999969,
+     "save_ms": 7893.09885199998,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.02163451910018921,
+     "recompute_ttft_ms": 1986.5333080000482,
+     "admit_ms": 12.029087,
+     "read_ms": 343.875392,
+     "h2d_ms": 49.903145,
+     "after_ms": 50.831658,
+     "bytes": 1207959552,
+     "copies": 19,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 529.3306840000014,
+     "save_ms": 7935.448418000078,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.07046246528625488,
+     "recompute_ttft_ms": 1984.0332669999725,
+     "admit_ms": 11.884353,
+     "read_ms": 417.15145,
+     "h2d_ms": 50.034269,
+     "after_ms": 50.261744,
+     "bytes": 1207959552,
+     "copies": 19,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 472.90244599980724,
+     "save_ms": 7944.53871099995,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.02691030502319336,
+     "recompute_ttft_ms": 1984.409750000168,
+     "admit_ms": 12.443233,
+     "read_ms": 346.8182,
+     "h2d_ms": 50.130827,
+     "after_ms": 63.511138,
+     "bytes": 1207959552,
+     "copies": 19,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 458.7305830000332,
+     "save_ms": 7911.183176999884,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.025070667266845703,
+     "recompute_ttft_ms": 1970.3462950001267,
+     "admit_ms": 13.324544,
+     "read_ms": 344.758465,
+     "h2d_ms": 49.72872,
+     "after_ms": 50.920248,
+     "bytes": 1207959552,
+     "copies": 19,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 520.700872000134,
+     "save_ms": 7924.605939999992,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.05331277847290039,
+     "recompute_ttft_ms": 1987.2871360000772,
+     "admit_ms": 12.631413,
+     "read_ms": 408.203623,
+     "h2d_ms": 49.684376,
+     "after_ms": 50.182582,
+     "bytes": 1207959552,
+     "copies": 19,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 465.9670080000069,
+     "save_ms": 8231.123369999978,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.03439521789550781,
+     "recompute_ttft_ms": 1986.4163940001163,
+     "admit_ms": 14.031671,
+     "read_ms": 351.276682,
+     "h2d_ms": 50.573924,
+     "after_ms": 50.085342,
+     "bytes": 1207959552,
+     "copies": 19,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 551.0977840001487,
+     "save_ms": 8196.184813999935,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.046097517013549805,
+     "recompute_ttft_ms": 1979.1506230001232,
+     "admit_ms": 11.7539,
+     "read_ms": 438.811983,
+     "h2d_ms": 50.180379,
+     "after_ms": 50.352203,
+     "bytes": 1207959552,
+     "copies": 19,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 556.7354900001646,
+     "save_ms": 8217.412338000031,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.055538177490234375,
+     "recompute_ttft_ms": 1983.5081060000448,
+     "admit_ms": 11.81304,
+     "read_ms": 433.364594,
+     "h2d_ms": 49.829053,
+     "after_ms": 61.729374,
+     "bytes": 1207959552,
+     "copies": 19,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 464.23374799996964,
+     "save_ms": 8180.76123600008,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.06725025177001953,
+     "recompute_ttft_ms": 1976.094046000071,
+     "admit_ms": 12.010949,
+     "read_ms": 350.765024,
+     "h2d_ms": 50.150109,
+     "after_ms": 51.308227,
+     "bytes": 1207959552,
+     "copies": 19,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 526.8134600000849,
+     "save_ms": 8182.574771999953,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.07380378246307373,
+     "recompute_ttft_ms": 1976.1538350001047,
+     "admit_ms": 11.58392,
+     "read_ms": 414.665985,
+     "h2d_ms": 50.062843,
+     "after_ms": 50.501304,
+     "bytes": 1207959552,
+     "copies": 19,
+     "ranks": 1
+    }
+   ]
+  },
+  {
+   "context_tokens": 8192,
+   "arm": "restore-disk",
+   "n": 15,
+   "ttft_ms_median": 232.9697010000018,
+   "ttft_ms_min": 229.3488760000173,
+   "ttft_ms_max": 238.3479109998916,
+   "ttft_ms": [
+    229.3488760000173,
+    230.54313600005116,
+    237.08639500000572,
+    236.36090900004092,
+    234.59012099999654,
+    230.32399499993517,
+    229.8979900000404,
+    232.9697010000018,
+    232.57512599980146,
+    231.84516900005292,
+    235.7441320000362,
+    231.31614099997932,
+    234.2344090000097,
+    238.3479109998916,
+    238.32654600005299
+   ],
+   "ttft_ms_median_by_run": [
+    234.59012099999654,
+    231.84516900005292,
+    235.7441320000362
+   ],
+   "save_ms_median": 8237.880144999963,
+   "admit_ms_median": 11.934118,
+   "read_ms_median": 119.386338,
+   "h2d_ms_median": 49.98654,
+   "after_ms_median": 51.034773,
+   "bytes_median": 1207959552,
+   "copies_median": 19,
+   "ranks_median": 1,
+   "tokens_match": 14,
+   "logprobs_equal": 0,
+   "max_logprob_delta": 2.059246063232422,
+   "samples": [
+    {
+     "ttft_ms": 229.3488760000173,
+     "save_ms": 8237.880144999963,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.06270074844360352,
+     "recompute_ttft_ms": 1953.4259600000041,
+     "admit_ms": 11.989982,
+     "read_ms": 115.466022,
+     "h2d_ms": 50.10234,
+     "after_ms": 51.791013,
+     "bytes": 1207959552,
+     "copies": 19,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 230.54313600005116,
+     "save_ms": 8275.908101000026,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.03875541687011719,
+     "recompute_ttft_ms": 1968.4358190000921,
+     "admit_ms": 11.146288,
+     "read_ms": 118.830592,
+     "h2d_ms": 49.710737,
+     "after_ms": 50.855839,
+     "bytes": 1207959552,
+     "copies": 19,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 237.08639500000572,
+     "save_ms": 8246.995318000018,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.02828669548034668,
+     "recompute_ttft_ms": 1974.389871000085,
+     "admit_ms": 11.387456,
+     "read_ms": 124.678706,
+     "h2d_ms": 49.985921,
+     "after_ms": 51.034773,
+     "bytes": 1207959552,
+     "copies": 19,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 236.36090900004092,
+     "save_ms": 8181.168585000023,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.0368039608001709,
+     "recompute_ttft_ms": 1977.2699679999732,
+     "admit_ms": 11.934118,
+     "read_ms": 122.277936,
+     "h2d_ms": 50.551401,
+     "after_ms": 51.597826,
+     "bytes": 1207959552,
+     "copies": 19,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 234.59012099999654,
+     "save_ms": 8241.460366999945,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.05678081512451172,
+     "recompute_ttft_ms": 1981.1188070000298,
+     "admit_ms": 12.404025,
+     "read_ms": 121.093931,
+     "h2d_ms": 50.950638,
+     "after_ms": 50.142078,
+     "bytes": 1207959552,
+     "copies": 19,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 230.32399499993517,
+     "save_ms": 8221.082564000084,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.06601071357727051,
+     "recompute_ttft_ms": 1985.6203880000294,
+     "admit_ms": 11.47204,
+     "read_ms": 118.140418,
+     "h2d_ms": 50.625017,
+     "after_ms": 50.086971,
+     "bytes": 1207959552,
+     "copies": 19,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 229.8979900000404,
+     "save_ms": 7944.3602000000055,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.07720136642456055,
+     "recompute_ttft_ms": 1983.031381999922,
+     "admit_ms": 11.249707,
+     "read_ms": 117.622009,
+     "h2d_ms": 49.791716,
+     "after_ms": 51.235018,
+     "bytes": 1207959552,
+     "copies": 19,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 232.9697010000018,
+     "save_ms": 8069.07699899989,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.09093165397644043,
+     "recompute_ttft_ms": 1992.704032000006,
+     "admit_ms": 12.606758,
+     "read_ms": 118.970422,
+     "h2d_ms": 50.138458,
+     "after_ms": 51.254503,
+     "bytes": 1207959552,
+     "copies": 19,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 232.57512599980146,
+     "save_ms": 7921.1153619999095,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.04712104797363281,
+     "recompute_ttft_ms": 1971.3650640001106,
+     "admit_ms": 13.197602,
+     "read_ms": 118.178845,
+     "h2d_ms": 49.89148,
+     "after_ms": 51.30763,
+     "bytes": 1207959552,
+     "copies": 19,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 231.84516900005292,
+     "save_ms": 7913.78444399993,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.04467102885246277,
+     "recompute_ttft_ms": 1982.1984339998835,
+     "admit_ms": 11.63267,
+     "read_ms": 119.386338,
+     "h2d_ms": 49.98654,
+     "after_ms": 50.840202,
+     "bytes": 1207959552,
+     "copies": 19,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 235.7441320000362,
+     "save_ms": 8243.929711999954,
+     "match": false,
+     "logprobs_equal": false,
+     "max_logprob_delta": 2.059246063232422,
+     "recompute_ttft_ms": 1991.2606339999002,
+     "admit_ms": 11.8917,
+     "read_ms": 123.449943,
+     "h2d_ms": 50.418276,
+     "after_ms": 49.985365,
+     "bytes": 1207959552,
+     "copies": 19,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 231.31614099997932,
+     "save_ms": 8268.995707000158,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.03908070921897888,
+     "recompute_ttft_ms": 1987.4607829999604,
+     "admit_ms": 12.068783,
+     "read_ms": 118.844732,
+     "h2d_ms": 49.934719,
+     "after_ms": 50.468368,
+     "bytes": 1207959552,
+     "copies": 19,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 234.2344090000097,
+     "save_ms": 8192.933395999944,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.03601086139678955,
+     "recompute_ttft_ms": 1989.3550310000592,
+     "admit_ms": 11.912376,
+     "read_ms": 121.188243,
+     "h2d_ms": 49.86837,
+     "after_ms": 51.26577,
+     "bytes": 1207959552,
+     "copies": 19,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 238.3479109998916,
+     "save_ms": 8358.154423000087,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.08926105499267578,
+     "recompute_ttft_ms": 1986.3034400000288,
+     "admit_ms": 12.380775,
+     "read_ms": 124.752265,
+     "h2d_ms": 50.090274,
+     "after_ms": 51.125008,
+     "bytes": 1207959552,
+     "copies": 19,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 238.32654600005299,
+     "save_ms": 8252.12800600002,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.04143381118774414,
+     "recompute_ttft_ms": 1985.9294970001429,
+     "admit_ms": 12.144782,
+     "read_ms": 126.179917,
+     "h2d_ms": 49.813049,
+     "after_ms": 50.189159,
+     "bytes": 1207959552,
+     "copies": 19,
+     "ranks": 1
+    }
+   ]
+  },
+  {
+   "context_tokens": 8192,
+   "arm": "restore-host",
+   "n": 15,
+   "ttft_ms_median": 113.21520200010582,
+   "ttft_ms_min": 111.89464399990356,
+   "ttft_ms_max": 117.38207300004433,
+   "ttft_ms": [
+    113.36146700000427,
+    111.98051899998518,
+    117.38207300004433,
+    114.08933000006982,
+    113.56758499994157,
+    111.91268599998239,
+    113.21520200010582,
+    115.84969099999398,
+    112.20579700011513,
+    112.50186600000234,
+    111.89464399990356,
+    112.5170430000253,
+    115.75152899990826,
+    113.9749489998394,
+    112.16555000009976
+   ],
+   "ttft_ms_median_by_run": [
+    113.56758499994157,
+    112.50186600000234,
+    112.5170430000253
+   ],
+   "save_ms_median": 612.927032000016,
+   "admit_ms_median": 10.66733,
+   "read_ms_median": 1.981172,
+   "h2d_ms_median": 49.867925,
+   "after_ms_median": 50.458068,
+   "bytes_median": 1207959552,
+   "copies_median": 19,
+   "ranks_median": 1,
+   "tokens_match": 13,
+   "logprobs_equal": 0,
+   "max_logprob_delta": 1.4924051761627197,
+   "samples": [
+    {
+     "ttft_ms": 113.36146700000427,
+     "save_ms": 603.7624829999686,
+     "match": false,
+     "logprobs_equal": false,
+     "max_logprob_delta": 1.4924051761627197,
+     "recompute_ttft_ms": 1960.1436929999636,
+     "admit_ms": 10.920421,
+     "read_ms": 1.988274,
+     "h2d_ms": 49.962154,
+     "after_ms": 50.491009,
+     "bytes": 1207959552,
+     "copies": 19,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 111.98051899998518,
+     "save_ms": 612.9394010000624,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.05991840362548828,
+     "recompute_ttft_ms": 1964.5144579999396,
+     "admit_ms": 10.305886,
+     "read_ms": 2.059329,
+     "h2d_ms": 49.560331,
+     "after_ms": 50.055523,
+     "bytes": 1207959552,
+     "copies": 19,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 117.38207300004433,
+     "save_ms": 591.3963110000395,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.05387544631958008,
+     "recompute_ttft_ms": 1970.5579110000144,
+     "admit_ms": 14.742985,
+     "read_ms": 1.976869,
+     "h2d_ms": 49.822903,
+     "after_ms": 50.839656,
+     "bytes": 1207959552,
+     "copies": 19,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 114.08933000006982,
+     "save_ms": 615.9360830000651,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.052556514739990234,
+     "recompute_ttft_ms": 1969.265164000035,
+     "admit_ms": 11.015568,
+     "read_ms": 2.118002,
+     "h2d_ms": 49.97265,
+     "after_ms": 50.983561,
+     "bytes": 1207959552,
+     "copies": 19,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 113.56758499994157,
+     "save_ms": 612.8031160000091,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.05931425094604492,
+     "recompute_ttft_ms": 1975.3205639999578,
+     "admit_ms": 11.101248,
+     "read_ms": 2.106091,
+     "h2d_ms": 50.242044,
+     "after_ms": 50.118573,
+     "bytes": 1207959552,
+     "copies": 19,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 111.91268599998239,
+     "save_ms": 601.6207220000069,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.045778751373291016,
+     "recompute_ttft_ms": 1981.8541360000381,
+     "admit_ms": 9.927191,
+     "read_ms": 1.92602,
+     "h2d_ms": 49.703975,
+     "after_ms": 50.356071,
+     "bytes": 1207959552,
+     "copies": 19,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 113.21520200010582,
+     "save_ms": 613.4575199999972,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.06831979751586914,
+     "recompute_ttft_ms": 1993.7347600000521,
+     "admit_ms": 10.637978,
+     "read_ms": 1.981172,
+     "h2d_ms": 50.238318,
+     "after_ms": 50.358255,
+     "bytes": 1207959552,
+     "copies": 19,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 115.84969099999398,
+     "save_ms": 636.4153869999427,
+     "match": false,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.5249841213226318,
+     "recompute_ttft_ms": 2005.0536609999199,
+     "admit_ms": 13.920508,
+     "read_ms": 1.437444,
+     "h2d_ms": 49.843613,
+     "after_ms": 50.648667,
+     "bytes": 1207959552,
+     "copies": 19,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 112.20579700011513,
+     "save_ms": 610.7337089999874,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.012907743453979492,
+     "recompute_ttft_ms": 1991.7947060000643,
+     "admit_ms": 9.894178,
+     "read_ms": 1.9063,
+     "h2d_ms": 49.924562,
+     "after_ms": 50.481158,
+     "bytes": 1207959552,
+     "copies": 19,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 112.50186600000234,
+     "save_ms": 602.2147480000513,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.046880245208740234,
+     "recompute_ttft_ms": 1981.1342599998625,
+     "admit_ms": 10.003898,
+     "read_ms": 2.029793,
+     "h2d_ms": 49.81911,
+     "after_ms": 50.649496,
+     "bytes": 1207959552,
+     "copies": 19,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 111.89464399990356,
+     "save_ms": 615.2015650000067,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.03401172161102295,
+     "recompute_ttft_ms": 2001.768211999888,
+     "admit_ms": 10.436545,
+     "read_ms": 1.468043,
+     "h2d_ms": 49.736441,
+     "after_ms": 50.254066,
+     "bytes": 1207959552,
+     "copies": 19,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 112.5170430000253,
+     "save_ms": 614.6875730000829,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.01688961684703827,
+     "recompute_ttft_ms": 1988.13326100003,
+     "admit_ms": 10.66733,
+     "read_ms": 1.99092,
+     "h2d_ms": 49.998349,
+     "after_ms": 49.860894,
+     "bytes": 1207959552,
+     "copies": 19,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 115.75152899990826,
+     "save_ms": 621.1493320001864,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.04887247085571289,
+     "recompute_ttft_ms": 1996.4574830000856,
+     "admit_ms": 13.715093,
+     "read_ms": 1.878507,
+     "h2d_ms": 49.959518,
+     "after_ms": 50.198752,
+     "bytes": 1207959552,
+     "copies": 19,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 113.9749489998394,
+     "save_ms": 612.927032000016,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.06692337989807129,
+     "recompute_ttft_ms": 1992.466370000102,
+     "admit_ms": 11.558662,
+     "read_ms": 2.090785,
+     "h2d_ms": 49.867925,
+     "after_ms": 50.458068,
+     "bytes": 1207959552,
+     "copies": 19,
+     "ranks": 1
+    },
+    {
+     "ttft_ms": 112.16555000009976,
+     "save_ms": 600.1475410000694,
+     "match": true,
+     "logprobs_equal": false,
+     "max_logprob_delta": 0.06168317794799805,
+     "recompute_ttft_ms": 1983.503550000023,
+     "admit_ms": 10.514505,
+     "read_ms": 1.27793,
+     "h2d_ms": 49.660978,
+     "after_ms": 50.712468,
+     "bytes": 1207959552,
+     "copies": 19,
+     "ranks": 1
+    }
+   ]
+  }
+ ],
+ "environment_by_run": [
+  {
+   "gpu_at_start": {
+    "name": "NVIDIA A10-24Q",
+    "driver_version": "570.211.01",
+    "clocks.sm": "1695 MHz",
+    "clocks.mem": "6251 MHz",
+    "clocks.max.sm": "[Unknown Error]",
+    "clocks.max.mem": "[Unknown Error]",
+    "pcie.link.gen.current": "[N/A]",
+    "pcie.link.gen.max": "[N/A]",
+    "pcie.link.width.current": "[N/A]",
+    "pcie.link.width.max": "[N/A]",
+    "power.limit": "[N/A]",
+    "temperature.gpu": "[N/A]",
+    "memory.used": "0 MiB",
+    "memory.total": "24512 MiB",
+    "host_load_average_1_5_15": [
+     4.04,
+     3.57,
+     1.83
+    ]
+   },
+   "git": {
+    "commit": "4ba6e8bbb4b7487c9a3eea108c9b3e104c564321",
+    "dirty": null,
+    "source": "archive"
+   },
+   "host": {
+    "cpu": "AMD EPYC 74F3 24-Core Processor",
+    "cpus": 72,
+    "memory_gib": 866.1,
+    "kernel": "5.15.221-14.2026100118g3ce9aaa+snow+aws+5.15+amd64.x86_64",
+    "load_average_1_5_15": [
+     4.04,
+     3.57,
+     1.83
+    ]
+   },
+   "storage": {
+    "device": "overlay",
+    "model_transport": null
+   },
+   "software": {
+    "python": "3.12.15",
+    "vllm": "0.31.0",
+    "torch": "2.13.0+cu130",
+    "torch_cuda": "13.0"
+   },
+   "gpu_at_measurement": {
+    "name": "NVIDIA A10-24Q",
+    "driver_version": "570.211.01",
+    "clocks.sm": "1695 MHz",
+    "clocks.mem": "6251 MHz",
+    "clocks.max.sm": "[Unknown Error]",
+    "clocks.max.mem": "[Unknown Error]",
+    "pcie.link.gen.current": "[N/A]",
+    "pcie.link.gen.max": "[N/A]",
+    "pcie.link.width.current": "[N/A]",
+    "pcie.link.width.max": "[N/A]",
+    "power.limit": "[N/A]",
+    "temperature.gpu": "[N/A]",
+    "memory.used": "18984 MiB",
+    "memory.total": "24512 MiB",
+    "host_load_average_1_5_15": [
+     3.07,
+     3.54,
+     2.06
+    ]
+   }
+  },
+  {
+   "gpu_at_start": {
+    "name": "NVIDIA A10-24Q",
+    "driver_version": "570.211.01",
+    "clocks.sm": "1695 MHz",
+    "clocks.mem": "6251 MHz",
+    "clocks.max.sm": "[Unknown Error]",
+    "clocks.max.mem": "[Unknown Error]",
+    "pcie.link.gen.current": "[N/A]",
+    "pcie.link.gen.max": "[N/A]",
+    "pcie.link.width.current": "[N/A]",
+    "pcie.link.width.max": "[N/A]",
+    "power.limit": "[N/A]",
+    "temperature.gpu": "[N/A]",
+    "memory.used": "0 MiB",
+    "memory.total": "24512 MiB",
+    "host_load_average_1_5_15": [
+     4.28,
+     3.98,
+     2.6
+    ]
+   },
+   "git": {
+    "commit": "4ba6e8bbb4b7487c9a3eea108c9b3e104c564321",
+    "dirty": null,
+    "source": "archive"
+   },
+   "host": {
+    "cpu": "AMD EPYC 74F3 24-Core Processor",
+    "cpus": 72,
+    "memory_gib": 866.1,
+    "kernel": "5.15.221-14.2026100118g3ce9aaa+snow+aws+5.15+amd64.x86_64",
+    "load_average_1_5_15": [
+     4.28,
+     3.98,
+     2.6
+    ]
+   },
+   "storage": {
+    "device": "overlay",
+    "model_transport": null
+   },
+   "software": {
+    "python": "3.12.15",
+    "vllm": "0.31.0",
+    "torch": "2.13.0+cu130",
+    "torch_cuda": "13.0"
+   },
+   "gpu_at_measurement": {
+    "name": "NVIDIA A10-24Q",
+    "driver_version": "570.211.01",
+    "clocks.sm": "1695 MHz",
+    "clocks.mem": "6251 MHz",
+    "clocks.max.sm": "[Unknown Error]",
+    "clocks.max.mem": "[Unknown Error]",
+    "pcie.link.gen.current": "[N/A]",
+    "pcie.link.gen.max": "[N/A]",
+    "pcie.link.width.current": "[N/A]",
+    "pcie.link.width.max": "[N/A]",
+    "power.limit": "[N/A]",
+    "temperature.gpu": "[N/A]",
+    "memory.used": "18984 MiB",
+    "memory.total": "24512 MiB",
+    "host_load_average_1_5_15": [
+     5.34,
+     4.29,
+     2.76
+    ]
+   }
+  },
+  {
+   "gpu_at_start": {
+    "name": "NVIDIA A10-24Q",
+    "driver_version": "570.211.01",
+    "clocks.sm": "1695 MHz",
+    "clocks.mem": "6251 MHz",
+    "clocks.max.sm": "[Unknown Error]",
+    "clocks.max.mem": "[Unknown Error]",
+    "pcie.link.gen.current": "[N/A]",
+    "pcie.link.gen.max": "[N/A]",
+    "pcie.link.width.current": "[N/A]",
+    "pcie.link.width.max": "[N/A]",
+    "power.limit": "[N/A]",
+    "temperature.gpu": "[N/A]",
+    "memory.used": "0 MiB",
+    "memory.total": "24512 MiB",
+    "host_load_average_1_5_15": [
+     6.97,
+     5.06,
+     3.38
+    ]
+   },
+   "git": {
+    "commit": "4ba6e8bbb4b7487c9a3eea108c9b3e104c564321",
+    "dirty": null,
+    "source": "archive"
+   },
+   "host": {
+    "cpu": "AMD EPYC 74F3 24-Core Processor",
+    "cpus": 72,
+    "memory_gib": 866.1,
+    "kernel": "5.15.221-14.2026100118g3ce9aaa+snow+aws+5.15+amd64.x86_64",
+    "load_average_1_5_15": [
+     6.97,
+     5.06,
+     3.38
+    ]
+   },
+   "storage": {
+    "device": "overlay",
+    "model_transport": null
+   },
+   "software": {
+    "python": "3.12.15",
+    "vllm": "0.31.0",
+    "torch": "2.13.0+cu130",
+    "torch_cuda": "13.0"
+   },
+   "gpu_at_measurement": {
+    "name": "NVIDIA A10-24Q",
+    "driver_version": "570.211.01",
+    "clocks.sm": "1695 MHz",
+    "clocks.mem": "6251 MHz",
+    "clocks.max.sm": "[Unknown Error]",
+    "clocks.max.mem": "[Unknown Error]",
+    "pcie.link.gen.current": "[N/A]",
+    "pcie.link.gen.max": "[N/A]",
+    "pcie.link.width.current": "[N/A]",
+    "pcie.link.width.max": "[N/A]",
+    "power.limit": "[N/A]",
+    "temperature.gpu": "[N/A]",
+    "memory.used": "18984 MiB",
+    "memory.total": "24512 MiB",
+    "host_load_average_1_5_15": [
+     7.6,
+     5.61,
+     3.64
+    ]
+   }
+  }
+ ]
+}

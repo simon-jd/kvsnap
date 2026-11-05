@@ -1,0 +1,438 @@
+{
+  "run_id": "20261105T061322Z-kvsnap-tp1-restore",
+  "pool": "PORTFOLIO_2XA10_POOL",
+  "instances": 1,
+  "payload": "payloads/kvsnap_tp_bench.py",
+  "pip": [],
+  "args": [
+    "kvsnap-src-4ba6e8b.tar",
+    "tp1-restore",
+    "33"
+  ],
+  "started_at": "2026-11-05T06:13:22+00:00",
+  "pool_before": {
+    "state": "SUSPENDED",
+    "instance_family": "GPU_NV_2M",
+    "min_nodes": "1",
+    "max_nodes": "1",
+    "active_nodes": "0",
+    "idle_nodes": "0",
+    "num_services": "0",
+    "num_jobs": "0"
+  },
+  "job_id": "PORTFOLIO_LAB.GPU.PF_KVSNAP_TP_BENCH_KVSNAP_TP1_RESTORE_1LQ95AN8IK6L4",
+  "status_trace": [
+    {
+      "at_s": 9,
+      "job": "PENDING",
+      "containers": [
+        [
+          "None",
+          "None"
+        ]
+      ]
+    },
+    {
+      "at_s": 153,
+      "job": "PENDING",
+      "containers": [
+        [
+          "PENDING",
+          "Unschedulable due to insufficient  resources."
+        ]
+      ]
+    },
+    {
+      "at_s": 173,
+      "job": "PENDING",
+      "containers": [
+        [
+          "PENDING",
+          "Waiting to start"
+        ]
+      ]
+    },
+    {
+      "at_s": 214,
+      "job": "RUNNING",
+      "containers": [
+        [
+          "READY",
+          "Running"
+        ]
+      ]
+    },
+    {
+      "at_s": 1513,
+      "job": "PENDING",
+      "containers": [
+        [
+          "DONE",
+          "Completed successfully"
+        ]
+      ]
+    },
+    {
+      "at_s": 1554,
+      "job": "DONE",
+      "containers": [
+        [
+          "DONE",
+          "Completed successfully"
+        ]
+      ]
+    }
+  ],
+  "status": "DONE",
+  "results": [
+    {
+      "step": "node",
+      "node": {
+        "python": "3.12.15",
+        "cpus": 72,
+        "cpu_model": "model name\t: AMD EPYC 74F3 24-Core Processor",
+        "mem": "total        used        free      shared  buff/cache   available\nMem:             866          11         838           0          19         854\nSwap:              0           0           0",
+        "df_work": "Filesystem      Size  Used Avail Use% Mounted on\noverlay         150G   25G  126G  17% /",
+        "findmnt_work": "TARGET SOURCE  FSTYPE  OPTIONS\n/      overlay overlay rw,relatime,seclabel,lowerdir=/var/lib/snowfs/mount/0,upperdir=/var/lib/snowfs/snapshots/mnt/snapshots/fs/52,workdir=/var/lib/snowfs/snapshots/mnt/snapshots/work/52",
+        "shm": "Filesystem      Size  Used Avail Use% Mounted on\ntmpfs           257G     0  257G   0% /dev/shm",
+        "lsblk": "NAME     SIZE TYPE MODEL            TRAN MOUNTPOINTS\nsda       50G disk Virtual Disk          \n\u251c\u2500sda1   500M part                       \n\u251c\u2500sda2    49G part                       /usr/lib/firmware/nvidia/570.211.01/gsp_tu10x.bin\n\u2502                                        /usr/lib/firmware/nvidia/570.211.01/gsp_ga10x.bin\n\u2502                                        /usr/lib/x86_64-linux-gnu/libnvidia-nvvm.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libnvidia-pkcs11-openssl3.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libnvidia-pkcs11.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libnvidia-allocator.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libnvidia-ptxjitcompiler.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libnvidia-gpucomp.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libnvidia-opencl.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libcudadebugger.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libcuda.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libnvidia-cfg.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libnvidia-ml.so.570.211.01\n\u2502                                        /usr/bin/nvidia-cuda-mps-server\n\u2502                                        /usr/bin/nvidia-cuda-mps-control\n\u2502                                        /usr/bin/nv-fabricmanager\n\u2502                                        /usr/bin/nvidia-persistenced\n\u2502                                        /usr/bin/nvidia-debugdump\n\u2502                                        /usr/bin/nvidia-smi\n\u2502                                        /var/log/services/internal\n\u251c\u2500sda14    4M part                       \n\u2514\u2500sda15  495M part                       \nsdb      2.8T disk Virtual Disk          \n\u2514\u2500sdb1   2.8T part                       \nsdc      220G disk Virtual Disk          \nsr0      630K rom  Virtual DVD-ROM",
+        "gpus": "GPU 0: NVIDIA A10-24Q (UUID: GPU-28901080-d8e0-11f1-965a-e4adc2fc9db0)\nGPU 1: NVIDIA A10-24Q (UUID: GPU-28901080-d8e0-11f1-965a-8de0768560f8)",
+        "topo": "\u001b[4mGPU0\tGPU1\tNIC0\tCPU Affinity\tNUMA Affinity\tGPU NUMA ID\u001b[0m\nGPU0\t X \tSYS\tSYS\t36-53\t2\t\tN/A\nGPU1\tSYS\t X \tNODE\t0-17\t0\t\tN/A\nNIC0\tSYS\tNODE\t X \t\t\t\t\n\nLegend:\n\n  X    = Self\n  SYS  = Connection traversing PCIe as well as the SMP interconnect between NUMA nodes (e.g., QPI/UPI)\n  NODE = Connection traversing PCIe as well as the interconnect between PCIe Host Bridges within a NUMA node\n  PHB  = Connection traversing PCIe as well as a PCIe Host Bridge (typically the CPU)\n  PXB  = Connection traversing multiple PCIe bridges (without traversing the PCIe Host Bridge)\n  PIX  = Connection traversing at most a single PCIe bridge\n  NV#  = Connection traversing a bonded set of # NVLinks\n\nNIC Legend:\n\n  NIC0: mlx5_0",
+        "p2p_read": "\u001b[4mGPU0\tGPU1\t\u001b[0m\n GPU0\tX\tNS\t\n GPU1\tNS\tX\t\n\nLegend:\n\n  X    = Self\n  OK   = Status Ok\n  CNS  = Chipset not supported\n  GNS  = GPU not supported\n  TNS  = Topology not supported\n  NS   = Not supported\n  U    = Unknown",
+        "query": "0, NVIDIA A10-24Q, 570.211.01, 24512 MiB, [Unknown Error], [N/A], [N/A]\n1, NVIDIA A10-24Q, 570.211.01, 24512 MiB, [Unknown Error], [N/A], [N/A]"
+      }
+    },
+    {
+      "step": "bootstrap",
+      "bootstrap": {
+        "fetch_s": 114.6,
+        "sha256_s": 12.0,
+        "untar_s": 15.8,
+        "install": {
+          "rc": 0,
+          "wheels": 199,
+          "seconds": 157.1,
+          "err_tail": []
+        },
+        "native_build": {
+          "io": {
+            "rc": 0,
+            "err_tail": []
+          },
+          "cuda": {
+            "rc": 0,
+            "err_tail": []
+          }
+        },
+        "source_commit": "4ba6e8bbb4b7487c9a3eea108c9b3e104c564321",
+        "sha256_mismatch": [],
+        "ninja_in_wheelhouse": true
+      }
+    },
+    {
+      "step": "restore-tp1-run1",
+      "restore-tp1-run1": {
+        "rc": 0,
+        "seconds": 397.4,
+        "nccl": {},
+        "key_lines": [
+          "(EngineCore pid=1810) INFO 11-05 06:22:09 [core.py:129] Initializing a V1 LLM engine (v0.31.0) with config: model='/tmp/pf-kvsnap/hf/hub/models--Qwen--Qwen3-8B/snapshots/b968826d9c46dd6066d109eabc6255188de91218', speculative_config=None, tokenizer='/tmp/pf-kvsnap/hf/hub/models--Qwen--Qwen3-8B/snapsh"
+        ],
+        "gpu_memory_after": "0, 0 MiB, 24512 MiB\n1, 0 MiB, 24512 MiB",
+        "rows": [
+          {
+            "context_tokens": 2048,
+            "arm": "recompute",
+            "cold": null,
+            "n": 15,
+            "ttft_ms_median": 445.0150490000624,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": null
+          },
+          {
+            "context_tokens": 2048,
+            "arm": "restore-cold",
+            "cold": null,
+            "n": 5,
+            "ttft_ms_median": 157.36347500001102,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": 4
+          },
+          {
+            "context_tokens": 2048,
+            "arm": "restore-disk",
+            "cold": null,
+            "n": 5,
+            "ttft_ms_median": 96.72199199997067,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": 4
+          },
+          {
+            "context_tokens": 2048,
+            "arm": "restore-host",
+            "cold": null,
+            "n": 5,
+            "ttft_ms_median": 61.74481699997614,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": 4
+          },
+          {
+            "context_tokens": 8192,
+            "arm": "recompute",
+            "cold": null,
+            "n": 15,
+            "ttft_ms_median": 1969.265164000035,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": null
+          },
+          {
+            "context_tokens": 8192,
+            "arm": "restore-cold",
+            "cold": null,
+            "n": 5,
+            "ttft_ms_median": 464.53815199993187,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": 4
+          },
+          {
+            "context_tokens": 8192,
+            "arm": "restore-disk",
+            "cold": null,
+            "n": 5,
+            "ttft_ms_median": 234.59012099999654,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": 5
+          },
+          {
+            "context_tokens": 8192,
+            "arm": "restore-host",
+            "cold": null,
+            "n": 5,
+            "ttft_ms_median": 113.56758499994157,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": 4
+          }
+        ]
+      }
+    },
+    {
+      "step": "restore-tp1-run1-put",
+      "restore-tp1-run1-put": {
+        "restore-tp1-run1.json": "UPLOADED",
+        "restore-tp1-run1.log": "UPLOADED"
+      }
+    },
+    {
+      "step": "restore-tp1-run2",
+      "restore-tp1-run2": {
+        "rc": 0,
+        "seconds": 291.2,
+        "nccl": {},
+        "key_lines": [
+          "(EngineCore pid=3666) INFO 11-05 06:28:39 [core.py:129] Initializing a V1 LLM engine (v0.31.0) with config: model='/tmp/pf-kvsnap/hf/hub/models--Qwen--Qwen3-8B/snapshots/b968826d9c46dd6066d109eabc6255188de91218', speculative_config=None, tokenizer='/tmp/pf-kvsnap/hf/hub/models--Qwen--Qwen3-8B/snapsh"
+        ],
+        "gpu_memory_after": "0, 0 MiB, 24512 MiB\n1, 0 MiB, 24512 MiB",
+        "rows": [
+          {
+            "context_tokens": 2048,
+            "arm": "recompute",
+            "cold": null,
+            "n": 15,
+            "ttft_ms_median": 447.38235099998747,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": null
+          },
+          {
+            "context_tokens": 2048,
+            "arm": "restore-cold",
+            "cold": null,
+            "n": 5,
+            "ttft_ms_median": 156.63846799998282,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": 4
+          },
+          {
+            "context_tokens": 2048,
+            "arm": "restore-disk",
+            "cold": null,
+            "n": 5,
+            "ttft_ms_median": 96.0440239999798,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": 5
+          },
+          {
+            "context_tokens": 2048,
+            "arm": "restore-host",
+            "cold": null,
+            "n": 5,
+            "ttft_ms_median": 61.416665000024295,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": 5
+          },
+          {
+            "context_tokens": 8192,
+            "arm": "recompute",
+            "cold": null,
+            "n": 15,
+            "ttft_ms_median": 1984.409750000168,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": null
+          },
+          {
+            "context_tokens": 8192,
+            "arm": "restore-cold",
+            "cold": null,
+            "n": 5,
+            "ttft_ms_median": 472.90244599980724,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": 5
+          },
+          {
+            "context_tokens": 8192,
+            "arm": "restore-disk",
+            "cold": null,
+            "n": 5,
+            "ttft_ms_median": 231.84516900005292,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": 5
+          },
+          {
+            "context_tokens": 8192,
+            "arm": "restore-host",
+            "cold": null,
+            "n": 5,
+            "ttft_ms_median": 112.50186600000234,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": 4
+          }
+        ]
+      }
+    },
+    {
+      "step": "restore-tp1-run2-put",
+      "restore-tp1-run2-put": {
+        "restore-tp1-run1.json": "UPLOADED",
+        "restore-tp1-run1.log": "UPLOADED",
+        "restore-tp1-run2.json": "UPLOADED",
+        "restore-tp1-run2.log": "UPLOADED"
+      }
+    },
+    {
+      "step": "restore-tp1-run3",
+      "restore-tp1-run3": {
+        "rc": 0,
+        "seconds": 296.6,
+        "nccl": {},
+        "key_lines": [
+          "(EngineCore pid=5333) INFO 11-05 06:33:31 [core.py:129] Initializing a V1 LLM engine (v0.31.0) with config: model='/tmp/pf-kvsnap/hf/hub/models--Qwen--Qwen3-8B/snapshots/b968826d9c46dd6066d109eabc6255188de91218', speculative_config=None, tokenizer='/tmp/pf-kvsnap/hf/hub/models--Qwen--Qwen3-8B/snapsh"
+        ],
+        "gpu_memory_after": "0, 0 MiB, 24512 MiB\n1, 0 MiB, 24512 MiB",
+        "rows": [
+          {
+            "context_tokens": 2048,
+            "arm": "recompute",
+            "cold": null,
+            "n": 15,
+            "ttft_ms_median": 447.1883040000648,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": null
+          },
+          {
+            "context_tokens": 2048,
+            "arm": "restore-cold",
+            "cold": null,
+            "n": 5,
+            "ttft_ms_median": 152.25761299984697,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": 5
+          },
+          {
+            "context_tokens": 2048,
+            "arm": "restore-disk",
+            "cold": null,
+            "n": 5,
+            "ttft_ms_median": 96.62596899988785,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": 4
+          },
+          {
+            "context_tokens": 2048,
+            "arm": "restore-host",
+            "cold": null,
+            "n": 5,
+            "ttft_ms_median": 60.8585380000477,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": 5
+          },
+          {
+            "context_tokens": 8192,
+            "arm": "recompute",
+            "cold": null,
+            "n": 15,
+            "ttft_ms_median": 1986.4163940001163,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": null
+          },
+          {
+            "context_tokens": 8192,
+            "arm": "restore-cold",
+            "cold": null,
+            "n": 5,
+            "ttft_ms_median": 526.8134600000849,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": 5
+          },
+          {
+            "context_tokens": 8192,
+            "arm": "restore-disk",
+            "cold": null,
+            "n": 5,
+            "ttft_ms_median": 235.7441320000362,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": 4
+          },
+          {
+            "context_tokens": 8192,
+            "arm": "restore-host",
+            "cold": null,
+            "n": 5,
+            "ttft_ms_median": 112.5170430000253,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": 5
+          }
+        ]
+      }
+    },
+    {
+      "step": "restore-tp1-run3-put",
+      "restore-tp1-run3-put": {
+        "restore-tp1-run1.json": "UPLOADED",
+        "restore-tp1-run1.log": "UPLOADED",
+        "restore-tp1-run2.json": "UPLOADED",
+        "restore-tp1-run2.log": "UPLOADED",
+        "restore-tp1-run3.json": "UPLOADED",
+        "restore-tp1-run3.log": "UPLOADED"
+      }
+    },
+    {
+      "step": "elapsed_s",
+      "elapsed_s": 1289.4
+    }
+  ],
+  "seconds": 1554.7,
+  "stop": [
+    "ALTER COMPUTE POOL PORTFOLIO_2XA10_POOL STOP ALL: ok",
+    "ALTER COMPUTE POOL PORTFOLIO_2XA10_POOL SUSPEND: ok"
+  ],
+  "pool_after": {
+    "state": "STOPPING",
+    "instance_family": "GPU_NV_2M",
+    "min_nodes": "1",
+    "max_nodes": "1",
+    "active_nodes": "0",
+    "idle_nodes": "1",
+    "num_services": "0",
+    "num_jobs": "0"
+  },
+  "credits_estimate": 1.512
+}

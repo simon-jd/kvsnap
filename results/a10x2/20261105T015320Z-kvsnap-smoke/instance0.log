@@ -1,0 +1,353 @@
+RESULT {"step": "node", "node": {"python": "3.12.15", "cpus": 72, "cpu_model": "model name\t: AMD EPYC 74F3 24-Core Processor", "mem": "total        used        free      shared  buff/cache   available\nMem:             866          11         839           0          19         854\nSwap:              0           0           0", "df_work": "Filesystem      Size  Used Avail Use% Mounted on\noverlay         150G   25G  126G  17% /", "findmnt_work": "TARGET SOURCE  FSTYPE  OPTIONS\n/      overlay overlay rw,relatime,seclabel,lowerdir=/var/lib/snowfs/mount/0,upperdir=/var/lib/snowfs/snapshots/mnt/snapshots/fs/52,workdir=/var/lib/snowfs/snapshots/mnt/snapshots/work/52", "shm": "Filesystem      Size  Used Avail Use% Mounted on\ntmpfs           257G     0  257G   0% /dev/shm", "lsblk": "NAME     SIZE TYPE MODEL            TRAN MOUNTPOINTS\nsda      220G disk Virtual Disk          \nsdb       50G disk Virtual Disk          \n\u251c\u2500sdb1   500M part                       \n\u251c\u2500sdb2    49G part                       /usr/lib/firmware/nvidia/570.211.01/gsp_tu10x.bin\n\u2502                                        /usr/lib/firmware/nvidia/570.211.01/gsp_ga10x.bin\n\u2502                                        /usr/lib/x86_64-linux-gnu/libnvidia-nvvm.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libnvidia-pkcs11-openssl3.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libnvidia-pkcs11.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libnvidia-allocator.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libnvidia-ptxjitcompiler.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libnvidia-gpucomp.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libnvidia-opencl.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libcudadebugger.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libcuda.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libnvidia-cfg.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libnvidia-ml.so.570.211.01\n\u2502                                        /usr/bin/nvidia-cuda-mps-server\n\u2502                                        /usr/bin/nvidia-cuda-mps-control\n\u2502                                        /usr/bin/nv-fabricmanager\n\u2502                                        /usr/bin/nvidia-persistenced\n\u2502                                        /usr/bin/nvidia-debugdump\n\u2502                                        /usr/bin/nvidia-smi\n\u2502                                        /var/log/services/internal\n\u251c\u2500sdb14    4M part                       \n\u2514\u2500sdb15  495M part                       \nsdc      2.8T disk Virtual Disk          \n\u2514\u2500sdc1   2.8T part                       \nsr0      630K rom  Virtual DVD-ROM", "gpus": "GPU 0: NVIDIA A10-24Q (UUID: GPU-c4f3ec00-d8bb-11f1-a552-46bf3d024411)\nGPU 1: NVIDIA A10-24Q (UUID: GPU-c58c8280-d8bb-11f1-8d57-1fc13adc1acc)", "topo": "\u001b[4mGPU0\tGPU1\tNIC0\tCPU Affinity\tNUMA Affinity\tGPU NUMA ID\u001b[0m\nGPU0\t X \tSYS\tNODE\t0-17\t0\t\tN/A\nGPU1\tSYS\t X \tSYS\t36-53\t2\t\tN/A\nNIC0\tNODE\tSYS\t X \t\t\t\t\n\nLegend:\n\n  X    = Self\n  SYS  = Connection traversing PCIe as well as the SMP interconnect between NUMA nodes (e.g., QPI/UPI)\n  NODE = Connection traversing PCIe as well as the interconnect between PCIe Host Bridges within a NUMA node\n  PHB  = Connection traversing PCIe as well as a PCIe Host Bridge (typically the CPU)\n  PXB  = Connection traversing multiple PCIe bridges (without traversing the PCIe Host Bridge)\n  PIX  = Connection traversing at most a single PCIe bridge\n  NV#  = Connection traversing a bonded set of # NVLinks\n\nNIC Legend:\n\n  NIC0: mlx5_0", "p2p_read": "\u001b[4mGPU0\tGPU1\t\u001b[0m\n GPU0\tX\tNS\t\n GPU1\tNS\tX\t\n\nLegend:\n\n  X    = Self\n  OK   = Status Ok\n  CNS  = Chipset not supported\n  GNS  = GPU not supported\n  TNS  = Topology not supported\n  NS   = Not supported\n  U    = Unknown", "query": "0, NVIDIA A10-24Q, 570.211.01, 24512 MiB, [Unknown Error], [N/A], [N/A]\n1, NVIDIA A10-24Q, 570.211.01, 24512 MiB, [Unknown Error], [N/A], [N/A]"}}
+2026-11-05 01:55:59,173	INFO usage_lib.py:448 -- Usage stats collection is disabled.
+2026-11-05 01:55:59,173	INFO scripts.py:940 -- [37mLocal node IP[39m: [1m10.244.12.75[22m
+2026-11-05 01:56:05,470	SUCC scripts.py:979 -- [32m--------------------[39m
+2026-11-05 01:56:05,470	SUCC scripts.py:980 -- [32mRay runtime started.[39m
+2026-11-05 01:56:05,470	SUCC scripts.py:981 -- [32m--------------------[39m
+2026-11-05 01:56:05,470	INFO scripts.py:983 -- [36mNext steps[39m
+2026-11-05 01:56:05,470	INFO scripts.py:986 -- To add another node to this Ray cluster, run
+2026-11-05 01:56:05,470	INFO scripts.py:989 -- [1m  ray start --address='10.244.12.75:12001'[22m
+2026-11-05 01:56:05,470	INFO scripts.py:1000 -- To connect to this Ray cluster:
+2026-11-05 01:56:05,470	INFO scripts.py:1002 -- [35mimport[39m[26m ray
+2026-11-05 01:56:05,470	INFO scripts.py:1003 -- ray[35m.[39m[26minit(_node_ip_address[35m=[39m[26m[33m'10.244.12.75'[39m[26m)
+2026-11-05 01:56:05,471	INFO scripts.py:1017 -- To submit a Ray job using the Ray Jobs CLI:
+2026-11-05 01:56:05,471	INFO scripts.py:1018 -- [1m  RAY_API_SERVER_ADDRESS='http://10.244.12.75:12003' ray job submit --working-dir . -- python my_script.py[22m
+2026-11-05 01:56:05,471	INFO scripts.py:1027 -- See https://docs.ray.io/en/latest/cluster/running-applications/job-submission/index.html 
+2026-11-05 01:56:05,471	INFO scripts.py:1031 -- for more information on submitting Ray jobs to the Ray cluster.
+2026-11-05 01:56:05,471	INFO scripts.py:1036 -- To terminate the Ray runtime, run
+2026-11-05 01:56:05,471	INFO scripts.py:1037 -- [1m  ray stop[22m
+2026-11-05 01:56:05,471	INFO scripts.py:1040 -- To view the status of the cluster, use
+2026-11-05 01:56:05,471	INFO scripts.py:1041 --   [1mray status[22m[26m
+2026-11-05 01:56:05,471	INFO scripts.py:1045 -- To monitor and debug Ray, view the dashboard at 
+2026-11-05 01:56:05,471	INFO scripts.py:1046 --   [1m10.244.12.75:12003[22m[26m
+2026-11-05 01:56:05,471	INFO scripts.py:1053 -- [4mIf connection to the dashboard fails, check your firewall settings and network configuration.[24m
+Patching Grafana datasource configuration to use port 9091
+Grafana started successfully
+Metric sent (UDP, best-effort) to 127.0.0.1:8125: mljob.ray_startup_seconds:11|h
+Metric sent (UDP, best-effort) to 127.0.0.1:8125: mljob.startup_status:1|c|#status:success
+Grafana server is running with elevated privileges. This is not recommended
+logger=migrator t=2026-11-05T01:56:46.313361228Z level=warn msg="Skipping migration: Already executed, but not recorded in migration log" id="drop unique orgID index on alert_configuration if exists"
+logger=migrator t=2026-11-05T01:56:47.137275863Z level=warn msg="Skipping migration: Already executed, but not recorded in migration log" id="drop index UQE_dashboard_public_config_uid - v1"
+logger=migrator t=2026-11-05T01:56:47.145639676Z level=warn msg="Skipping migration: Already executed, but not recorded in migration log" id="drop index IDX_dashboard_public_config_org_id_dashboard_uid - v1"
+logger=migrator t=2026-11-05T01:56:47.35606058Z level=warn msg="Skipping migration: Already executed, but not recorded in migration log" id="drop my_row_id and add primary key to file table if my_row_id exists (auto-generated mysql column)"
+logger=migrator t=2026-11-05T01:56:47.39190032Z level=warn msg="Skipping migration: Already executed, but not recorded in migration log" id="drop my_row_id and add primary key to file_meta table if my_row_id exists (auto-generated mysql column)"
+logger=migrator t=2026-11-05T01:56:48.309284195Z level=warn msg="Skipping migration: Already executed, but not recorded in migration log" id="drop my_row_id and add primary key with columns snapshot_uid,resource_type,partition_number to table cloud_migration_snapshot_partition if my_row_id exists (auto-generated mysql column)"
+logger=renderer.manager t=2026-11-05T01:56:48.863373471Z level=error msg="Failed to get renderer plugin sources" error="failed to open plugins path"
+logger=plugin.sources t=2026-11-05T01:56:48.865838675Z level=error msg="Failed to load external plugins" error="failed to open plugins path"
+logger=secret-migrator t=2026-11-05T01:56:57.722722273Z level=warn msg="Skipping migration: Already executed, but not recorded in migration log" id="drop my_row_id and add primary key with columns namespace,name,version to table secret_encrypted_value if my_row_id exists (auto-generated mysql column)"
+logger=resource-migrator t=2026-11-05T01:57:08.462965958Z level=warn msg="Skipping migration: Already executed, but not recorded in migration log" id="drop my_row_id and add primary key with columns group,resource to table resource_version if my_row_id exists (auto-generated mysql column)"
+logger=storage.unified.migrations t=2026-11-05T01:57:11.18534523Z level=warn msg="Failed to check if migration exists" migration=folders-dashboards error="failed to check migration existence: SQL logic error: no such table: unifiedstorage_migration_log (1)"
+logger=storage.unified.migrations t=2026-11-05T01:57:11.185494238Z level=warn msg="Failed to check if migration exists" migration=folders-dashboards error="failed to check migration existence: SQL logic error: no such table: unifiedstorage_migration_log (1)"
+logger=plugin.backgroundinstaller t=2026-11-05T01:57:43.573535828Z level=error msg="Failed to install plugin" pluginId=grafana-metricsdrilldown-app version= error="Get \"https://grafana.com/api/plugins/grafana-metricsdrilldown-app/versions\": dial tcp: lookup grafana.com on 169.254.20.10:53: no such host"
+logger=provisioning.plugins t=2026-11-05T01:57:43.703094542Z level=error msg="Failed to read plugin provisioning files from directory" path=/tmp/ray/session_latest/metrics/grafana/provisioning/plugins error="open /tmp/ray/session_latest/metrics/grafana/provisioning/plugins: no such file or directory"
+logger=provisioning.alerting t=2026-11-05T01:57:43.703171526Z level=error msg="can't read alerting provisioning files from directory" path=/tmp/ray/session_latest/metrics/grafana/provisioning/alerting error="open /tmp/ray/session_latest/metrics/grafana/provisioning/alerting: no such file or directory"
+logger=plugin.backgroundinstaller t=2026-11-05T01:57:43.807681498Z level=error msg="Failed to install plugin" pluginId=grafana-lokiexplore-app version= error="Get \"https://grafana.com/api/plugins/grafana-lokiexplore-app/versions\": dial tcp: lookup grafana.com on 169.254.20.10:53: no such host"
+logger=plugin.backgroundinstaller t=2026-11-05T01:57:43.82334831Z level=error msg="Failed to install plugin" pluginId=grafana-pyroscope-app version= error="Get \"https://grafana.com/api/plugins/grafana-pyroscope-app/versions\": dial tcp: lookup grafana.com on 169.254.20.10:53: no such host"
+logger=plugin.backgroundinstaller t=2026-11-05T01:57:43.836471435Z level=error msg="Failed to install plugin" pluginId=grafana-exploretraces-app version= error="Get \"https://grafana.com/api/plugins/grafana-exploretraces-app/versions\": dial tcp: lookup grafana.com on 169.254.20.10:53: no such host"
+logger=renderer.manager t=2026-11-05T01:57:48.473939377Z level=error msg="Failed to get renderer plugin sources" error="failed to open plugins path"
+logger=grafana.update.checker t=2026-11-05T01:57:48.490515245Z level=error msg="Update check failed" error="failed to get stable version from grafana.com: Get \"https://grafana.com/api/grafana/versions/stable\": dial tcp: lookup grafana.com on 169.254.20.10:53: no such host" duration=16.56652ms
+logger=plugin.signature.key_retriever t=2026-11-05T01:57:49.141070134Z level=error msg="Error downloading plugin manifest keys" error="Get \"https://grafana.com/api/plugins/ci/keys\": dial tcp: lookup grafana.com on 169.254.20.10:53: no such host"
+logger=plugin.angulardetectorsprovider.dynamic t=2026-11-05T01:57:51.375013048Z level=error msg="Error while updating detectors" error="fetch: http do: Get \"https://grafana.com/api/plugins/angular_patterns\": dial tcp: lookup grafana.com on 169.254.20.10:53: no such host"
+logger=plugin.signature.key_retriever t=2026-11-05T01:58:50.847233583Z level=error msg="Error downloading plugin manifest keys" error="Get \"https://grafana.com/api/plugins/ci/keys\": dial tcp: lookup grafana.com on 169.254.20.10:53: no such host"
+logger=ngalert.multiorg.alertmanager t=2026-11-05T01:59:56.214826342Z level=error msg="Error while synchronizing Alertmanager orgs" error="[sqlstore.max-retries-reached] retry 1: database is locked (5) (SQLITE_BUSY)"
+logger=ngalert.sender.router t=2026-11-05T01:59:56.218861112Z level=error msg="Unable to sync admin configuration" error="[sqlstore.max-retries-reached] retry 1: database is locked (5) (SQLITE_BUSY)"
+logger=ngalert.scheduler t=2026-11-05T01:59:57.508288532Z level=error msg="Failed to update alert rules" error="failed to get alert rules: [sqlstore.max-retries-reached] retry 1: failed to fetch alert rules: database is locked (5) (SQLITE_BUSY)"
+logger=ngalert.scheduler t=2026-11-05T02:00:07.507711207Z level=error msg="Failed to update alert rules" error="failed to get alert rules: [sqlstore.max-retries-reached] retry 1: failed to fetch alert rules: database is locked (5) (SQLITE_BUSY)"
+logger=ngalert.scheduler t=2026-11-05T02:00:27.509734861Z level=error msg="Failed to update alert rules" error="failed to get alert rules: [sqlstore.max-retries-reached] retry 1: failed to fetch alert rules: database is locked (5) (SQLITE_BUSY)"
+t=2026-11-05T02:00:55.98483349Z level=error caller=logger.go:234 time=2026-11-05T02:00:55.984801901Z msg="cleaning up inactive secure values" error="fetching inactive secure values that need to be cleaned up: acquiring leases for inactive secure values: leasing inactive secure values: context deadline exceeded"
+logger=ngalert.scheduler t=2026-11-05T02:00:57.508893753Z level=error msg="Failed to update alert rules" error="failed to get alert rules: [sqlstore.max-retries-reached] retry 1: failed to fetch alert rules: database is locked (5) (SQLITE_BUSY)"
+logger=ngalert.multiorg.alertmanager t=2026-11-05T02:01:03.725519916Z level=error msg="Error while synchronizing Alertmanager orgs" error="[sqlstore.max-retries-reached] retry 1: database is locked (5) (SQLITE_BUSY)"
+logger=ngalert.sender.router t=2026-11-05T02:01:03.726962229Z level=error msg="Unable to sync admin configuration" error="[sqlstore.max-retries-reached] retry 1: database is locked (5) (SQLITE_BUSY)"
+logger=ngalert.scheduler t=2026-11-05T02:01:07.510959533Z level=error msg="Failed to update alert rules" error="failed to get alert rules: [sqlstore.max-retries-reached] retry 1: failed to fetch alert rules: database is locked (5) (SQLITE_BUSY)"
+RESULT {"step": "bootstrap", "bootstrap": {"fetch_s": 113.6, "sha256_s": 12.0, "untar_s": 15.4, "install": {"rc": 0, "wheels": 199, "seconds": 229.5, "err_tail": []}, "native_build": {"io": {"rc": 0, "err_tail": []}, "cuda": {"rc": 0, "err_tail": []}}, "source_commit": "7bb6471 plus uncommitted tensor-parallel changes (smoke)", "sha256_mismatch": []}}
+RESULT {"step": "torch", "torch": {"torch": "2.13.0+cu130", "count": 2, "names": ["NVIDIA A10-24Q", "NVIDIA A10-24Q"], "peer": [[null, false], [false, null]], "free_total_gib": [[21.37, 23.72], [21.37, 23.72]]}}
+RESULT {"step": "tp2_graphs_nccl_default", "tp2_graphs_nccl_default": {"rc": 0, "seconds": 165.7, "result": {"tp": 2, "eager": false, "load_s": 130.2, "prefill_ms": {"1024": [381.4, 382.3, 381.4], "8192": [3086.7, 3100.7, 3092.7]}, "prefill_plus_64_decode_ms_1k": [1662.6, 1667.4, 1665.8], "text": " Paris. The capital of Italy is Rome. The capital of Spain is Madrid."}, "key_lines": ["(EngineCore pid=1915) INFO 11-05 02:02:35 [core.py:129] Initializing a V1 LLM engine (v0.31.0) with config: model='/tmp/pf-kvsnap/hf/hub/models--Qwen--Qwen3-8B/snapshots/b968826d9c46dd6066d109eabc6255188de91218', speculative_config=None, tokenizer='/tmp/pf-kvsnap/hf/hub/models--Qwen--Qwen3-8B/snapsh", "(Worker pid=2017) WARNING 11-05 02:02:36 [flashinfer_all_reduce.py:394] FlashInfer All Reduce is disabled because it is not supported for world_size=2.", "(Worker pid=1978) WARNING 11-05 02:02:36 [flashinfer_all_reduce.py:394] FlashInfer All Reduce is disabled because it is not supported for world_size=2.", "(Worker pid=2017) WARNING 11-05 02:02:36 [custom_all_reduce.py:280] Custom allreduce is disabled because your platform lacks GPU P2P capability or P2P test failed. To silence this warning, specify disable_custom_all_reduce=True explicitly.", "(Worker pid=1978) WARNING 11-05 02:02:36 [custom_all_reduce.py:280] Custom allreduce is disabled because your platform lacks GPU P2P capability or P2P test failed. To silence this warning, specify disable_custom_all_reduce=True explicitly.", "(Worker_TP1 pid=2017) INFO 11-05 02:02:41 [model_runner.py:407] Model loading took 7.64 GiB memory and 3.707908 seconds", "(Worker_TP0 pid=1978) INFO 11-05 02:02:41 [model_runner.py:407] Model loading took 7.64 GiB memory and 4.170548 seconds", "(Worker_TP0 pid=1978) INFO 11-05 02:02:49 [backends.py:1090] Using cache directory: /root/.cache/vllm/torch_compile_cache/2e2b4d2430/rank_0_0/backbone for vLLM's torch.compile", "(Worker_TP0 pid=1978) INFO 11-05 02:03:12 [monitor.py:53] torch.compile took 30.32 s in total", "(Worker_TP0 pid=1978) INFO 11-05 02:04:32 [model_runner.py:1087] Graph capturing finished in 11 secs, took 0.74 GiB", "(Worker_TP1 pid=2017) INFO 11-05 02:04:32 [model_runner.py:1087] Graph capturing finished in 11 secs, took 0.74 GiB", "Capturing CUDA graphs (PIECEWISE):   0%|          | 0/51 [00:00<?, ?it/s]", "Capturing CUDA graphs (PIECEWISE):   2%|\u258f         | 1/51 [00:00<00:13,  3.77it/s]", "Capturing CUDA graphs (PIECEWISE):   4%|\u258d         | 2/51 [00:00<00:12,  3.98it/s]", "Capturing CUDA graphs (PIECEWISE):   6%|\u258c         | 3/51 [00:00<00:11,  4.09it/s]", "Capturing CUDA graphs (PIECEWISE):   8%|\u258a         | 4/51 [00:00<00:11,  4.18it/s]", "Capturing CUDA graphs (PIECEWISE):  10%|\u2589         | 5/51 [00:01<00:10,  4.22it/s]", "Capturing CUDA graphs (PIECEWISE):  12%|\u2588\u258f        | 6/51 [00:01<00:10,  4.29it/s]", "Capturing CUDA graphs (PIECEWISE):  14%|\u2588\u258e        | 7/51 [00:01<00:10,  4.37it/s]", "Capturing CUDA graphs (PIECEWISE):  16%|\u2588\u258c        | 8/51 [00:01<00:09,  4.45it/s]", "Capturing CUDA graphs (PIECEWISE):  18%|\u2588\u258a        | 9/51 [00:02<00:09,  4.61it/s]", "Capturing CUDA graphs (PIECEWISE):  20%|\u2588\u2589        | 10/51 [00:02<00:08,  4.71it/s]", "Capturing CUDA graphs (PIECEWISE):  22%|\u2588\u2588\u258f       | 11/51 [00:02<00:08,  4.82it/s]", "Capturing CUDA graphs (PIECEWISE):  24%|\u2588\u2588\u258e       | 12/51 [00:02<00:07,  4.94it/s]", "Capturing CUDA graphs (PIECEWISE):  25%|\u2588\u2588\u258c       | 13/51 [00:02<00:07,  5.06it/s]", "Capturing CUDA graphs (PIECEWISE):  27%|\u2588\u2588\u258b       | 14/51 [00:03<00:07,  5.18it/s]", "Capturing CUDA graphs (PIECEWISE):  29%|\u2588\u2588\u2589       | 15/51 [00:03<00:06,  5.30it/s]", "Capturing CUDA graphs (PIECEWISE):  31%|\u2588\u2588\u2588\u258f      | 16/51 [00:03<00:06,  5.43it/s]", "Capturing CUDA graphs (PIECEWISE):  33%|\u2588\u2588\u2588\u258e      | 17/51 [00:03<00:05,  5.70it/s]", "Capturing CUDA graphs (PIECEWISE):  35%|\u2588\u2588\u2588\u258c      | 18/51 [00:03<00:05,  6.03it/s]"]}}
+Capturing CUDA graphs (PIECEWISE):  55%|█████▍    | 28/51 [00:04<00:02,  8.07it/s]
+Capturing CUDA graphs (PIECEWISE):  57%|█████▋    | 29/51 [00:05<00:02,  8.33it/s]
+Capturing CUDA graphs (PIECEWISE):  59%|█████▉    | 30/51 [00:05<00:02,  8.50it/s]
+Capturing CUDA graphs (PIECEWISE):  61%|██████    | 31/51 [00:05<00:02,  8.68it/s]
+Capturing CUDA graphs (PIECEWISE):  63%|██████▎   | 32/51 [00:05<00:02,  8.76it/s]
+Capturing CUDA graphs (PIECEWISE):  65%|██████▍   | 33/51 [00:05<00:02,  8.98it/s]
+Capturing CUDA graphs (PIECEWISE):  67%|██████▋   | 34/51 [00:05<00:01,  9.21it/s]
+Capturing CUDA graphs (PIECEWISE):  71%|███████   | 36/51 [00:05<00:01,  9.63it/s]
+Capturing CUDA graphs (PIECEWISE):  75%|███████▍  | 38/51 [00:05<00:01, 10.08it/s]
+Capturing CUDA graphs (PIECEWISE):  78%|███████▊  | 40/51 [00:06<00:01, 10.56it/s]
+Capturing CUDA graphs (PIECEWISE):  82%|████████▏ | 42/51 [00:06<00:00, 11.07it/s]
+Capturing CUDA graphs (PIECEWISE):  86%|████████▋ | 44/51 [00:06<00:00, 11.48it/s]
+Capturing CUDA graphs (PIECEWISE):  90%|█████████ | 46/51 [00:06<00:00, 12.26it/s]
+Capturing CUDA graphs (PIECEWISE):  94%|█████████▍| 48/51 [00:06<00:00, 13.08it/s]
+Capturing CUDA graphs (PIECEWISE):  98%|█████████▊| 50/51 [00:06<00:00, 13.90it/s]
+Capturing CUDA graphs (PIECEWISE): 100%|██████████| 51/51 [00:06<00:00,  7.34it/s]
+
+Capturing CUDA graphs (FULL):   0%|          | 0/35 [00:00<?, ?it/s]
+Capturing CUDA graphs (FULL):   3%|▎         | 1/35 [00:00<00:04,  7.95it/s]
+Capturing CUDA graphs (FULL):   6%|▌         | 2/35 [00:00<00:04,  8.13it/s]
+Capturing CUDA graphs (FULL):   9%|▊         | 3/35 [00:00<00:03,  8.24it/s]
+Capturing CUDA graphs (FULL):  11%|█▏        | 4/35 [00:00<00:03,  8.35it/s]
+Capturing CUDA graphs (FULL):  14%|█▍        | 5/35 [00:00<00:03,  8.50it/s]
+Capturing CUDA graphs (FULL):  17%|█▋        | 6/35 [00:00<00:03,  8.67it/s]
+Capturing CUDA graphs (FULL):  20%|██        | 7/35 [00:00<00:03,  8.85it/s]
+Capturing CUDA graphs (FULL):  23%|██▎       | 8/35 [00:00<00:03,  8.97it/s]
+Capturing CUDA graphs (FULL):  26%|██▌       | 9/35 [00:01<00:02,  9.17it/s]
+Capturing CUDA graphs (FULL):  31%|███▏      | 11/35 [00:01<00:02,  9.64it/s]
+Capturing CUDA graphs (FULL):  37%|███▋      | 13/35 [00:01<00:02, 10.04it/s]
+Capturing CUDA graphs (FULL):  43%|████▎     | 15/35 [00:01<00:01, 10.45it/s]
+Capturing CUDA graphs (FULL):  49%|████▊     | 17/35 [00:01<00:01, 10.84it/s]
+Capturing CUDA graphs (FULL):  54%|█████▍    | 19/35 [00:01<00:01, 11.40it/s]
+Capturing CUDA graphs (FULL):  60%|██████    | 21/35 [00:02<00:01, 12.02it/s]
+Capturing CUDA graphs (FULL):  66%|██████▌   | 23/35 [00:02<00:00, 12.74it/s]
+Capturing CUDA graphs (FULL):  71%|███████▏  | 25/35 [00:02<00:00, 13.50it/s]
+Capturing CUDA graphs (FULL):  77%|███████▋  | 27/35 [00:02<00:00, 14.43it/s]
+Capturing CUDA graphs (FULL):  83%|████████▎ | 29/35 [00:02<00:00, 15.61it/s]
+Capturing CUDA graphs (FULL):  91%|█████████▏| 32/35 [00:02<00:00, 17.59it/s]
+Capturing CUDA graphs (FULL): 100%|██████████| 35/35 [00:02<00:00, 19.89it/s]
+Capturing CUDA graphs (FULL): 100%|██████████| 35/35 [00:02<00:00, 12.48it/s]
+RESULT {"step": "tp2_graphs_nccl_shm_memcpy", "tp2_graphs_nccl_shm_memcpy": {"rc": null, "seconds": 1200.1, "result": {"rc": null, "err_tail": ["TimeoutExpired(['/tmp/pf-kvsnap/venv/bin/python', '-c', '\\nimport json, random, sys, time\\nfrom vllm import LLM, SamplingParams\\ntp, eager = int(sys.argv[1]), sys.argv[2] == \"1\"\\nt = time.time()\\nllm = LLM(model=\"Qwen/Qwen3-8B\", revision=\"b968826d9c46dd6066d109eabc6255188de91218\", dtype=\"bfloat16\",\\n          tensor_parallel_size=tp, max_model_len=8288, block_size=16, kv_cache_memory_bytes=(2 << 30) // tp,\\n          gpu_memory_utilization=0.80, enable_prefix_caching=False, async_scheduling=Fals"]}, "key_lines": []}}
+
+TimeoutExpired(['/tmp/pf-kvsnap/venv/bin/python', '-c', '\nimport json, random, sys, time\nfrom vllm import LLM, SamplingParams\ntp, eager = int(sys.argv[1]), sys.argv[2] == "1"\nt = time.time()\nllm = LLM(model="Qwen/Qwen3-8B", revision="b968826d9c46dd6066d109eabc6255188de91218", dtype="bfloat16",\n          tensor_parallel_size=tp, max_model_len=8288, block_size=16, kv_cache_memory_bytes=(2 << 30) // tp,\n          gpu_memory_utilization=0.80, enable_prefix_caching=False, async_scheduling=Fals
+RESULT {"step": "tp2_nccl_choice", "tp2_nccl_choice": {"arm": "tp2_graphs_nccl_default", "prefill_8k_ms": {"tp2_graphs_nccl_default": [3086.7, 3100.7, 3092.7]}}}
+  File "/opt/python/cpython-3.12.15-linux-x86_64-gnu/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/engine/core.py", line 1437, in run_engine_core
+    raise e
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/engine/core.py", line 1395, in run_engine_core
+    engine_core = EngineCoreProc(*args, engine_index=dp_rank, **kwargs)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/tracing/otel.py", line 175, in sync_wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/engine/core.py", line 1151, in __init__
+    super().__init__(
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/engine/core.py", line 140, in __init__
+    self.model_executor = executor_class(vllm_config)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/executor/multiproc_executor.py", line 116, in __init__
+    super().__init__(vllm_config)
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/tracing/otel.py", line 175, in sync_wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/executor/abstract.py", line 113, in __init__
+    self._init_executor()
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/executor/multiproc_executor.py", line 214, in _init_executor
+    self.workers = WorkerProc.wait_for_ready(unready_workers)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/executor/multiproc_executor.py", line 810, in wait_for_ready
+    raise e from None
+Exception: WorkerProc initialization failed due to an exception in a background process. See stack trace for root cause.
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/tmp/pf-kvsnap/src/kvsnap/bench/restore_ttft.py", line 311, in <module>
+    main()
+  File "/tmp/pf-kvsnap/src/kvsnap/bench/restore_ttft.py", line 304, in main
+    result = asyncio.run(run(args))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/python/cpython-3.12.15-linux-x86_64-gnu/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/opt/python/cpython-3.12.15-linux-x86_64-gnu/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/python/cpython-3.12.15-linux-x86_64-gnu/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+/opt/python/cpython-3.12.15-linux-x86_64-gnu/lib/python3.12/multiprocessing/resource_tracker.py:279: UserWarning: resource_tracker: There appear to be 2 leaked shared_memory objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/tmp/pf-kvsnap/src/kvsnap/bench/restore_ttft.py", line 140, in run
+    runtime = create_async_llm(root, model=args.model, revision=revision, max_model_len=max_len,
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/pf-kvsnap/src/kvsnap/kvsnap/connector/engine.py", line 182, in create_async_llm
+    engine = AsyncLLM.from_engine_args(AsyncEngineArgs(**settings))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/engine/async_llm.py", line 276, in from_engine_args
+    return cls(
+           ^^^^
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/engine/async_llm.py", line 180, in __init__
+    self.engine_core = EngineCoreClient.make_async_mp_client(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/tracing/otel.py", line 175, in sync_wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/engine/core_client.py", line 167, in make_async_mp_client
+    return AsyncMPClient(
+           ^^^^^^^^^^^^^^
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/tracing/otel.py", line 175, in sync_wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/engine/core_client.py", line 1100, in __init__
+    super().__init__(
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/engine/core_client.py", line 674, in __init__
+    with launch_core_engines(
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/opt/python/cpython-3.12.15-linux-x86_64-gnu/lib/python3.12/contextlib.py", line 144, in __exit__
+    next(self.gen)
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/engine/utils.py", line 1268, in launch_core_engines
+    wait_for_engine_startup(
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/engine/utils.py", line 1348, in wait_for_engine_startup
+    raise RuntimeError(
+RuntimeError: Engine core initialization failed. See root cause above. Failed core proc(s): {'EngineCore': 1}
+RESULT {"step": "tp2_restore", "tp2_restore": {"rc": 1, "seconds": 14.6, "samples": [], "key_lines": ["(EngineCore pid=4501) INFO 11-05 02:25:12 [core.py:129] Initializing a V1 LLM engine (v0.31.0) with config: model='/tmp/pf-kvsnap/hf/hub/models--Qwen--Qwen3-8B/snapshots/b968826d9c46dd6066d109eabc6255188de91218', speculative_config=None, tokenizer='/tmp/pf-kvsnap/hf/hub/models--Qwen--Qwen3-8B/snapsh", "(Worker pid=4602) WARNING 11-05 02:25:14 [flashinfer_all_reduce.py:394] FlashInfer All Reduce is disabled because it is not supported for world_size=2.", "(Worker pid=4563) WARNING 11-05 02:25:14 [flashinfer_all_reduce.py:394] FlashInfer All Reduce is disabled because it is not supported for world_size=2.", "(Worker pid=4602) WARNING 11-05 02:25:14 [custom_all_reduce.py:280] Custom allreduce is disabled because your platform lacks GPU P2P capability or P2P test failed. To silence this warning, specify disable_custom_all_reduce=True explicitly.", "(Worker pid=4563) WARNING 11-05 02:25:14 [custom_all_reduce.py:280] Custom allreduce is disabled because your platform lacks GPU P2P capability or P2P test failed. To silence this warning, specify disable_custom_all_reduce=True explicitly.", "(Worker pid=4602) ERROR 11-05 02:25:14 [multiproc_executor.py:948] Traceback (most recent call last):", "(Worker pid=4602) ERROR 11-05 02:25:14 [multiproc_executor.py:948]     raise ValueError(", "(Worker pid=4602) ERROR 11-05 02:25:14 [multiproc_executor.py:948] ValueError: Free memory on device cuda:1 (12.85/23.72 GiB) on startup is less than desired GPU memory utilization (0.8, 18.98 GiB). Decrease GPU memory utilization or reduce GPU memory used by other processes.", "(Worker pid=4563) ERROR 11-05 02:25:14 [multiproc_executor.py:948] Traceback (most recent call last):", "(Worker pid=4563) ERROR 11-05 02:25:14 [multiproc_executor.py:948]     raise ValueError(", "(Worker pid=4563) ERROR 11-05 02:25:14 [multiproc_executor.py:948] ValueError: Free memory on device cuda:0 (12.85/23.72 GiB) on startup is less than desired GPU memory utilization (0.8, 18.98 GiB). Decrease GPU memory utilization or reduce GPU memory used by other processes.", "(EngineCore pid=4501) ERROR 11-05 02:25:15 [core.py:1433] Traceback (most recent call last):", "Traceback (most recent call last):", "Traceback (most recent call last):", "raise RuntimeError(", "RuntimeError: Engine core initialization failed. See root cause above. Failed core proc(s): {'EngineCore': 1}"]}}
+    raise e
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/engine/core.py", line 1395, in run_engine_core
+    engine_core = EngineCoreProc(*args, engine_index=dp_rank, **kwargs)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/tracing/otel.py", line 175, in sync_wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/engine/core.py", line 1151, in __init__
+    super().__init__(
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/engine/core.py", line 140, in __init__
+    self.model_executor = executor_class(vllm_config)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/executor/multiproc_executor.py", line 116, in __init__
+    super().__init__(vllm_config)
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/tracing/otel.py", line 175, in sync_wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/executor/abstract.py", line 113, in __init__
+    self._init_executor()
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/executor/multiproc_executor.py", line 214, in _init_executor
+    self.workers = WorkerProc.wait_for_ready(unready_workers)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/executor/multiproc_executor.py", line 810, in wait_for_ready
+    raise e from None
+Exception: WorkerProc initialization failed due to an exception in a background process. See stack trace for root cause.
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/tmp/pf-kvsnap/src/kvsnap/bench/restart_resume.py", line 273, in <module>
+    main()
+  File "/tmp/pf-kvsnap/src/kvsnap/bench/restart_resume.py", line 266, in main
+    result = asyncio.run(run_lmcache_disk(args) if args.engine == "lmcache-disk" else run(args))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/python/cpython-3.12.15-linux-x86_64-gnu/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/opt/python/cpython-3.12.15-linux-x86_64-gnu/lib/python3.12/asyncio/runners.py", line 118, in run
+/opt/python/cpython-3.12.15-linux-x86_64-gnu/lib/python3.12/multiprocessing/resource_tracker.py:279: UserWarning: resource_tracker: There appear to be 2 leaked shared_memory objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/python/cpython-3.12.15-linux-x86_64-gnu/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/tmp/pf-kvsnap/src/kvsnap/bench/restart_resume.py", line 71, in run
+    runtime, store, identity, gateway = await engine(args, root)
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/pf-kvsnap/src/kvsnap/bench/restart_resume.py", line 53, in engine
+    runtime = create_async_llm(root, model=args.model, revision=args.revision,
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/pf-kvsnap/src/kvsnap/kvsnap/connector/engine.py", line 182, in create_async_llm
+    engine = AsyncLLM.from_engine_args(AsyncEngineArgs(**settings))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/engine/async_llm.py", line 276, in from_engine_args
+    return cls(
+           ^^^^
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/engine/async_llm.py", line 180, in __init__
+    self.engine_core = EngineCoreClient.make_async_mp_client(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/tracing/otel.py", line 175, in sync_wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/engine/core_client.py", line 167, in make_async_mp_client
+    return AsyncMPClient(
+           ^^^^^^^^^^^^^^
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/tracing/otel.py", line 175, in sync_wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/engine/core_client.py", line 1100, in __init__
+    super().__init__(
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/engine/core_client.py", line 674, in __init__
+    with launch_core_engines(
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/opt/python/cpython-3.12.15-linux-x86_64-gnu/lib/python3.12/contextlib.py", line 144, in __exit__
+    next(self.gen)
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/engine/utils.py", line 1268, in launch_core_engines
+    wait_for_engine_startup(
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/engine/utils.py", line 1348, in wait_for_engine_startup
+    raise RuntimeError(
+RuntimeError: Engine core initialization failed. See root cause above. Failed core proc(s): {'EngineCore': 1}
+RESULT {"step": "tp2_restart", "tp2_restart": {"rc": 1, "seconds": 14.9, "samples": [], "key_lines": ["(EngineCore pid=5052) INFO 11-05 02:25:26 [core.py:129] Initializing a V1 LLM engine (v0.31.0) with config: model='/tmp/pf-kvsnap/hf/hub/models--Qwen--Qwen3-8B/snapshots/b968826d9c46dd6066d109eabc6255188de91218', speculative_config=None, tokenizer='/tmp/pf-kvsnap/hf/hub/models--Qwen--Qwen3-8B/snapsh", "(Worker pid=5114) WARNING 11-05 02:25:29 [flashinfer_all_reduce.py:394] FlashInfer All Reduce is disabled because it is not supported for world_size=2.", "(Worker pid=5153) WARNING 11-05 02:25:29 [flashinfer_all_reduce.py:394] FlashInfer All Reduce is disabled because it is not supported for world_size=2.", "(Worker pid=5114) WARNING 11-05 02:25:29 [custom_all_reduce.py:280] Custom allreduce is disabled because your platform lacks GPU P2P capability or P2P test failed. To silence this warning, specify disable_custom_all_reduce=True explicitly.", "(Worker pid=5153) WARNING 11-05 02:25:29 [custom_all_reduce.py:280] Custom allreduce is disabled because your platform lacks GPU P2P capability or P2P test failed. To silence this warning, specify disable_custom_all_reduce=True explicitly.", "(Worker pid=5153) ERROR 11-05 02:25:29 [multiproc_executor.py:948] Traceback (most recent call last):", "(Worker pid=5153) ERROR 11-05 02:25:29 [multiproc_executor.py:948]     raise ValueError(", "(Worker pid=5153) ERROR 11-05 02:25:29 [multiproc_executor.py:948] ValueError: Free memory on device cuda:1 (12.85/23.72 GiB) on startup is less than desired GPU memory utilization (0.8, 18.98 GiB). Decrease GPU memory utilization or reduce GPU memory used by other processes.", "(Worker pid=5114) ERROR 11-05 02:25:29 [multiproc_executor.py:948] Traceback (most recent call last):", "(Worker pid=5114) ERROR 11-05 02:25:29 [multiproc_executor.py:948]     raise ValueError(", "(Worker pid=5114) ERROR 11-05 02:25:29 [multiproc_executor.py:948] ValueError: Free memory on device cuda:0 (12.85/23.72 GiB) on startup is less than desired GPU memory utilization (0.8, 18.98 GiB). Decrease GPU memory utilization or reduce GPU memory used by other processes.", "(EngineCore pid=5052) ERROR 11-05 02:25:30 [core.py:1433] Traceback (most recent call last):", "Traceback (most recent call last):", "Traceback (most recent call last):", "raise RuntimeError(", "RuntimeError: Engine core initialization failed. See root cause above. Failed core proc(s): {'EngineCore': 1}"]}}
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/engine/core.py", line 1395, in run_engine_core
+    engine_core = EngineCoreProc(*args, engine_index=dp_rank, **kwargs)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/tracing/otel.py", line 175, in sync_wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/engine/core.py", line 1151, in __init__
+    super().__init__(
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/engine/core.py", line 140, in __init__
+    self.model_executor = executor_class(vllm_config)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/tracing/otel.py", line 175, in sync_wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/executor/abstract.py", line 113, in __init__
+    self._init_executor()
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/executor/uniproc_executor.py", line 69, in _init_executor
+    self.driver_worker.init_device()
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/worker/worker_base.py", line 343, in init_device
+    self.worker.init_device()  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/tracing/otel.py", line 175, in sync_wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/worker/gpu_worker.py", line 490, in init_device
+    self.requested_memory = request_memory(init_snapshot, self.cache_config)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/worker/utils.py", line 548, in request_memory
+    raise ValueError(
+ValueError: Free memory on device cuda:0 (13.0/23.72 GiB) on startup is less than desired GPU memory utilization (0.8, 18.98 GiB). Decrease GPU memory utilization or reduce GPU memory used by other processes.
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/tmp/pf-kvsnap/src/kvsnap/bench/restore_ttft.py", line 311, in <module>
+    main()
+  File "/tmp/pf-kvsnap/src/kvsnap/bench/restore_ttft.py", line 304, in main
+    result = asyncio.run(run(args))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/python/cpython-3.12.15-linux-x86_64-gnu/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/opt/python/cpython-3.12.15-linux-x86_64-gnu/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/python/cpython-3.12.15-linux-x86_64-gnu/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/tmp/pf-kvsnap/src/kvsnap/bench/restore_ttft.py", line 140, in run
+    runtime = create_async_llm(root, model=args.model, revision=revision, max_model_len=max_len,
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/pf-kvsnap/src/kvsnap/kvsnap/connector/engine.py", line 182, in create_async_llm
+    engine = AsyncLLM.from_engine_args(AsyncEngineArgs(**settings))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/engine/async_llm.py", line 276, in from_engine_args
+    return cls(
+           ^^^^
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/engine/async_llm.py", line 180, in __init__
+    self.engine_core = EngineCoreClient.make_async_mp_client(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/tracing/otel.py", line 175, in sync_wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/engine/core_client.py", line 167, in make_async_mp_client
+    return AsyncMPClient(
+           ^^^^^^^^^^^^^^
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/tracing/otel.py", line 175, in sync_wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/engine/core_client.py", line 1100, in __init__
+    super().__init__(
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/engine/core_client.py", line 674, in __init__
+    with launch_core_engines(
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/opt/python/cpython-3.12.15-linux-x86_64-gnu/lib/python3.12/contextlib.py", line 144, in __exit__
+    next(self.gen)
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/engine/utils.py", line 1268, in launch_core_engines
+    wait_for_engine_startup(
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/engine/utils.py", line 1348, in wait_for_engine_startup
+    raise RuntimeError(
+RuntimeError: Engine core initialization failed. See root cause above. Failed core proc(s): {}
+RESULT {"step": "tp1_restore", "tp1_restore": {"rc": 1, "seconds": 11.8, "samples": [], "key_lines": ["(EngineCore pid=5597) INFO 11-05 02:25:40 [core.py:129] Initializing a V1 LLM engine (v0.31.0) with config: model='/tmp/pf-kvsnap/hf/hub/models--Qwen--Qwen3-8B/snapshots/b968826d9c46dd6066d109eabc6255188de91218', speculative_config=None, tokenizer='/tmp/pf-kvsnap/hf/hub/models--Qwen--Qwen3-8B/snapsh", "(EngineCore pid=5597) ERROR 11-05 02:25:42 [core.py:1433] Traceback (most recent call last):", "(EngineCore pid=5597) ERROR 11-05 02:25:42 [core.py:1433]     raise ValueError(", "(EngineCore pid=5597) ERROR 11-05 02:25:42 [core.py:1433] ValueError: Free memory on device cuda:0 (13.0/23.72 GiB) on startup is less than desired GPU memory utilization (0.8, 18.98 GiB). Decrease GPU memory utilization or reduce GPU memory used by other processes.", "Traceback (most recent call last):", "raise ValueError(", "ValueError: Free memory on device cuda:0 (13.0/23.72 GiB) on startup is less than desired GPU memory utilization (0.8, 18.98 GiB). Decrease GPU memory utilization or reduce GPU memory used by other processes.", "Traceback (most recent call last):", "raise RuntimeError(", "RuntimeError: Engine core initialization failed. See root cause above. Failed core proc(s): {}"]}}
+RESULT {"step": "put_results", "put_results": {"tp1_restore.log": "UPLOADED", "tp2_graphs_nccl_default.log": "UPLOADED", "tp2_graphs_nccl_shm_memcpy.log": "UPLOADED", "tp2_restart.log": "UPLOADED", "tp2_restore.log": "UPLOADED"}}
+RESULT {"step": "elapsed_s", "elapsed_s": 1783.2}

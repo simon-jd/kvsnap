@@ -1,0 +1,352 @@
+{
+  "run_id": "20261105T015320Z-kvsnap-smoke",
+  "pool": "PORTFOLIO_2XA10_POOL",
+  "instances": 1,
+  "payload": "payloads/kvsnap_tp_smoke_pool.py",
+  "pip": [],
+  "args": [
+    "kvsnap-src-smoke.tar"
+  ],
+  "started_at": "2026-11-05T01:53:20+00:00",
+  "pool_before": {
+    "state": "SUSPENDED",
+    "instance_family": "GPU_NV_2M",
+    "min_nodes": "1",
+    "max_nodes": "1",
+    "active_nodes": "0",
+    "idle_nodes": "0",
+    "num_services": "0",
+    "num_jobs": "0"
+  },
+  "job_id": "PORTFOLIO_LAB.GPU.PF_KVSNAP_TP_SMOKE_POOL_KVSNAP_SMOKE_17L56OYTGZ2TU",
+  "status_trace": [
+    {
+      "at_s": 6,
+      "job": "PENDING",
+      "containers": [
+        [
+          "PENDING",
+          "Compute pool node(s) are being provisioned"
+        ]
+      ]
+    },
+    {
+      "at_s": 108,
+      "job": "PENDING",
+      "containers": [
+        [
+          "PENDING",
+          "Unschedulable due to insufficient  resources."
+        ]
+      ]
+    },
+    {
+      "at_s": 128,
+      "job": "PENDING",
+      "containers": [
+        [
+          "PENDING",
+          "Waiting to start"
+        ]
+      ]
+    },
+    {
+      "at_s": 148,
+      "job": "RUNNING",
+      "containers": [
+        [
+          "READY",
+          "Running"
+        ]
+      ]
+    },
+    {
+      "at_s": 1963,
+      "job": "PENDING",
+      "containers": [
+        [
+          "DONE",
+          "Completed successfully"
+        ]
+      ]
+    },
+    {
+      "at_s": 1983,
+      "job": "DONE",
+      "containers": [
+        [
+          "DONE",
+          "Completed successfully"
+        ]
+      ]
+    }
+  ],
+  "status": "DONE",
+  "results": [
+    {
+      "step": "node",
+      "node": {
+        "python": "3.12.15",
+        "cpus": 72,
+        "cpu_model": "model name\t: AMD EPYC 74F3 24-Core Processor",
+        "mem": "total        used        free      shared  buff/cache   available\nMem:             866          11         839           0          19         854\nSwap:              0           0           0",
+        "df_work": "Filesystem      Size  Used Avail Use% Mounted on\noverlay         150G   25G  126G  17% /",
+        "findmnt_work": "TARGET SOURCE  FSTYPE  OPTIONS\n/      overlay overlay rw,relatime,seclabel,lowerdir=/var/lib/snowfs/mount/0,upperdir=/var/lib/snowfs/snapshots/mnt/snapshots/fs/52,workdir=/var/lib/snowfs/snapshots/mnt/snapshots/work/52",
+        "shm": "Filesystem      Size  Used Avail Use% Mounted on\ntmpfs           257G     0  257G   0% /dev/shm",
+        "lsblk": "NAME     SIZE TYPE MODEL            TRAN MOUNTPOINTS\nsda      220G disk Virtual Disk          \nsdb       50G disk Virtual Disk          \n\u251c\u2500sdb1   500M part                       \n\u251c\u2500sdb2    49G part                       /usr/lib/firmware/nvidia/570.211.01/gsp_tu10x.bin\n\u2502                                        /usr/lib/firmware/nvidia/570.211.01/gsp_ga10x.bin\n\u2502                                        /usr/lib/x86_64-linux-gnu/libnvidia-nvvm.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libnvidia-pkcs11-openssl3.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libnvidia-pkcs11.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libnvidia-allocator.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libnvidia-ptxjitcompiler.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libnvidia-gpucomp.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libnvidia-opencl.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libcudadebugger.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libcuda.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libnvidia-cfg.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libnvidia-ml.so.570.211.01\n\u2502                                        /usr/bin/nvidia-cuda-mps-server\n\u2502                                        /usr/bin/nvidia-cuda-mps-control\n\u2502                                        /usr/bin/nv-fabricmanager\n\u2502                                        /usr/bin/nvidia-persistenced\n\u2502                                        /usr/bin/nvidia-debugdump\n\u2502                                        /usr/bin/nvidia-smi\n\u2502                                        /var/log/services/internal\n\u251c\u2500sdb14    4M part                       \n\u2514\u2500sdb15  495M part                       \nsdc      2.8T disk Virtual Disk          \n\u2514\u2500sdc1   2.8T part                       \nsr0      630K rom  Virtual DVD-ROM",
+        "gpus": "GPU 0: NVIDIA A10-24Q (UUID: GPU-c4f3ec00-d8bb-11f1-a552-46bf3d024411)\nGPU 1: NVIDIA A10-24Q (UUID: GPU-c58c8280-d8bb-11f1-8d57-1fc13adc1acc)",
+        "topo": "\u001b[4mGPU0\tGPU1\tNIC0\tCPU Affinity\tNUMA Affinity\tGPU NUMA ID\u001b[0m\nGPU0\t X \tSYS\tNODE\t0-17\t0\t\tN/A\nGPU1\tSYS\t X \tSYS\t36-53\t2\t\tN/A\nNIC0\tNODE\tSYS\t X \t\t\t\t\n\nLegend:\n\n  X    = Self\n  SYS  = Connection traversing PCIe as well as the SMP interconnect between NUMA nodes (e.g., QPI/UPI)\n  NODE = Connection traversing PCIe as well as the interconnect between PCIe Host Bridges within a NUMA node\n  PHB  = Connection traversing PCIe as well as a PCIe Host Bridge (typically the CPU)\n  PXB  = Connection traversing multiple PCIe bridges (without traversing the PCIe Host Bridge)\n  PIX  = Connection traversing at most a single PCIe bridge\n  NV#  = Connection traversing a bonded set of # NVLinks\n\nNIC Legend:\n\n  NIC0: mlx5_0",
+        "p2p_read": "\u001b[4mGPU0\tGPU1\t\u001b[0m\n GPU0\tX\tNS\t\n GPU1\tNS\tX\t\n\nLegend:\n\n  X    = Self\n  OK   = Status Ok\n  CNS  = Chipset not supported\n  GNS  = GPU not supported\n  TNS  = Topology not supported\n  NS   = Not supported\n  U    = Unknown",
+        "query": "0, NVIDIA A10-24Q, 570.211.01, 24512 MiB, [Unknown Error], [N/A], [N/A]\n1, NVIDIA A10-24Q, 570.211.01, 24512 MiB, [Unknown Error], [N/A], [N/A]"
+      }
+    },
+    {
+      "step": "bootstrap",
+      "bootstrap": {
+        "fetch_s": 113.6,
+        "sha256_s": 12.0,
+        "untar_s": 15.4,
+        "install": {
+          "rc": 0,
+          "wheels": 199,
+          "seconds": 229.5,
+          "err_tail": []
+        },
+        "native_build": {
+          "io": {
+            "rc": 0,
+            "err_tail": []
+          },
+          "cuda": {
+            "rc": 0,
+            "err_tail": []
+          }
+        },
+        "source_commit": "7bb6471 plus uncommitted tensor-parallel changes (smoke)",
+        "sha256_mismatch": []
+      }
+    },
+    {
+      "step": "torch",
+      "torch": {
+        "torch": "2.13.0+cu130",
+        "count": 2,
+        "names": [
+          "NVIDIA A10-24Q",
+          "NVIDIA A10-24Q"
+        ],
+        "peer": [
+          [
+            null,
+            false
+          ],
+          [
+            false,
+            null
+          ]
+        ],
+        "free_total_gib": [
+          [
+            21.37,
+            23.72
+          ],
+          [
+            21.37,
+            23.72
+          ]
+        ]
+      }
+    },
+    {
+      "step": "tp2_graphs_nccl_default",
+      "tp2_graphs_nccl_default": {
+        "rc": 0,
+        "seconds": 165.7,
+        "result": {
+          "tp": 2,
+          "eager": false,
+          "load_s": 130.2,
+          "prefill_ms": {
+            "1024": [
+              381.4,
+              382.3,
+              381.4
+            ],
+            "8192": [
+              3086.7,
+              3100.7,
+              3092.7
+            ]
+          },
+          "prefill_plus_64_decode_ms_1k": [
+            1662.6,
+            1667.4,
+            1665.8
+          ],
+          "text": " Paris. The capital of Italy is Rome. The capital of Spain is Madrid."
+        },
+        "key_lines": [
+          "(EngineCore pid=1915) INFO 11-05 02:02:35 [core.py:129] Initializing a V1 LLM engine (v0.31.0) with config: model='/tmp/pf-kvsnap/hf/hub/models--Qwen--Qwen3-8B/snapshots/b968826d9c46dd6066d109eabc6255188de91218', speculative_config=None, tokenizer='/tmp/pf-kvsnap/hf/hub/models--Qwen--Qwen3-8B/snapsh",
+          "(Worker pid=2017) WARNING 11-05 02:02:36 [flashinfer_all_reduce.py:394] FlashInfer All Reduce is disabled because it is not supported for world_size=2.",
+          "(Worker pid=1978) WARNING 11-05 02:02:36 [flashinfer_all_reduce.py:394] FlashInfer All Reduce is disabled because it is not supported for world_size=2.",
+          "(Worker pid=2017) WARNING 11-05 02:02:36 [custom_all_reduce.py:280] Custom allreduce is disabled because your platform lacks GPU P2P capability or P2P test failed. To silence this warning, specify disable_custom_all_reduce=True explicitly.",
+          "(Worker pid=1978) WARNING 11-05 02:02:36 [custom_all_reduce.py:280] Custom allreduce is disabled because your platform lacks GPU P2P capability or P2P test failed. To silence this warning, specify disable_custom_all_reduce=True explicitly.",
+          "(Worker_TP1 pid=2017) INFO 11-05 02:02:41 [model_runner.py:407] Model loading took 7.64 GiB memory and 3.707908 seconds",
+          "(Worker_TP0 pid=1978) INFO 11-05 02:02:41 [model_runner.py:407] Model loading took 7.64 GiB memory and 4.170548 seconds",
+          "(Worker_TP0 pid=1978) INFO 11-05 02:02:49 [backends.py:1090] Using cache directory: /root/.cache/vllm/torch_compile_cache/2e2b4d2430/rank_0_0/backbone for vLLM's torch.compile",
+          "(Worker_TP0 pid=1978) INFO 11-05 02:03:12 [monitor.py:53] torch.compile took 30.32 s in total",
+          "(Worker_TP0 pid=1978) INFO 11-05 02:04:32 [model_runner.py:1087] Graph capturing finished in 11 secs, took 0.74 GiB",
+          "(Worker_TP1 pid=2017) INFO 11-05 02:04:32 [model_runner.py:1087] Graph capturing finished in 11 secs, took 0.74 GiB",
+          "Capturing CUDA graphs (PIECEWISE):   0%|          | 0/51 [00:00<?, ?it/s]",
+          "Capturing CUDA graphs (PIECEWISE):   2%|\u258f         | 1/51 [00:00<00:13,  3.77it/s]",
+          "Capturing CUDA graphs (PIECEWISE):   4%|\u258d         | 2/51 [00:00<00:12,  3.98it/s]",
+          "Capturing CUDA graphs (PIECEWISE):   6%|\u258c         | 3/51 [00:00<00:11,  4.09it/s]",
+          "Capturing CUDA graphs (PIECEWISE):   8%|\u258a         | 4/51 [00:00<00:11,  4.18it/s]",
+          "Capturing CUDA graphs (PIECEWISE):  10%|\u2589         | 5/51 [00:01<00:10,  4.22it/s]",
+          "Capturing CUDA graphs (PIECEWISE):  12%|\u2588\u258f        | 6/51 [00:01<00:10,  4.29it/s]",
+          "Capturing CUDA graphs (PIECEWISE):  14%|\u2588\u258e        | 7/51 [00:01<00:10,  4.37it/s]",
+          "Capturing CUDA graphs (PIECEWISE):  16%|\u2588\u258c        | 8/51 [00:01<00:09,  4.45it/s]",
+          "Capturing CUDA graphs (PIECEWISE):  18%|\u2588\u258a        | 9/51 [00:02<00:09,  4.61it/s]",
+          "Capturing CUDA graphs (PIECEWISE):  20%|\u2588\u2589        | 10/51 [00:02<00:08,  4.71it/s]",
+          "Capturing CUDA graphs (PIECEWISE):  22%|\u2588\u2588\u258f       | 11/51 [00:02<00:08,  4.82it/s]",
+          "Capturing CUDA graphs (PIECEWISE):  24%|\u2588\u2588\u258e       | 12/51 [00:02<00:07,  4.94it/s]",
+          "Capturing CUDA graphs (PIECEWISE):  25%|\u2588\u2588\u258c       | 13/51 [00:02<00:07,  5.06it/s]",
+          "Capturing CUDA graphs (PIECEWISE):  27%|\u2588\u2588\u258b       | 14/51 [00:03<00:07,  5.18it/s]",
+          "Capturing CUDA graphs (PIECEWISE):  29%|\u2588\u2588\u2589       | 15/51 [00:03<00:06,  5.30it/s]",
+          "Capturing CUDA graphs (PIECEWISE):  31%|\u2588\u2588\u2588\u258f      | 16/51 [00:03<00:06,  5.43it/s]",
+          "Capturing CUDA graphs (PIECEWISE):  33%|\u2588\u2588\u2588\u258e      | 17/51 [00:03<00:05,  5.70it/s]",
+          "Capturing CUDA graphs (PIECEWISE):  35%|\u2588\u2588\u2588\u258c      | 18/51 [00:03<00:05,  6.03it/s]"
+        ]
+      }
+    },
+    {
+      "step": "tp2_graphs_nccl_shm_memcpy",
+      "tp2_graphs_nccl_shm_memcpy": {
+        "rc": null,
+        "seconds": 1200.1,
+        "result": {
+          "rc": null,
+          "err_tail": [
+            "TimeoutExpired(['/tmp/pf-kvsnap/venv/bin/python', '-c', '\\nimport json, random, sys, time\\nfrom vllm import LLM, SamplingParams\\ntp, eager = int(sys.argv[1]), sys.argv[2] == \"1\"\\nt = time.time()\\nllm = LLM(model=\"Qwen/Qwen3-8B\", revision=\"b968826d9c46dd6066d109eabc6255188de91218\", dtype=\"bfloat16\",\\n          tensor_parallel_size=tp, max_model_len=8288, block_size=16, kv_cache_memory_bytes=(2 << 30) // tp,\\n          gpu_memory_utilization=0.80, enable_prefix_caching=False, async_scheduling=Fals"
+          ]
+        },
+        "key_lines": []
+      }
+    },
+    {
+      "step": "tp2_nccl_choice",
+      "tp2_nccl_choice": {
+        "arm": "tp2_graphs_nccl_default",
+        "prefill_8k_ms": {
+          "tp2_graphs_nccl_default": [
+            3086.7,
+            3100.7,
+            3092.7
+          ]
+        }
+      }
+    },
+    {
+      "step": "tp2_restore",
+      "tp2_restore": {
+        "rc": 1,
+        "seconds": 14.6,
+        "samples": [],
+        "key_lines": [
+          "(EngineCore pid=4501) INFO 11-05 02:25:12 [core.py:129] Initializing a V1 LLM engine (v0.31.0) with config: model='/tmp/pf-kvsnap/hf/hub/models--Qwen--Qwen3-8B/snapshots/b968826d9c46dd6066d109eabc6255188de91218', speculative_config=None, tokenizer='/tmp/pf-kvsnap/hf/hub/models--Qwen--Qwen3-8B/snapsh",
+          "(Worker pid=4602) WARNING 11-05 02:25:14 [flashinfer_all_reduce.py:394] FlashInfer All Reduce is disabled because it is not supported for world_size=2.",
+          "(Worker pid=4563) WARNING 11-05 02:25:14 [flashinfer_all_reduce.py:394] FlashInfer All Reduce is disabled because it is not supported for world_size=2.",
+          "(Worker pid=4602) WARNING 11-05 02:25:14 [custom_all_reduce.py:280] Custom allreduce is disabled because your platform lacks GPU P2P capability or P2P test failed. To silence this warning, specify disable_custom_all_reduce=True explicitly.",
+          "(Worker pid=4563) WARNING 11-05 02:25:14 [custom_all_reduce.py:280] Custom allreduce is disabled because your platform lacks GPU P2P capability or P2P test failed. To silence this warning, specify disable_custom_all_reduce=True explicitly.",
+          "(Worker pid=4602) ERROR 11-05 02:25:14 [multiproc_executor.py:948] Traceback (most recent call last):",
+          "(Worker pid=4602) ERROR 11-05 02:25:14 [multiproc_executor.py:948]     raise ValueError(",
+          "(Worker pid=4602) ERROR 11-05 02:25:14 [multiproc_executor.py:948] ValueError: Free memory on device cuda:1 (12.85/23.72 GiB) on startup is less than desired GPU memory utilization (0.8, 18.98 GiB). Decrease GPU memory utilization or reduce GPU memory used by other processes.",
+          "(Worker pid=4563) ERROR 11-05 02:25:14 [multiproc_executor.py:948] Traceback (most recent call last):",
+          "(Worker pid=4563) ERROR 11-05 02:25:14 [multiproc_executor.py:948]     raise ValueError(",
+          "(Worker pid=4563) ERROR 11-05 02:25:14 [multiproc_executor.py:948] ValueError: Free memory on device cuda:0 (12.85/23.72 GiB) on startup is less than desired GPU memory utilization (0.8, 18.98 GiB). Decrease GPU memory utilization or reduce GPU memory used by other processes.",
+          "(EngineCore pid=4501) ERROR 11-05 02:25:15 [core.py:1433] Traceback (most recent call last):",
+          "Traceback (most recent call last):",
+          "Traceback (most recent call last):",
+          "raise RuntimeError(",
+          "RuntimeError: Engine core initialization failed. See root cause above. Failed core proc(s): {'EngineCore': 1}"
+        ]
+      }
+    },
+    {
+      "step": "tp2_restart",
+      "tp2_restart": {
+        "rc": 1,
+        "seconds": 14.9,
+        "samples": [],
+        "key_lines": [
+          "(EngineCore pid=5052) INFO 11-05 02:25:26 [core.py:129] Initializing a V1 LLM engine (v0.31.0) with config: model='/tmp/pf-kvsnap/hf/hub/models--Qwen--Qwen3-8B/snapshots/b968826d9c46dd6066d109eabc6255188de91218', speculative_config=None, tokenizer='/tmp/pf-kvsnap/hf/hub/models--Qwen--Qwen3-8B/snapsh",
+          "(Worker pid=5114) WARNING 11-05 02:25:29 [flashinfer_all_reduce.py:394] FlashInfer All Reduce is disabled because it is not supported for world_size=2.",
+          "(Worker pid=5153) WARNING 11-05 02:25:29 [flashinfer_all_reduce.py:394] FlashInfer All Reduce is disabled because it is not supported for world_size=2.",
+          "(Worker pid=5114) WARNING 11-05 02:25:29 [custom_all_reduce.py:280] Custom allreduce is disabled because your platform lacks GPU P2P capability or P2P test failed. To silence this warning, specify disable_custom_all_reduce=True explicitly.",
+          "(Worker pid=5153) WARNING 11-05 02:25:29 [custom_all_reduce.py:280] Custom allreduce is disabled because your platform lacks GPU P2P capability or P2P test failed. To silence this warning, specify disable_custom_all_reduce=True explicitly.",
+          "(Worker pid=5153) ERROR 11-05 02:25:29 [multiproc_executor.py:948] Traceback (most recent call last):",
+          "(Worker pid=5153) ERROR 11-05 02:25:29 [multiproc_executor.py:948]     raise ValueError(",
+          "(Worker pid=5153) ERROR 11-05 02:25:29 [multiproc_executor.py:948] ValueError: Free memory on device cuda:1 (12.85/23.72 GiB) on startup is less than desired GPU memory utilization (0.8, 18.98 GiB). Decrease GPU memory utilization or reduce GPU memory used by other processes.",
+          "(Worker pid=5114) ERROR 11-05 02:25:29 [multiproc_executor.py:948] Traceback (most recent call last):",
+          "(Worker pid=5114) ERROR 11-05 02:25:29 [multiproc_executor.py:948]     raise ValueError(",
+          "(Worker pid=5114) ERROR 11-05 02:25:29 [multiproc_executor.py:948] ValueError: Free memory on device cuda:0 (12.85/23.72 GiB) on startup is less than desired GPU memory utilization (0.8, 18.98 GiB). Decrease GPU memory utilization or reduce GPU memory used by other processes.",
+          "(EngineCore pid=5052) ERROR 11-05 02:25:30 [core.py:1433] Traceback (most recent call last):",
+          "Traceback (most recent call last):",
+          "Traceback (most recent call last):",
+          "raise RuntimeError(",
+          "RuntimeError: Engine core initialization failed. See root cause above. Failed core proc(s): {'EngineCore': 1}"
+        ]
+      }
+    },
+    {
+      "step": "tp1_restore",
+      "tp1_restore": {
+        "rc": 1,
+        "seconds": 11.8,
+        "samples": [],
+        "key_lines": [
+          "(EngineCore pid=5597) INFO 11-05 02:25:40 [core.py:129] Initializing a V1 LLM engine (v0.31.0) with config: model='/tmp/pf-kvsnap/hf/hub/models--Qwen--Qwen3-8B/snapshots/b968826d9c46dd6066d109eabc6255188de91218', speculative_config=None, tokenizer='/tmp/pf-kvsnap/hf/hub/models--Qwen--Qwen3-8B/snapsh",
+          "(EngineCore pid=5597) ERROR 11-05 02:25:42 [core.py:1433] Traceback (most recent call last):",
+          "(EngineCore pid=5597) ERROR 11-05 02:25:42 [core.py:1433]     raise ValueError(",
+          "(EngineCore pid=5597) ERROR 11-05 02:25:42 [core.py:1433] ValueError: Free memory on device cuda:0 (13.0/23.72 GiB) on startup is less than desired GPU memory utilization (0.8, 18.98 GiB). Decrease GPU memory utilization or reduce GPU memory used by other processes.",
+          "Traceback (most recent call last):",
+          "raise ValueError(",
+          "ValueError: Free memory on device cuda:0 (13.0/23.72 GiB) on startup is less than desired GPU memory utilization (0.8, 18.98 GiB). Decrease GPU memory utilization or reduce GPU memory used by other processes.",
+          "Traceback (most recent call last):",
+          "raise RuntimeError(",
+          "RuntimeError: Engine core initialization failed. See root cause above. Failed core proc(s): {}"
+        ]
+      }
+    },
+    {
+      "step": "put_results",
+      "put_results": {
+        "tp1_restore.log": "UPLOADED",
+        "tp2_graphs_nccl_default.log": "UPLOADED",
+        "tp2_graphs_nccl_shm_memcpy.log": "UPLOADED",
+        "tp2_restart.log": "UPLOADED",
+        "tp2_restore.log": "UPLOADED"
+      }
+    },
+    {
+      "step": "elapsed_s",
+      "elapsed_s": 1783.2
+    }
+  ],
+  "seconds": 1983.5,
+  "stop": [
+    "ALTER COMPUTE POOL PORTFOLIO_2XA10_POOL STOP ALL: ok",
+    "ALTER COMPUTE POOL PORTFOLIO_2XA10_POOL SUSPEND: ok"
+  ],
+  "pool_after": {
+    "state": "SUSPENDED",
+    "instance_family": "GPU_NV_2M",
+    "min_nodes": "1",
+    "max_nodes": "1",
+    "active_nodes": "0",
+    "idle_nodes": "0",
+    "num_services": "0",
+    "num_jobs": "0"
+  },
+  "credits_estimate": 1.928
+}

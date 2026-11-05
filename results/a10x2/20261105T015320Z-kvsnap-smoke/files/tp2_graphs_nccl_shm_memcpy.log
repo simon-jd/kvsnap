@@ -1,0 +1,2 @@
+
+TimeoutExpired(['/tmp/pf-kvsnap/venv/bin/python', '-c', '\nimport json, random, sys, time\nfrom vllm import LLM, SamplingParams\ntp, eager = int(sys.argv[1]), sys.argv[2] == "1"\nt = time.time()\nllm = LLM(model="Qwen/Qwen3-8B", revision="b968826d9c46dd6066d109eabc6255188de91218", dtype="bfloat16",\n          tensor_parallel_size=tp, max_model_len=8288, block_size=16, kv_cache_memory_bytes=(2 << 30) // tp,\n          gpu_memory_utilization=0.80, enable_prefix_caching=False, async_scheduling=Fals

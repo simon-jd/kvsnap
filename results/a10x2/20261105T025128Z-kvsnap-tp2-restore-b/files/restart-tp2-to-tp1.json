@@ -1,0 +1,167 @@
+{
+ "model": "Qwen/Qwen3-8B",
+ "revision": "b968826d9c46dd6066d109eabc6255188de91218",
+ "lengths": [
+  2048
+ ],
+ "restart_tensor_parallel_size": 1,
+ "restore_misses": 3,
+ "miss_reasons": [
+  "IdentityMismatch: incompatible KV identity: model_shape"
+ ],
+ "loads_after_restart": 0,
+ "turn2_saves_refused": 3,
+ "kv_cache_gib": 1,
+ "max_num_batched_tokens": 8448,
+ "tensor_parallel_size": 2,
+ "seed": 1,
+ "engine_restart_s": 51.25461730400002,
+ "rows": [
+  {
+   "context_tokens": 2048,
+   "cold": true,
+   "ttft_ms": 476.2529839999843,
+   "recompute_ttft_ms": 479.6872050001184,
+   "match": true
+  },
+  {
+   "context_tokens": 2048,
+   "cold": false,
+   "ttft_ms": 489.1610839999885,
+   "recompute_ttft_ms": 485.1022440000179,
+   "match": true
+  }
+ ],
+ "summary": [
+  {
+   "context_tokens": 2048,
+   "cold": false,
+   "n": 1,
+   "ttft_ms_median": 489.1610839999885,
+   "ttft_ms_min": 489.1610839999885,
+   "ttft_ms_max": 489.1610839999885,
+   "recompute_ttft_ms_median": 485.1022440000179,
+   "recompute_ttft_ms_min": 485.1022440000179,
+   "recompute_ttft_ms_max": 485.1022440000179,
+   "tokens_match": 1
+  },
+  {
+   "context_tokens": 2048,
+   "cold": true,
+   "n": 1,
+   "ttft_ms_median": 476.2529839999843,
+   "ttft_ms_min": 476.2529839999843,
+   "ttft_ms_max": 476.2529839999843,
+   "recompute_ttft_ms_median": 479.6872050001184,
+   "recompute_ttft_ms_min": 479.6872050001184,
+   "recompute_ttft_ms_max": 479.6872050001184,
+   "tokens_match": 1
+  }
+ ],
+ "environment": {
+  "gpu_at_start": {
+   "name": "NVIDIA A10-24Q",
+   "driver_version": "570.211.01",
+   "clocks.sm": "1695 MHz",
+   "clocks.mem": "6251 MHz",
+   "clocks.max.sm": "[Unknown Error]",
+   "clocks.max.mem": "[Unknown Error]",
+   "pcie.link.gen.current": "[N/A]",
+   "pcie.link.gen.max": "[N/A]",
+   "pcie.link.width.current": "[N/A]",
+   "pcie.link.width.max": "[N/A]",
+   "power.limit": "[N/A]",
+   "temperature.gpu": "[N/A]",
+   "memory.used": "0 MiB",
+   "memory.total": "24512 MiB",
+   "other_gpus": [
+    {
+     "name": "NVIDIA A10-24Q",
+     "driver_version": "570.211.01",
+     "clocks.sm": "1695 MHz",
+     "clocks.mem": "6251 MHz",
+     "clocks.max.sm": "[Unknown Error]",
+     "clocks.max.mem": "[Unknown Error]",
+     "pcie.link.gen.current": "[N/A]",
+     "pcie.link.gen.max": "[N/A]",
+     "pcie.link.width.current": "[N/A]",
+     "pcie.link.width.max": "[N/A]",
+     "power.limit": "[N/A]",
+     "temperature.gpu": "[N/A]",
+     "memory.used": "0 MiB",
+     "memory.total": "24512 MiB"
+    }
+   ],
+   "host_load_average_1_5_15": [
+    9.04,
+    8.15,
+    6.06
+   ]
+  },
+  "git": {
+   "commit": "4ba6e8bbb4b7487c9a3eea108c9b3e104c564321",
+   "dirty": null,
+   "source": "archive"
+  },
+  "host": {
+   "cpu": "AMD EPYC 74F3 24-Core Processor",
+   "cpus": 72,
+   "memory_gib": 866.1,
+   "kernel": "5.15.221-14.2026100118g3ce9aaa+snow+aws+5.15+amd64.x86_64",
+   "load_average_1_5_15": [
+    9.04,
+    8.15,
+    6.06
+   ]
+  },
+  "storage": {
+   "device": "overlay",
+   "model_transport": null
+  },
+  "software": {
+   "python": "3.12.15",
+   "vllm": "0.31.0",
+   "torch": "2.13.0+cu130",
+   "torch_cuda": "13.0"
+  },
+  "gpu_at_measurement": {
+   "name": "NVIDIA A10-24Q",
+   "driver_version": "570.211.01",
+   "clocks.sm": "1695 MHz",
+   "clocks.mem": "6251 MHz",
+   "clocks.max.sm": "[Unknown Error]",
+   "clocks.max.mem": "[Unknown Error]",
+   "pcie.link.gen.current": "[N/A]",
+   "pcie.link.gen.max": "[N/A]",
+   "pcie.link.width.current": "[N/A]",
+   "pcie.link.width.max": "[N/A]",
+   "power.limit": "[N/A]",
+   "temperature.gpu": "[N/A]",
+   "memory.used": "18436 MiB",
+   "memory.total": "24512 MiB",
+   "other_gpus": [
+    {
+     "name": "NVIDIA A10-24Q",
+     "driver_version": "570.211.01",
+     "clocks.sm": "1695 MHz",
+     "clocks.mem": "6251 MHz",
+     "clocks.max.sm": "[Unknown Error]",
+     "clocks.max.mem": "[Unknown Error]",
+     "pcie.link.gen.current": "[N/A]",
+     "pcie.link.gen.max": "[N/A]",
+     "pcie.link.width.current": "[N/A]",
+     "pcie.link.width.max": "[N/A]",
+     "power.limit": "[N/A]",
+     "temperature.gpu": "[N/A]",
+     "memory.used": "3 MiB",
+     "memory.total": "24512 MiB"
+    }
+   ],
+   "host_load_average_1_5_15": [
+    3.71,
+    6.98,
+    5.94
+   ]
+  }
+ }
+}

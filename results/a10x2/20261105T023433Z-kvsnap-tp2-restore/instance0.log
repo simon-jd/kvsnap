@@ -1,0 +1,117 @@
+RESULT {"step": "node", "node": {"python": "3.12.15", "cpus": 72, "cpu_model": "model name\t: AMD EPYC 74F3 24-Core Processor", "mem": "total        used        free      shared  buff/cache   available\nMem:             866          11         838           0          19         854\nSwap:              0           0           0", "df_work": "Filesystem      Size  Used Avail Use% Mounted on\noverlay         150G   25G  126G  17% /", "findmnt_work": "TARGET SOURCE  FSTYPE  OPTIONS\n/      overlay overlay rw,relatime,seclabel,lowerdir=/var/lib/snowfs/mount/0,upperdir=/var/lib/snowfs/snapshots/mnt/snapshots/fs/52,workdir=/var/lib/snowfs/snapshots/mnt/snapshots/work/52", "shm": "Filesystem      Size  Used Avail Use% Mounted on\ntmpfs           257G     0  257G   0% /dev/shm", "lsblk": "NAME     SIZE TYPE MODEL            TRAN MOUNTPOINTS\nsda       50G disk Virtual Disk          \n\u251c\u2500sda1   500M part                       \n\u251c\u2500sda2    49G part                       /usr/lib/firmware/nvidia/570.211.01/gsp_tu10x.bin\n\u2502                                        /usr/lib/firmware/nvidia/570.211.01/gsp_ga10x.bin\n\u2502                                        /usr/lib/x86_64-linux-gnu/libnvidia-nvvm.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libnvidia-pkcs11-openssl3.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libnvidia-pkcs11.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libnvidia-allocator.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libnvidia-ptxjitcompiler.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libnvidia-gpucomp.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libnvidia-opencl.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libcudadebugger.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libcuda.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libnvidia-cfg.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libnvidia-ml.so.570.211.01\n\u2502                                        /usr/bin/nvidia-cuda-mps-server\n\u2502                                        /usr/bin/nvidia-cuda-mps-control\n\u2502                                        /usr/bin/nv-fabricmanager\n\u2502                                        /usr/bin/nvidia-persistenced\n\u2502                                        /usr/bin/nvidia-debugdump\n\u2502                                        /usr/bin/nvidia-smi\n\u2502                                        /var/log/services/internal\n\u251c\u2500sda14    4M part                       \n\u2514\u2500sda15  495M part                       \nsdb      2.8T disk Virtual Disk          \n\u2514\u2500sdb1   2.8T part                       \nsdc      220G disk Virtual Disk          \nsr0      630K rom  Virtual DVD-ROM", "gpus": "GPU 0: NVIDIA A10-24Q (UUID: GPU-86613000-d8c1-11f1-a18a-1045598e8081)\nGPU 1: NVIDIA A10-24Q (UUID: GPU-85c89980-d8c1-11f1-ac93-668097bf99f6)", "topo": "\u001b[4mGPU0\tGPU1\tNIC0\tCPU Affinity\tNUMA Affinity\tGPU NUMA ID\u001b[0m\nGPU0\t X \tSYS\tSYS\t18-35\t1\t\tN/A\nGPU1\tSYS\t X \tSYS\t54-71\t3\t\tN/A\nNIC0\tSYS\tSYS\t X \t\t\t\t\n\nLegend:\n\n  X    = Self\n  SYS  = Connection traversing PCIe as well as the SMP interconnect between NUMA nodes (e.g., QPI/UPI)\n  NODE = Connection traversing PCIe as well as the interconnect between PCIe Host Bridges within a NUMA node\n  PHB  = Connection traversing PCIe as well as a PCIe Host Bridge (typically the CPU)\n  PXB  = Connection traversing multiple PCIe bridges (without traversing the PCIe Host Bridge)\n  PIX  = Connection traversing at most a single PCIe bridge\n  NV#  = Connection traversing a bonded set of # NVLinks\n\nNIC Legend:\n\n  NIC0: mlx5_0", "p2p_read": "\u001b[4mGPU0\tGPU1\t\u001b[0m\n GPU0\tX\tNS\t\n GPU1\tNS\tX\t\n\nLegend:\n\n  X    = Self\n  OK   = Status Ok\n  CNS  = Chipset not supported\n  GNS  = GPU not supported\n  TNS  = Topology not supported\n  NS   = Not supported\n  U    = Unknown", "query": "0, NVIDIA A10-24Q, 570.211.01, 24512 MiB, [Unknown Error], [N/A], [N/A]\n1, NVIDIA A10-24Q, 570.211.01, 24512 MiB, [Unknown Error], [N/A], [N/A]"}}
+2026-11-05 02:37:07,936	INFO usage_lib.py:448 -- Usage stats collection is disabled.
+2026-11-05 02:37:07,937	INFO scripts.py:940 -- [37mLocal node IP[39m: [1m10.244.13.11[22m
+2026-11-05 02:37:14,246	SUCC scripts.py:979 -- [32m--------------------[39m
+2026-11-05 02:37:14,246	SUCC scripts.py:980 -- [32mRay runtime started.[39m
+2026-11-05 02:37:14,246	SUCC scripts.py:981 -- [32m--------------------[39m
+2026-11-05 02:37:14,246	INFO scripts.py:983 -- [36mNext steps[39m
+2026-11-05 02:37:14,246	INFO scripts.py:986 -- To add another node to this Ray cluster, run
+2026-11-05 02:37:14,246	INFO scripts.py:989 -- [1m  ray start --address='10.244.13.11:12001'[22m
+2026-11-05 02:37:14,246	INFO scripts.py:1000 -- To connect to this Ray cluster:
+2026-11-05 02:37:14,246	INFO scripts.py:1002 -- [35mimport[39m[26m ray
+2026-11-05 02:37:14,247	INFO scripts.py:1003 -- ray[35m.[39m[26minit(_node_ip_address[35m=[39m[26m[33m'10.244.13.11'[39m[26m)
+2026-11-05 02:37:14,247	INFO scripts.py:1017 -- To submit a Ray job using the Ray Jobs CLI:
+2026-11-05 02:37:14,247	INFO scripts.py:1018 -- [1m  RAY_API_SERVER_ADDRESS='http://10.244.13.11:12003' ray job submit --working-dir . -- python my_script.py[22m
+2026-11-05 02:37:14,247	INFO scripts.py:1027 -- See https://docs.ray.io/en/latest/cluster/running-applications/job-submission/index.html 
+2026-11-05 02:37:14,247	INFO scripts.py:1031 -- for more information on submitting Ray jobs to the Ray cluster.
+2026-11-05 02:37:14,247	INFO scripts.py:1036 -- To terminate the Ray runtime, run
+2026-11-05 02:37:14,247	INFO scripts.py:1037 -- [1m  ray stop[22m
+2026-11-05 02:37:14,247	INFO scripts.py:1040 -- To view the status of the cluster, use
+2026-11-05 02:37:14,247	INFO scripts.py:1041 --   [1mray status[22m[26m
+2026-11-05 02:37:14,247	INFO scripts.py:1045 -- To monitor and debug Ray, view the dashboard at 
+2026-11-05 02:37:14,247	INFO scripts.py:1046 --   [1m10.244.13.11:12003[22m[26m
+2026-11-05 02:37:14,247	INFO scripts.py:1053 -- [4mIf connection to the dashboard fails, check your firewall settings and network configuration.[24m
+Patching Grafana datasource configuration to use port 9091
+Grafana started successfully
+Metric sent (UDP, best-effort) to 127.0.0.1:8125: mljob.ray_startup_seconds:11|h
+Metric sent (UDP, best-effort) to 127.0.0.1:8125: mljob.startup_status:1|c|#status:success
+Grafana server is running with elevated privileges. This is not recommended
+logger=migrator t=2026-11-05T02:37:57.114168616Z level=warn msg="Skipping migration: Already executed, but not recorded in migration log" id="drop unique orgID index on alert_configuration if exists"
+logger=migrator t=2026-11-05T02:37:57.920883489Z level=warn msg="Skipping migration: Already executed, but not recorded in migration log" id="drop index UQE_dashboard_public_config_uid - v1"
+logger=migrator t=2026-11-05T02:37:57.930339971Z level=warn msg="Skipping migration: Already executed, but not recorded in migration log" id="drop index IDX_dashboard_public_config_org_id_dashboard_uid - v1"
+logger=migrator t=2026-11-05T02:37:58.131666835Z level=warn msg="Skipping migration: Already executed, but not recorded in migration log" id="drop my_row_id and add primary key to file table if my_row_id exists (auto-generated mysql column)"
+logger=migrator t=2026-11-05T02:37:58.168605679Z level=warn msg="Skipping migration: Already executed, but not recorded in migration log" id="drop my_row_id and add primary key to file_meta table if my_row_id exists (auto-generated mysql column)"
+logger=migrator t=2026-11-05T02:37:59.021541742Z level=warn msg="Skipping migration: Already executed, but not recorded in migration log" id="drop my_row_id and add primary key with columns snapshot_uid,resource_type,partition_number to table cloud_migration_snapshot_partition if my_row_id exists (auto-generated mysql column)"
+logger=renderer.manager t=2026-11-05T02:41:19.089411251Z level=error msg="Failed to get renderer plugin sources" error="failed to open plugins path"
+logger=plugin.sources t=2026-11-05T02:41:19.092294835Z level=error msg="Failed to load external plugins" error="failed to open plugins path"
+logger=secret-migrator t=2026-11-05T02:42:31.889221643Z level=warn msg="Skipping migration: Already executed, but not recorded in migration log" id="drop my_row_id and add primary key with columns namespace,name,version to table secret_encrypted_value if my_row_id exists (auto-generated mysql column)"
+logger=resource-migrator t=2026-11-05T02:42:57.116880188Z level=warn msg="Skipping migration: Already executed, but not recorded in migration log" id="drop my_row_id and add primary key with columns group,resource to table resource_version if my_row_id exists (auto-generated mysql column)"
+logger=storage.unified.migrations t=2026-11-05T02:42:57.201352032Z level=warn msg="Failed to check if migration exists" migration=folders-dashboards error="failed to check migration existence: SQL logic error: no such table: unifiedstorage_migration_log (1)"
+logger=storage.unified.migrations t=2026-11-05T02:42:57.201494877Z level=warn msg="Failed to check if migration exists" migration=folders-dashboards error="failed to check migration existence: SQL logic error: no such table: unifiedstorage_migration_log (1)"
+logger=provisioning.plugins t=2026-11-05T02:43:01.484570146Z level=error msg="Failed to read plugin provisioning files from directory" path=/tmp/ray/session_latest/metrics/grafana/provisioning/plugins error="open /tmp/ray/session_latest/metrics/grafana/provisioning/plugins: no such file or directory"
+logger=provisioning.alerting t=2026-11-05T02:43:01.484645456Z level=error msg="can't read alerting provisioning files from directory" path=/tmp/ray/session_latest/metrics/grafana/provisioning/alerting error="open /tmp/ray/session_latest/metrics/grafana/provisioning/alerting: no such file or directory"
+logger=plugin.backgroundinstaller t=2026-11-05T02:43:01.677054817Z level=error msg="Failed to install plugin" pluginId=grafana-exploretraces-app version= error="Get \"https://grafana.com/api/plugins/grafana-exploretraces-app/versions\": dial tcp: lookup grafana.com on 169.254.20.10:53: no such host"
+logger=plugin.backgroundinstaller t=2026-11-05T02:43:01.695850964Z level=error msg="Failed to install plugin" pluginId=grafana-metricsdrilldown-app version= error="Get \"https://grafana.com/api/plugins/grafana-metricsdrilldown-app/versions\": dial tcp: lookup grafana.com on 169.254.20.10:53: no such host"
+logger=plugin.backgroundinstaller t=2026-11-05T02:43:01.717057199Z level=error msg="Failed to install plugin" pluginId=grafana-lokiexplore-app version= error="Get \"https://grafana.com/api/plugins/grafana-lokiexplore-app/versions\": dial tcp: lookup grafana.com on 169.254.20.10:53: no such host"
+logger=plugin.backgroundinstaller t=2026-11-05T02:43:01.729430111Z level=error msg="Failed to install plugin" pluginId=grafana-pyroscope-app version= error="Get \"https://grafana.com/api/plugins/grafana-pyroscope-app/versions\": dial tcp: lookup grafana.com on 169.254.20.10:53: no such host"
+logger=renderer.manager t=2026-11-05T02:43:01.829599454Z level=error msg="Failed to get renderer plugin sources" error="failed to open plugins path"
+logger=grafana.update.checker t=2026-11-05T02:43:01.844010142Z level=error msg="Update check failed" error="failed to get stable version from grafana.com: Get \"https://grafana.com/api/grafana/versions/stable\": dial tcp: lookup grafana.com on 169.254.20.10:53: no such host" duration=14.536505ms
+logger=plugin.angulardetectorsprovider.dynamic t=2026-11-05T02:43:01.953123255Z level=error msg="Error while updating detectors" error="fetch: http do: Get \"https://grafana.com/api/plugins/angular_patterns\": dial tcp: lookup grafana.com on 169.254.20.10:53: no such host"
+logger=plugin.signature.key_retriever t=2026-11-05T02:43:01.953129576Z level=error msg="Error downloading plugin manifest keys" error="Get \"https://grafana.com/api/plugins/ci/keys\": dial tcp: lookup grafana.com on 169.254.20.10:53: no such host"
+t=2026-11-05T02:44:07.674265417Z level=error caller=logger.go:234 time=2026-11-05T02:44:07.674231343Z msg="cleaning up inactive secure values" error="fetching inactive secure values that need to be cleaned up: acquiring leases for inactive secure values: leasing inactive secure values: context deadline exceeded"
+logger=plugin.signature.key_retriever t=2026-11-05T02:44:07.899039552Z level=error msg="Error downloading plugin manifest keys" error="Get \"https://grafana.com/api/plugins/ci/keys\": dial tcp: lookup grafana.com on 169.254.20.10:53: no such host"
+RESULT {"step": "bootstrap", "bootstrap": {"fetch_s": 106.7, "sha256_s": 11.9, "untar_s": 93.4, "install": {"rc": 0, "wheels": 199, "seconds": 218.0, "err_tail": []}, "native_build": {"io": {"rc": 0, "err_tail": []}, "cuda": {"rc": 0, "err_tail": []}}, "source_commit": "679a45118e198778735797579282ec913bdaaef6", "sha256_mismatch": [], "ninja_in_wheelhouse": true}}
+Capturing CUDA graphs (PIECEWISE):  29%|██▊       | 10/35 [00:01<00:03,  7.62it/s]
+Capturing CUDA graphs (PIECEWISE):  31%|███▏      | 11/35 [00:01<00:03,  7.80it/s]
+Capturing CUDA graphs (PIECEWISE):  34%|███▍      | 12/35 [00:01<00:02,  7.98it/s]
+Capturing CUDA graphs (PIECEWISE):  37%|███▋      | 13/35 [00:01<00:02,  8.13it/s]
+Capturing CUDA graphs (PIECEWISE):  40%|████      | 14/35 [00:01<00:02,  8.38it/s]
+Capturing CUDA graphs (PIECEWISE):  43%|████▎     | 15/35 [00:01<00:02,  8.55it/s]
+Capturing CUDA graphs (PIECEWISE):  46%|████▌     | 16/35 [00:02<00:02,  8.69it/s]
+Capturing CUDA graphs (PIECEWISE):  51%|█████▏    | 18/35 [00:02<00:01,  9.22it/s]
+Capturing CUDA graphs (PIECEWISE):  57%|█████▋    | 20/35 [00:02<00:01,  9.60it/s]
+Capturing CUDA graphs (PIECEWISE):  63%|██████▎   | 22/35 [00:02<00:01, 10.11it/s]
+Capturing CUDA graphs (PIECEWISE):  69%|██████▊   | 24/35 [00:02<00:01, 10.60it/s]
+Capturing CUDA graphs (PIECEWISE):  74%|███████▍  | 26/35 [00:02<00:00, 11.12it/s]
+Capturing CUDA graphs (PIECEWISE):  80%|████████  | 28/35 [00:03<00:00, 11.80it/s]
+Capturing CUDA graphs (PIECEWISE):  86%|████████▌ | 30/35 [00:03<00:00, 12.55it/s]
+Capturing CUDA graphs (PIECEWISE):  91%|█████████▏| 32/35 [00:03<00:00, 13.40it/s]
+Capturing CUDA graphs (PIECEWISE):  97%|█████████▋| 34/35 [00:03<00:00, 14.33it/s]
+Capturing CUDA graphs (PIECEWISE): 100%|██████████| 35/35 [00:03<00:00,  9.81it/s]
+
+Capturing CUDA graphs (FULL):   0%|          | 0/19 [00:00<?, ?it/s]
+Capturing CUDA graphs (FULL):  11%|█         | 2/19 [00:00<00:01, 12.25it/s]
+Capturing CUDA graphs (FULL):  21%|██        | 4/19 [00:00<00:01, 12.79it/s]
+Capturing CUDA graphs (FULL):  32%|███▏      | 6/19 [00:00<00:00, 13.33it/s]
+Capturing CUDA graphs (FULL):  42%|████▏     | 8/19 [00:00<00:00, 13.95it/s]
+Capturing CUDA graphs (FULL):  53%|█████▎    | 10/19 [00:00<00:00, 14.72it/s]
+Capturing CUDA graphs (FULL):  63%|██████▎   | 12/19 [00:00<00:00, 15.66it/s]
+Capturing CUDA graphs (FULL):  74%|███████▎  | 14/19 [00:00<00:00, 16.83it/s]
+Capturing CUDA graphs (FULL):  89%|████████▉ | 17/19 [00:01<00:00, 19.15it/s]
+Capturing CUDA graphs (FULL): 100%|██████████| 19/19 [00:01<00:00, 16.82it/s]
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/tmp/pf-kvsnap/src/kvsnap/bench/restore_ttft.py", line 311, in <module>
+    main()
+  File "/tmp/pf-kvsnap/src/kvsnap/bench/restore_ttft.py", line 304, in main
+    result = asyncio.run(run(args))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/python/cpython-3.12.15-linux-x86_64-gnu/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/opt/python/cpython-3.12.15-linux-x86_64-gnu/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/python/cpython-3.12.15-linux-x86_64-gnu/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/tmp/pf-kvsnap/src/kvsnap/bench/restore_ttft.py", line 209, in run
+    await restore(length, durability, False)
+  File "/tmp/pf-kvsnap/src/kvsnap/bench/restore_ttft.py", line 178, in restore
+    reference_ttft, reference, reference_logprobs = await recompute(tuple(manifest.token_ids) + tuple(suffix))
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/pf-kvsnap/src/kvsnap/bench/restore_ttft.py", line 158, in recompute
+    async for out in runtime.generate({"prompt_token_ids": list(prompt)}, params, uuid.uuid4().hex):
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/engine/async_llm.py", line 713, in generate
+    q = await self.add_request(
+        ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/pf-kvsnap/venv/lib/python3.12/site-packages/vllm/v1/engine/async_llm.py", line 396, in add_request
+    raise EngineDeadError()
+vllm.v1.engine.exceptions.EngineDeadError: EngineCore encountered an issue. See stack trace (above) for the root cause.
+/opt/python/cpython-3.12.15-linux-x86_64-gnu/lib/python3.12/multiprocessing/resource_tracker.py:279: UserWarning: resource_tracker: There appear to be 1 leaked shared_memory objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '
+RESULT {"step": "restore-tp2-run1", "restore-tp2-run1": {"rc": 1, "seconds": 141.3, "nccl": {}, "key_lines": ["(EngineCore pid=1899) INFO 11-05 02:44:40 [core.py:129] Initializing a V1 LLM engine (v0.31.0) with config: model='/tmp/pf-kvsnap/hf/hub/models--Qwen--Qwen3-8B/snapshots/b968826d9c46dd6066d109eabc6255188de91218', speculative_config=None, tokenizer='/tmp/pf-kvsnap/hf/hub/models--Qwen--Qwen3-8B/snapsh", "(Worker pid=2000) WARNING 11-05 02:44:43 [custom_all_reduce.py:280] Custom allreduce is disabled because your platform lacks GPU P2P capability or P2P test failed. To silence this warning, specify disable_custom_all_reduce=True explicitly.", "(Worker pid=1961) WARNING 11-05 02:44:43 [custom_all_reduce.py:280] Custom allreduce is disabled because your platform lacks GPU P2P capability or P2P test failed. To silence this warning, specify disable_custom_all_reduce=True explicitly.", "(EngineCore pid=1899) ERROR 11-05 02:46:37 [core.py:1435] Traceback (most recent call last):", "(EngineCore pid=1899) ERROR 11-05 02:46:37 [core.py:1435] TypeError: list indices must be integers or slices, not str", "(MainProcess pid=1595) ERROR 11-05 02:46:37 [async_llm.py:871] Traceback (most recent call last):", "(MainProcess pid=1595) ERROR 11-05 02:46:37 [async_llm.py:871] vllm.v1.engine.exceptions.EngineDeadError: EngineCore encountered an issue. See stack trace (above) for the root cause.", "Traceback (most recent call last):", "raise EngineDeadError()", "vllm.v1.engine.exceptions.EngineDeadError: EngineCore encountered an issue. See stack trace (above) for the root cause."], "gpu_memory_after": "0, 0 MiB, 24512 MiB\n1, 0 MiB, 24512 MiB"}}
+RESULT {"step": "restore-tp2-run1-put", "restore-tp2-run1-put": {"restore-tp2-run1.log": "UPLOADED"}}
+RESULT {"step": "stopped", "stopped": "restore-tp2-run1 failed: the rest of the plan is skipped"}
+RESULT {"step": "elapsed_s", "elapsed_s": 574.2}

@@ -1,0 +1,488 @@
+{
+  "run_id": "20261105T025128Z-kvsnap-tp2-restore-b",
+  "pool": "PORTFOLIO_2XA10_POOL",
+  "instances": 1,
+  "payload": "payloads/kvsnap_tp_bench.py",
+  "pip": [],
+  "args": [
+    "kvsnap-src-4ba6e8b.tar",
+    "tp2-restore",
+    "33"
+  ],
+  "started_at": "2026-11-05T02:51:28+00:00",
+  "pool_before": {
+    "state": "SUSPENDED",
+    "instance_family": "GPU_NV_2M",
+    "min_nodes": "1",
+    "max_nodes": "1",
+    "active_nodes": "0",
+    "idle_nodes": "0",
+    "num_services": "0",
+    "num_jobs": "0"
+  },
+  "job_id": "PORTFOLIO_LAB.GPU.PF_KVSNAP_TP_BENCH_KVSNAP_TP2_RESTORE_B_U6OZBF3ONJDM",
+  "status_trace": [
+    {
+      "at_s": 9,
+      "job": "PENDING",
+      "containers": [
+        [
+          "PENDING",
+          "Compute pool node(s) are being provisioned"
+        ]
+      ]
+    },
+    {
+      "at_s": 110,
+      "job": "PENDING",
+      "containers": [
+        [
+          "PENDING",
+          "Waiting to start"
+        ]
+      ]
+    },
+    {
+      "at_s": 151,
+      "job": "RUNNING",
+      "containers": [
+        [
+          "READY",
+          "Running"
+        ]
+      ]
+    },
+    {
+      "at_s": 1785,
+      "job": "PENDING",
+      "containers": [
+        [
+          "DONE",
+          "Completed successfully"
+        ]
+      ]
+    },
+    {
+      "at_s": 1825,
+      "job": "DONE",
+      "containers": [
+        [
+          "DONE",
+          "Completed successfully"
+        ]
+      ]
+    }
+  ],
+  "status": "DONE",
+  "results": [
+    {
+      "step": "node",
+      "node": {
+        "python": "3.12.15",
+        "cpus": 72,
+        "cpu_model": "model name\t: AMD EPYC 74F3 24-Core Processor",
+        "mem": "total        used        free      shared  buff/cache   available\nMem:             866          12         838           0          19         853\nSwap:              0           0           0",
+        "df_work": "Filesystem      Size  Used Avail Use% Mounted on\noverlay         150G   25G  126G  17% /",
+        "findmnt_work": "TARGET SOURCE  FSTYPE  OPTIONS\n/      overlay overlay rw,relatime,seclabel,lowerdir=/var/lib/snowfs/mount/0,upperdir=/var/lib/snowfs/snapshots/mnt/snapshots/fs/52,workdir=/var/lib/snowfs/snapshots/mnt/snapshots/work/52",
+        "shm": "Filesystem      Size  Used Avail Use% Mounted on\ntmpfs           257G     0  257G   0% /dev/shm",
+        "lsblk": "NAME     SIZE TYPE MODEL            TRAN MOUNTPOINTS\nsda       50G disk Virtual Disk          \n\u251c\u2500sda1   500M part                       \n\u251c\u2500sda2    49G part                       /usr/lib/firmware/nvidia/570.211.01/gsp_tu10x.bin\n\u2502                                        /usr/lib/firmware/nvidia/570.211.01/gsp_ga10x.bin\n\u2502                                        /usr/lib/x86_64-linux-gnu/libnvidia-nvvm.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libnvidia-pkcs11-openssl3.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libnvidia-pkcs11.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libnvidia-allocator.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libnvidia-ptxjitcompiler.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libnvidia-gpucomp.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libnvidia-opencl.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libcudadebugger.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libcuda.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libnvidia-cfg.so.570.211.01\n\u2502                                        /usr/lib/x86_64-linux-gnu/libnvidia-ml.so.570.211.01\n\u2502                                        /usr/bin/nvidia-cuda-mps-server\n\u2502                                        /usr/bin/nvidia-cuda-mps-control\n\u2502                                        /usr/bin/nv-fabricmanager\n\u2502                                        /usr/bin/nvidia-persistenced\n\u2502                                        /usr/bin/nvidia-debugdump\n\u2502                                        /usr/bin/nvidia-smi\n\u2502                                        /var/log/services/internal\n\u251c\u2500sda14    4M part                       \n\u2514\u2500sda15  495M part                       \nsdb      2.8T disk Virtual Disk          \n\u2514\u2500sdb1   2.8T part                       \nsdc      220G disk Virtual Disk          \nsr0      630K rom  Virtual DVD-ROM",
+        "gpus": "GPU 0: NVIDIA A10-24Q (UUID: GPU-df31c800-d8c3-11f1-9aa3-9f8473a49215)\nGPU 1: NVIDIA A10-24Q (UUID: GPU-de993180-d8c3-11f1-bbaa-03a3fdca6fce)",
+        "topo": "\u001b[4mGPU0\tGPU1\tNIC0\tCPU Affinity\tNUMA Affinity\tGPU NUMA ID\u001b[0m\nGPU0\t X \tSYS\tSYS\t36-53\t2\t\tN/A\nGPU1\tSYS\t X \tNODE\t0-17\t0\t\tN/A\nNIC0\tSYS\tNODE\t X \t\t\t\t\n\nLegend:\n\n  X    = Self\n  SYS  = Connection traversing PCIe as well as the SMP interconnect between NUMA nodes (e.g., QPI/UPI)\n  NODE = Connection traversing PCIe as well as the interconnect between PCIe Host Bridges within a NUMA node\n  PHB  = Connection traversing PCIe as well as a PCIe Host Bridge (typically the CPU)\n  PXB  = Connection traversing multiple PCIe bridges (without traversing the PCIe Host Bridge)\n  PIX  = Connection traversing at most a single PCIe bridge\n  NV#  = Connection traversing a bonded set of # NVLinks\n\nNIC Legend:\n\n  NIC0: mlx5_0",
+        "p2p_read": "\u001b[4mGPU0\tGPU1\t\u001b[0m\n GPU0\tX\tNS\t\n GPU1\tNS\tX\t\n\nLegend:\n\n  X    = Self\n  OK   = Status Ok\n  CNS  = Chipset not supported\n  GNS  = GPU not supported\n  TNS  = Topology not supported\n  NS   = Not supported\n  U    = Unknown",
+        "query": "0, NVIDIA A10-24Q, 570.211.01, 24512 MiB, [Unknown Error], [N/A], [N/A]\n1, NVIDIA A10-24Q, 570.211.01, 24512 MiB, [Unknown Error], [N/A], [N/A]"
+      }
+    },
+    {
+      "step": "bootstrap",
+      "bootstrap": {
+        "fetch_s": 116.4,
+        "sha256_s": 12.3,
+        "untar_s": 16.5,
+        "install": {
+          "rc": 0,
+          "wheels": 199,
+          "seconds": 202.4,
+          "err_tail": []
+        },
+        "native_build": {
+          "io": {
+            "rc": 0,
+            "err_tail": []
+          },
+          "cuda": {
+            "rc": 0,
+            "err_tail": []
+          }
+        },
+        "source_commit": "4ba6e8bbb4b7487c9a3eea108c9b3e104c564321",
+        "sha256_mismatch": [],
+        "ninja_in_wheelhouse": true
+      }
+    },
+    {
+      "step": "restore-tp2-run1",
+      "restore-tp2-run1": {
+        "rc": 0,
+        "seconds": 440.2,
+        "nccl": {},
+        "key_lines": [
+          "(EngineCore pid=1845) INFO 11-05 03:00:07 [core.py:129] Initializing a V1 LLM engine (v0.31.0) with config: model='/tmp/pf-kvsnap/hf/hub/models--Qwen--Qwen3-8B/snapshots/b968826d9c46dd6066d109eabc6255188de91218', speculative_config=None, tokenizer='/tmp/pf-kvsnap/hf/hub/models--Qwen--Qwen3-8B/snapsh",
+          "(Worker pid=1946) WARNING 11-05 03:00:10 [custom_all_reduce.py:280] Custom allreduce is disabled because your platform lacks GPU P2P capability or P2P test failed. To silence this warning, specify disable_custom_all_reduce=True explicitly.",
+          "(Worker pid=1907) WARNING 11-05 03:00:10 [custom_all_reduce.py:280] Custom allreduce is disabled because your platform lacks GPU P2P capability or P2P test failed. To silence this warning, specify disable_custom_all_reduce=True explicitly."
+        ],
+        "gpu_memory_after": "0, 0 MiB, 24512 MiB\n1, 0 MiB, 24512 MiB",
+        "rows": [
+          {
+            "context_tokens": 2048,
+            "arm": "recompute",
+            "cold": null,
+            "n": 15,
+            "ttft_ms_median": 787.186060999943,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": null
+          },
+          {
+            "context_tokens": 2048,
+            "arm": "restore-cold",
+            "cold": null,
+            "n": 5,
+            "ttft_ms_median": 145.7914239999809,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": 4
+          },
+          {
+            "context_tokens": 2048,
+            "arm": "restore-disk",
+            "cold": null,
+            "n": 5,
+            "ttft_ms_median": 98.76375700002882,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": 5
+          },
+          {
+            "context_tokens": 2048,
+            "arm": "restore-host",
+            "cold": null,
+            "n": 5,
+            "ttft_ms_median": 66.90268600004856,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": 2
+          },
+          {
+            "context_tokens": 8192,
+            "arm": "recompute",
+            "cold": null,
+            "n": 15,
+            "ttft_ms_median": 3145.1630970000224,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": null
+          },
+          {
+            "context_tokens": 8192,
+            "arm": "restore-cold",
+            "cold": null,
+            "n": 5,
+            "ttft_ms_median": 418.44181299995853,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": 3
+          },
+          {
+            "context_tokens": 8192,
+            "arm": "restore-disk",
+            "cold": null,
+            "n": 5,
+            "ttft_ms_median": 221.55664700005673,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": 5
+          },
+          {
+            "context_tokens": 8192,
+            "arm": "restore-host",
+            "cold": null,
+            "n": 5,
+            "ttft_ms_median": 109.92207100002815,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": 4
+          }
+        ]
+      }
+    },
+    {
+      "step": "restore-tp2-run1-put",
+      "restore-tp2-run1-put": {
+        "restore-tp2-run1.json": "UPLOADED",
+        "restore-tp2-run1.log": "UPLOADED"
+      }
+    },
+    {
+      "step": "restore-tp2-run2",
+      "restore-tp2-run2": {
+        "rc": 0,
+        "seconds": 337.3,
+        "nccl": {},
+        "key_lines": [
+          "(EngineCore pid=5284) INFO 11-05 03:07:20 [core.py:129] Initializing a V1 LLM engine (v0.31.0) with config: model='/tmp/pf-kvsnap/hf/hub/models--Qwen--Qwen3-8B/snapshots/b968826d9c46dd6066d109eabc6255188de91218', speculative_config=None, tokenizer='/tmp/pf-kvsnap/hf/hub/models--Qwen--Qwen3-8B/snapsh",
+          "(Worker pid=5385) WARNING 11-05 03:07:22 [custom_all_reduce.py:280] Custom allreduce is disabled because your platform lacks GPU P2P capability or P2P test failed. To silence this warning, specify disable_custom_all_reduce=True explicitly.",
+          "(Worker pid=5346) WARNING 11-05 03:07:22 [custom_all_reduce.py:280] Custom allreduce is disabled because your platform lacks GPU P2P capability or P2P test failed. To silence this warning, specify disable_custom_all_reduce=True explicitly."
+        ],
+        "gpu_memory_after": "0, 0 MiB, 24512 MiB\n1, 0 MiB, 24512 MiB",
+        "rows": [
+          {
+            "context_tokens": 2048,
+            "arm": "recompute",
+            "cold": null,
+            "n": 15,
+            "ttft_ms_median": 789.7401200000331,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": null
+          },
+          {
+            "context_tokens": 2048,
+            "arm": "restore-cold",
+            "cold": null,
+            "n": 5,
+            "ttft_ms_median": 148.84601300002487,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": 4
+          },
+          {
+            "context_tokens": 2048,
+            "arm": "restore-disk",
+            "cold": null,
+            "n": 5,
+            "ttft_ms_median": 99.64224499992724,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": 5
+          },
+          {
+            "context_tokens": 2048,
+            "arm": "restore-host",
+            "cold": null,
+            "n": 5,
+            "ttft_ms_median": 67.40593000006356,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": 5
+          },
+          {
+            "context_tokens": 8192,
+            "arm": "recompute",
+            "cold": null,
+            "n": 15,
+            "ttft_ms_median": 3154.299346000016,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": null
+          },
+          {
+            "context_tokens": 8192,
+            "arm": "restore-cold",
+            "cold": null,
+            "n": 5,
+            "ttft_ms_median": 493.9137840001422,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": 5
+          },
+          {
+            "context_tokens": 8192,
+            "arm": "restore-disk",
+            "cold": null,
+            "n": 5,
+            "ttft_ms_median": 221.03862799986018,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": 5
+          },
+          {
+            "context_tokens": 8192,
+            "arm": "restore-host",
+            "cold": null,
+            "n": 5,
+            "ttft_ms_median": 110.89555900002779,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": 5
+          }
+        ]
+      }
+    },
+    {
+      "step": "restore-tp2-run2-put",
+      "restore-tp2-run2-put": {
+        "restore-tp2-run1.json": "UPLOADED",
+        "restore-tp2-run1.log": "UPLOADED",
+        "restore-tp2-run2.json": "UPLOADED",
+        "restore-tp2-run2.log": "UPLOADED"
+      }
+    },
+    {
+      "step": "restore-tp2-run3",
+      "restore-tp2-run3": {
+        "rc": 0,
+        "seconds": 352.5,
+        "nccl": {},
+        "key_lines": [
+          "(EngineCore pid=8480) INFO 11-05 03:12:59 [core.py:129] Initializing a V1 LLM engine (v0.31.0) with config: model='/tmp/pf-kvsnap/hf/hub/models--Qwen--Qwen3-8B/snapshots/b968826d9c46dd6066d109eabc6255188de91218', speculative_config=None, tokenizer='/tmp/pf-kvsnap/hf/hub/models--Qwen--Qwen3-8B/snapsh",
+          "(Worker pid=8581) WARNING 11-05 03:13:01 [custom_all_reduce.py:280] Custom allreduce is disabled because your platform lacks GPU P2P capability or P2P test failed. To silence this warning, specify disable_custom_all_reduce=True explicitly.",
+          "(Worker pid=8542) WARNING 11-05 03:13:01 [custom_all_reduce.py:280] Custom allreduce is disabled because your platform lacks GPU P2P capability or P2P test failed. To silence this warning, specify disable_custom_all_reduce=True explicitly."
+        ],
+        "gpu_memory_after": "0, 0 MiB, 24512 MiB\n1, 0 MiB, 24512 MiB",
+        "rows": [
+          {
+            "context_tokens": 2048,
+            "arm": "recompute",
+            "cold": null,
+            "n": 15,
+            "ttft_ms_median": 780.6702989998939,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": null
+          },
+          {
+            "context_tokens": 2048,
+            "arm": "restore-cold",
+            "cold": null,
+            "n": 5,
+            "ttft_ms_median": 141.47475799995846,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": 4
+          },
+          {
+            "context_tokens": 2048,
+            "arm": "restore-disk",
+            "cold": null,
+            "n": 5,
+            "ttft_ms_median": 100.40948699997898,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": 5
+          },
+          {
+            "context_tokens": 2048,
+            "arm": "restore-host",
+            "cold": null,
+            "n": 5,
+            "ttft_ms_median": 67.9676599997947,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": 4
+          },
+          {
+            "context_tokens": 8192,
+            "arm": "recompute",
+            "cold": null,
+            "n": 15,
+            "ttft_ms_median": 3130.8647689997997,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": null
+          },
+          {
+            "context_tokens": 8192,
+            "arm": "restore-cold",
+            "cold": null,
+            "n": 5,
+            "ttft_ms_median": 1172.0791899999767,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": 5
+          },
+          {
+            "context_tokens": 8192,
+            "arm": "restore-disk",
+            "cold": null,
+            "n": 5,
+            "ttft_ms_median": 223.39859500016246,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": 5
+          },
+          {
+            "context_tokens": 8192,
+            "arm": "restore-host",
+            "cold": null,
+            "n": 5,
+            "ttft_ms_median": 107.17265200014481,
+            "recompute_ttft_ms_median": null,
+            "tokens_match": 5
+          }
+        ]
+      }
+    },
+    {
+      "step": "restore-tp2-run3-put",
+      "restore-tp2-run3-put": {
+        "restore-tp2-run1.json": "UPLOADED",
+        "restore-tp2-run1.log": "UPLOADED",
+        "restore-tp2-run2.json": "UPLOADED",
+        "restore-tp2-run2.log": "UPLOADED",
+        "restore-tp2-run3.json": "UPLOADED",
+        "restore-tp2-run3.log": "UPLOADED"
+      }
+    },
+    {
+      "step": "restart-tp2-to-tp1",
+      "restart-tp2-to-tp1": {
+        "rc": 0,
+        "seconds": 137.9,
+        "nccl": {},
+        "key_lines": [
+          "(EngineCore pid=11646) INFO 11-05 03:18:52 [core.py:129] Initializing a V1 LLM engine (v0.31.0) with config: model='/tmp/pf-kvsnap/hf/hub/models--Qwen--Qwen3-8B/snapshots/b968826d9c46dd6066d109eabc6255188de91218', speculative_config=None, tokenizer='/tmp/pf-kvsnap/hf/hub/models--Qwen--Qwen3-8B/snaps",
+          "(Worker pid=11747) WARNING 11-05 03:18:54 [custom_all_reduce.py:280] Custom allreduce is disabled because your platform lacks GPU P2P capability or P2P test failed. To silence this warning, specify disable_custom_all_reduce=True explicitly.",
+          "(Worker pid=11708) WARNING 11-05 03:18:54 [custom_all_reduce.py:280] Custom allreduce is disabled because your platform lacks GPU P2P capability or P2P test failed. To silence this warning, specify disable_custom_all_reduce=True explicitly.",
+          "(EngineCore pid=12539) INFO 11-05 03:20:01 [core.py:129] Initializing a V1 LLM engine (v0.31.0) with config: model='/tmp/pf-kvsnap/hf/hub/models--Qwen--Qwen3-8B/snapshots/b968826d9c46dd6066d109eabc6255188de91218', speculative_config=None, tokenizer='/tmp/pf-kvsnap/hf/hub/models--Qwen--Qwen3-8B/snaps"
+        ],
+        "gpu_memory_after": "0, 0 MiB, 24512 MiB\n1, 0 MiB, 24512 MiB",
+        "rows": [
+          {
+            "context_tokens": 2048,
+            "arm": null,
+            "cold": false,
+            "n": 1,
+            "ttft_ms_median": 489.1610839999885,
+            "recompute_ttft_ms_median": 485.1022440000179,
+            "tokens_match": 1
+          },
+          {
+            "context_tokens": 2048,
+            "arm": null,
+            "cold": true,
+            "n": 1,
+            "ttft_ms_median": 476.2529839999843,
+            "recompute_ttft_ms_median": 479.6872050001184,
+            "tokens_match": 1
+          }
+        ],
+        "restore_misses": 3,
+        "miss_reasons": [
+          "IdentityMismatch: incompatible KV identity: model_shape"
+        ],
+        "loads_after_restart": 0,
+        "turn2_saves_refused": 3
+      }
+    },
+    {
+      "step": "restart-tp2-to-tp1-put",
+      "restart-tp2-to-tp1-put": {
+        "restart-tp2-to-tp1.json": "UPLOADED",
+        "restart-tp2-to-tp1.log": "UPLOADED",
+        "restore-tp2-run1.json": "UPLOADED",
+        "restore-tp2-run1.log": "UPLOADED",
+        "restore-tp2-run2.json": "UPLOADED",
+        "restore-tp2-run2.log": "UPLOADED",
+        "restore-tp2-run3.json": "UPLOADED",
+        "restore-tp2-run3.log": "UPLOADED"
+      }
+    },
+    {
+      "step": "elapsed_s",
+      "elapsed_s": 1621.3
+    }
+  ],
+  "seconds": 1825.8,
+  "stop": [
+    "ALTER COMPUTE POOL PORTFOLIO_2XA10_POOL STOP ALL: ok",
+    "ALTER COMPUTE POOL PORTFOLIO_2XA10_POOL SUSPEND: ok"
+  ],
+  "pool_after": {
+    "state": "SUSPENDED",
+    "instance_family": "GPU_NV_2M",
+    "min_nodes": "1",
+    "max_nodes": "1",
+    "active_nodes": "0",
+    "idle_nodes": "0",
+    "num_services": "0",
+    "num_jobs": "0"
+  },
+  "credits_estimate": 1.775
+}

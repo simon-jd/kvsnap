@@ -1,0 +1,227 @@
+{
+ "model": "Qwen/Qwen3-8B",
+ "revision": "b968826d9c46dd6066d109eabc6255188de91218",
+ "lengths": [
+  2048,
+  8192
+ ],
+ "kv_cache_gib": 1,
+ "max_num_batched_tokens": 8448,
+ "tensor_parallel_size": 2,
+ "seed": 2,
+ "engine_restart_s": 36.24824304900005,
+ "rows": [
+  {
+   "context_tokens": 2048,
+   "cold": true,
+   "ttft_ms": 467.3592899999903,
+   "recompute_ttft_ms": 780.5568809999386,
+   "match": true
+  },
+  {
+   "context_tokens": 2048,
+   "cold": false,
+   "ttft_ms": 102.30882300004396,
+   "recompute_ttft_ms": 782.2011250000287,
+   "match": true
+  },
+  {
+   "context_tokens": 2048,
+   "cold": true,
+   "ttft_ms": 772.9319779999742,
+   "recompute_ttft_ms": 779.1472760000033,
+   "match": true
+  },
+  {
+   "context_tokens": 2048,
+   "cold": false,
+   "ttft_ms": 98.88715900001444,
+   "recompute_ttft_ms": 781.4324539999689,
+   "match": true
+  },
+  {
+   "context_tokens": 8192,
+   "cold": true,
+   "ttft_ms": 3541.4982539999755,
+   "recompute_ttft_ms": 3112.138287999983,
+   "match": true
+  },
+  {
+   "context_tokens": 8192,
+   "cold": false,
+   "ttft_ms": 258.62898299999415,
+   "recompute_ttft_ms": 3107.556634000048,
+   "match": true
+  },
+  {
+   "context_tokens": 8192,
+   "cold": true,
+   "ttft_ms": 3571.347522999986,
+   "recompute_ttft_ms": 3101.205213000071,
+   "match": true
+  },
+  {
+   "context_tokens": 8192,
+   "cold": false,
+   "ttft_ms": 227.55991899998662,
+   "recompute_ttft_ms": 3120.253254999966,
+   "match": true
+  }
+ ],
+ "summary": [
+  {
+   "context_tokens": 2048,
+   "cold": false,
+   "n": 2,
+   "ttft_ms_median": 100.5979910000292,
+   "ttft_ms_min": 98.88715900001444,
+   "ttft_ms_max": 102.30882300004396,
+   "recompute_ttft_ms_median": 781.8167894999988,
+   "recompute_ttft_ms_min": 781.4324539999689,
+   "recompute_ttft_ms_max": 782.2011250000287,
+   "tokens_match": 2
+  },
+  {
+   "context_tokens": 2048,
+   "cold": true,
+   "n": 2,
+   "ttft_ms_median": 620.1456339999822,
+   "ttft_ms_min": 467.3592899999903,
+   "ttft_ms_max": 772.9319779999742,
+   "recompute_ttft_ms_median": 779.852078499971,
+   "recompute_ttft_ms_min": 779.1472760000033,
+   "recompute_ttft_ms_max": 780.5568809999386,
+   "tokens_match": 2
+  },
+  {
+   "context_tokens": 8192,
+   "cold": false,
+   "n": 2,
+   "ttft_ms_median": 243.09445099999039,
+   "ttft_ms_min": 227.55991899998662,
+   "ttft_ms_max": 258.62898299999415,
+   "recompute_ttft_ms_median": 3113.904944500007,
+   "recompute_ttft_ms_min": 3107.556634000048,
+   "recompute_ttft_ms_max": 3120.253254999966,
+   "tokens_match": 2
+  },
+  {
+   "context_tokens": 8192,
+   "cold": true,
+   "n": 2,
+   "ttft_ms_median": 3556.4228884999807,
+   "ttft_ms_min": 3541.4982539999755,
+   "ttft_ms_max": 3571.347522999986,
+   "recompute_ttft_ms_median": 3106.671750500027,
+   "recompute_ttft_ms_min": 3101.205213000071,
+   "recompute_ttft_ms_max": 3112.138287999983,
+   "tokens_match": 2
+  }
+ ],
+ "environment": {
+  "gpu_at_start": {
+   "name": "NVIDIA A10-24Q",
+   "driver_version": "570.211.01",
+   "clocks.sm": "1695 MHz",
+   "clocks.mem": "6251 MHz",
+   "clocks.max.sm": "[Unknown Error]",
+   "clocks.max.mem": "[Unknown Error]",
+   "pcie.link.gen.current": "[N/A]",
+   "pcie.link.gen.max": "[N/A]",
+   "pcie.link.width.current": "[N/A]",
+   "pcie.link.width.max": "[N/A]",
+   "power.limit": "[N/A]",
+   "temperature.gpu": "[N/A]",
+   "memory.used": "0 MiB",
+   "memory.total": "24512 MiB",
+   "other_gpus": [
+    {
+     "name": "NVIDIA A10-24Q",
+     "driver_version": "570.211.01",
+     "clocks.sm": "1695 MHz",
+     "clocks.mem": "6251 MHz",
+     "clocks.max.sm": "[Unknown Error]",
+     "clocks.max.mem": "[Unknown Error]",
+     "pcie.link.gen.current": "[N/A]",
+     "pcie.link.gen.max": "[N/A]",
+     "pcie.link.width.current": "[N/A]",
+     "pcie.link.width.max": "[N/A]",
+     "power.limit": "[N/A]",
+     "temperature.gpu": "[N/A]",
+     "memory.used": "0 MiB",
+     "memory.total": "24512 MiB"
+    }
+   ],
+   "host_load_average_1_5_15": [
+    6.39,
+    6.22,
+    3.36
+   ]
+  },
+  "git": {
+   "commit": "4ba6e8bbb4b7487c9a3eea108c9b3e104c564321",
+   "dirty": null,
+   "source": "archive"
+  },
+  "host": {
+   "cpu": "AMD EPYC 74F3 24-Core Processor",
+   "cpus": 72,
+   "memory_gib": 866.1,
+   "kernel": "5.15.221-14.2026100118g3ce9aaa+snow+aws+5.15+amd64.x86_64",
+   "load_average_1_5_15": [
+    6.39,
+    6.22,
+    3.36
+   ]
+  },
+  "storage": {
+   "device": "overlay",
+   "model_transport": null
+  },
+  "software": {
+   "python": "3.12.15",
+   "vllm": "0.31.0",
+   "torch": "2.13.0+cu130",
+   "torch_cuda": "13.0"
+  },
+  "gpu_at_measurement": {
+   "name": "NVIDIA A10-24Q",
+   "driver_version": "570.211.01",
+   "clocks.sm": "1695 MHz",
+   "clocks.mem": "6251 MHz",
+   "clocks.max.sm": "[Unknown Error]",
+   "clocks.max.mem": "[Unknown Error]",
+   "pcie.link.gen.current": "[N/A]",
+   "pcie.link.gen.max": "[N/A]",
+   "pcie.link.width.current": "[N/A]",
+   "pcie.link.width.max": "[N/A]",
+   "power.limit": "[N/A]",
+   "temperature.gpu": "[N/A]",
+   "memory.used": "9842 MiB",
+   "memory.total": "24512 MiB",
+   "other_gpus": [
+    {
+     "name": "NVIDIA A10-24Q",
+     "driver_version": "570.211.01",
+     "clocks.sm": "1695 MHz",
+     "clocks.mem": "6251 MHz",
+     "clocks.max.sm": "[Unknown Error]",
+     "clocks.max.mem": "[Unknown Error]",
+     "pcie.link.gen.current": "[N/A]",
+     "pcie.link.gen.max": "[N/A]",
+     "pcie.link.width.current": "[N/A]",
+     "pcie.link.width.max": "[N/A]",
+     "power.limit": "[N/A]",
+     "temperature.gpu": "[N/A]",
+     "memory.used": "9842 MiB",
+     "memory.total": "24512 MiB"
+    }
+   ],
+   "host_load_average_1_5_15": [
+    15.48,
+    9.48,
+    4.93
+   ]
+  }
+ }
+}
