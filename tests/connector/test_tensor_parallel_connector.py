@@ -151,6 +151,23 @@ class TwoRankWorkerTests(unittest.TestCase):
         result = worker.build_connector_worker_meta()
         self.assertEqual((result.failed_loads, result.loaded_leases), (["request"], ["lease"]))
 
+    def test_a_rank_borrows_its_own_host_memory_shard_in_place(self):
+        worker = connector(self.module, rank=1)
+        worker.volatile = Mock(descriptor={"owner_id": "rank1"})
+        worker.volatile.borrow.return_value.__enter__ = Mock(return_value=["a10", "a11"])
+        worker.volatile.borrow.return_value.__exit__ = Mock(return_value=False)
+        manifest = dict(two_rank_manifest(), durability="volatile")
+        locations = {s["blob_id"]: {"owner": {"owner_id": f"rank{s.get('rank', 0)}"}, "handle": "h"}
+                     for s in manifest["segments"]}
+        transfer = self.module.Transfer("request", [11, 12], manifest, lease_id="lease", volatile_locations=locations)
+        worker._get_connector_metadata = lambda: self.module.KvsnapMetadata(loads=[transfer])
+        worker.start_load_kv(None)
+        self.assertEqual(worker.get_finished(set()), (set(), {"request"}))
+        # Rank 0's blocks live in rank 0's worker; rank 1's own are borrowed, with no staging copy.
+        self.assertEqual([s["blob_id"] for s in worker.volatile.borrow.call_args.args[0]], ["r1b0", "r1b1"])
+        worker.dataplane.staging.assert_not_called()
+        self.assertEqual(worker.dataplane.load_scatter.call_args.args[1], [("a10", 0), ("a11", 0)])
+
     def test_a_rank_reports_its_save_as_its_own_shard(self):
         worker = connector(self.module, rank=1)
         worker.dataplane.pool.reserve.return_value = Mock(read_range=lambda offset, size: b"k" * size)

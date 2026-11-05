@@ -516,7 +516,8 @@ class KvsnapConnector(KVConnectorBase_V1):
         locations = transfer.volatile_locations
         if locations is None:
             raise ContractError("volatile transfer lacks worker handles")
-        if all(location["owner"] == self.volatile.descriptor for location in locations.values()):
+        # At TP>1 the other ranks' blocks belong to their own workers; only this rank's matter here.
+        if all(locations[segment["blob_id"]]["owner"] == self.volatile.descriptor for segment in segments):
             pinned = stack.enter_context(self.volatile.borrow(segments, locations,
                                                               verify_checksums=self.verify_host_checksums))
             return [(allocation, 0) for allocation in pinned]
