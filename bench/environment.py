@@ -28,12 +28,25 @@ def _run(*command: str) -> str | None:
 
 
 def gpu_state() -> dict:
-    """nvidia-smi's view of the first visible GPU (CUDA_VISIBLE_DEVICES respected), and the host load."""
-    index = os.environ.get("CUDA_VISIBLE_DEVICES", "0").split(",")[0] or "0"
-    out = _run("nvidia-smi", f"--id={index}", "--query-gpu=" + ",".join(GPU_FIELDS), "--format=csv,noheader")
-    if not out:
-        return {"error": "nvidia-smi unavailable"}
-    state = dict(zip(GPU_FIELDS, (value.strip() for value in out.splitlines()[0].split(","))))
+    """nvidia-smi's view of the first visible GPU (CUDA_VISIBLE_DEVICES respected), and the host load.
+
+    With several GPUs visible (tensor parallelism), ``other_gpus`` holds the rest.
+    """
+    visible = os.environ.get("CUDA_VISIBLE_DEVICES")
+    if visible:
+        indices = [index for index in visible.split(",") if index] or ["0"]
+    else:
+        listed = _run("nvidia-smi", "--query-gpu=index", "--format=csv,noheader")
+        indices = listed.split() if listed else ["0"]
+    states = []
+    for index in indices:
+        out = _run("nvidia-smi", f"--id={index}", "--query-gpu=" + ",".join(GPU_FIELDS), "--format=csv,noheader")
+        if not out:
+            return {"error": "nvidia-smi unavailable"}
+        states.append(dict(zip(GPU_FIELDS, (value.strip() for value in out.splitlines()[0].split(",")))))
+    state = states[0]
+    if len(states) > 1:
+        state["other_gpus"] = states[1:]
     state["host_load_average_1_5_15"] = [round(value, 2) for value in os.getloadavg()]
     return state
 
@@ -42,7 +55,11 @@ def git_state() -> dict:
     """The commit, and whether tracked files other than results differ from it.
 
     results/ is left out: the suite rewrites tracked results files as it runs.
+    A source archive without .git (a remote job's) names its commit in
+    KVSNAP_SOURCE_COMMIT instead.
     """
+    if not (ROOT / ".git").exists() and os.environ.get("KVSNAP_SOURCE_COMMIT"):
+        return {"commit": os.environ["KVSNAP_SOURCE_COMMIT"], "dirty": None, "source": "archive"}
     commit = _run("git", "-C", str(ROOT), "rev-parse", "HEAD")
     status = _run("git", "-C", str(ROOT), "status", "--porcelain", "--untracked-files=no", "--",
                   ".", ":(exclude)results")

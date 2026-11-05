@@ -12,6 +12,11 @@
 
 One process is one run; ``--combine`` merges separate runs into one file.
 
+``--restart-tensor-parallel-size`` starts engine B at another TP size than
+engine A. Every snapshot must then miss (the TP size is part of the KV
+identity) and turn 2 is recomputed; connector telemetry is on in that mode,
+and the output counts engine B's ``restore_miss`` events and loads.
+
 TTFT is client-side. The recompute reference is the same prompt sent to
 engine B directly, once the resumed turn's own durable save has finished. An offload tier that lives in host memory (vLLM's own CPU
 offloading, or this project's volatile tier) starts empty after step 2.
@@ -45,15 +50,18 @@ from bench.resume_baselines import offloader_args
 SUFFIX, OUTPUT = 64, 16
 
 
-async def engine(args, root):
+async def engine(args, root, tensor_parallel_size=None):
     from kvsnap.connector.engine import VLLMEngine, create_async_llm
     from kvsnap.connector.runtime import wait_runtime_identity
     from kvsnap.gateway import SessionGateway
     from kvsnap.store import SnapshotStore
+    tp = tensor_parallel_size or args.tensor_parallel_size
     runtime = create_async_llm(root, model=args.model, revision=args.revision,
                                max_model_len=max(args.lengths) + SUFFIX + OUTPUT + 16,
-                               kv_cache_memory_bytes=args.kv_cache_gib * 1024**3,
-                               max_num_batched_tokens=args.max_num_batched_tokens)
+                               # The same KV capacity in tokens at every TP size.
+                               kv_cache_memory_bytes=args.kv_cache_gib * 1024**3 * args.tensor_parallel_size // tp,
+                               max_num_batched_tokens=args.max_num_batched_tokens,
+                               tensor_parallel_size=tp)
     store = SnapshotStore(root)
     identity = await wait_runtime_identity(root, runtime.kvsnap_runtime_id, timeout=600)
     return runtime, store, identity, SessionGateway(VLLMEngine(runtime, store, require_batch_invariant=False), store)
@@ -62,7 +70,12 @@ async def engine(args, root):
 async def run(args) -> dict:
     measured = environment(args.store_dir)
     root = Path(tempfile.mkdtemp(prefix="kvsnap-restart-", dir=args.store_dir))
+    cross = args.restart_tensor_parallel_size not in (None, args.tensor_parallel_size)
+    if cross:
+        (root / "events").mkdir()
+        os.environ["KVSNAP_EVENT_DIR"] = str(root / "events")
     from vllm import SamplingParams
+    from kvsnap.connector.engine import SaveFailed
     from kvsnap.models import SamplingConfig
     rng = random.Random(args.seed)
     saved = []
@@ -82,10 +95,11 @@ async def run(args) -> dict:
         store.close()
         stopped = time.perf_counter()
 
-        runtime, store, identity, gateway = await engine(args, root)
+        restarted = time.monotonic_ns()
+        runtime, store, identity, gateway = await engine(args, root, args.restart_tensor_parallel_size)
         restart_s = time.perf_counter() - stopped
         measured["gpu_at_measurement"] = gpu_state()
-        rows = []
+        rows, saves_refused = [], 0
         for length, rep, snapshot_id in saved:
             cold = rep % 2 == 1
             session = gateway.recover(snapshot_id)
@@ -101,7 +115,14 @@ async def run(args) -> dict:
                 tokens.append(token.token_id)
             # Turn 2 saves durably when it ends. Wait for that, as restore_ttft
             # does, so the recompute does not share the GPU and the disk with it.
-            await gateway.pause(session.session_id, expected_generation=session.generation)
+            # Across TP sizes that save must fail: the session's identity is
+            # engine A's.
+            try:
+                await gateway.pause(session.session_id, expected_generation=session.generation)
+            except SaveFailed:
+                if not cross:
+                    raise
+                saves_refused += 1
             params = SamplingParams(max_tokens=OUTPUT, temperature=0.0, ignore_eos=True, detokenize=False)
             began, reference_first, reference = time.perf_counter(), None, None
             async for out in runtime.generate({"prompt_token_ids": list(manifest["token_ids"]) + suffix},
@@ -114,8 +135,19 @@ async def run(args) -> dict:
                 print(json.dumps(rows[-1]), flush=True)
         runtime.shutdown()
         store.close()
-        return {"model": model_label(args.model), "revision": args.revision, "lengths": args.lengths,
+        extra = {}
+        if cross:
+            events = [json.loads(line) for path in (root / "events").glob("kvsnap-events-*.jsonl")
+                      for line in path.read_text().splitlines()]
+            after = [e for e in events if e["monotonic_ns"] >= restarted]
+            misses = [e for e in after if e["event"] == "restore_miss"]
+            extra = {"restart_tensor_parallel_size": args.restart_tensor_parallel_size,
+                     "restore_misses": len(misses), "miss_reasons": sorted({e["reason"] for e in misses}),
+                     "loads_after_restart": sum(e["event"] == "h2d_completed" for e in after),
+                     "turn2_saves_refused": saves_refused}
+        return {"model": model_label(args.model), "revision": args.revision, "lengths": args.lengths, **extra,
                 "kv_cache_gib": args.kv_cache_gib, "max_num_batched_tokens": args.max_num_batched_tokens,
+                **({"tensor_parallel_size": args.tensor_parallel_size} if args.tensor_parallel_size > 1 else {}),
                 "seed": args.seed, "engine_restart_s": restart_s, "rows": rows, "summary": summarise(rows),
                 "environment": measured}
     finally:
@@ -248,8 +280,11 @@ def main() -> None:
     parser.add_argument("--lengths", type=int, nargs="+", default=[2048, 8192])
     parser.add_argument("--reps", type=int, default=4)
     parser.add_argument("--seed", type=int, default=1)
-    parser.add_argument("--kv-cache-gib", type=int, default=6)
+    parser.add_argument("--kv-cache-gib", type=int, default=6, help="per TP rank")
     parser.add_argument("--max-num-batched-tokens", type=int, default=16384)
+    parser.add_argument("--tensor-parallel-size", type=int, default=1, help="kvsnap engine only")
+    parser.add_argument("--restart-tensor-parallel-size", type=int, default=None,
+                        help="engine B's TP size, if not engine A's: every resume must miss")
     parser.add_argument("--store-dir", default=None)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--combine", type=Path, nargs="+", metavar="RUN_JSON",

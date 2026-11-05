@@ -96,6 +96,8 @@ def h2d_breakdown(event_dir: Path, since_ns: int, first_token_ns: int) -> dict |
     admit: submit -> scheduler allocates blocks and admits the external hit;
     read: worker reads + CRC-checks the snapshot into pinned memory;
     h2d: strided copies into the GPU blocks; after: suffix prefill to first token.
+    At TP>1 every rank reads and copies its own shard; the phases are those of
+    the rank that finished its copy last, and ``bytes`` is that rank's shard.
     """
     events = []
     for path in event_dir.glob("kvsnap-events-*.jsonl"):
@@ -103,13 +105,20 @@ def h2d_breakdown(event_dir: Path, since_ns: int, first_token_ns: int) -> dict |
             record = json.loads(line)
             if record["monotonic_ns"] >= since_ns and record["event"] in {"load_allocated", "h2d_started", "h2d_completed"}:
                 events.append(record)
-    by = {e["event"]: e for e in sorted(events, key=lambda e: e["monotonic_ns"])}
+    by = {}
+    for e in sorted(events, key=lambda e: e["monotonic_ns"]):
+        by.setdefault(e["event"], {})[e.get("rank", 0)] = e
     if not {"load_allocated", "h2d_started", "h2d_completed"} <= set(by):
         return None
-    allocated, started, completed = (by[k]["monotonic_ns"] for k in ("load_allocated", "h2d_started", "h2d_completed"))
+    rank = max(by["h2d_completed"], key=lambda r: by["h2d_completed"][r]["monotonic_ns"])
+    if rank not in by["h2d_started"]:
+        return None
+    allocated = by["load_allocated"][0]["monotonic_ns"]
+    started, completed = by["h2d_started"][rank]["monotonic_ns"], by["h2d_completed"][rank]["monotonic_ns"]
     return {"admit_ms": (allocated - since_ns) / 1e6, "read_ms": (started - allocated) / 1e6,
             "h2d_ms": (completed - started) / 1e6, "after_ms": (first_token_ns - completed) / 1e6,
-            "bytes": by["h2d_completed"]["bytes"], "copies": by["h2d_completed"].get("copies")}
+            "bytes": by["h2d_completed"][rank]["bytes"], "copies": by["h2d_completed"][rank].get("copies"),
+            "ranks": len(by["h2d_completed"])}
 
 
 async def run(args) -> dict:
@@ -132,8 +141,9 @@ async def run(args) -> dict:
                                kv_cache_memory_bytes=args.kv_cache_gib * 1024**3,
                                pinned_pool_bytes=args.pinned_gib * 1024**3,
                                max_num_batched_tokens=args.max_num_batched_tokens,
-                               cudagraph_mode=args.cudagraph_mode, async_load=args.async_load)
-    store = SnapshotStore(root, host_capacity_bytes=args.pinned_gib * 1024**3)
+                               cudagraph_mode=args.cudagraph_mode, async_load=args.async_load,
+                               tensor_parallel_size=args.tensor_parallel_size)
+    store = SnapshotStore(root, host_capacity_bytes=args.pinned_gib * 1024**3 * args.tensor_parallel_size)
     try:
         identity = await wait_runtime_identity(root, runtime.kvsnap_runtime_id, timeout=600)
         engine = VLLMEngine(runtime, store, require_batch_invariant=args.batch_invariant)
@@ -224,7 +234,8 @@ def config(args) -> dict:
     return {"model": model_label(args.model), "revision": args.revision, "batch_invariant": args.batch_invariant,
             "cudagraph_mode": args.cudagraph_mode, "async_load": args.async_load, "perturb": args.perturb,
             "max_num_batched_tokens": args.max_num_batched_tokens, "kv_cache_gib": args.kv_cache_gib,
-            "suffix_tokens": SUFFIX, "output_tokens": OUTPUT}
+            "suffix_tokens": SUFFIX, "output_tokens": OUTPUT,
+            **({"tensor_parallel_size": args.tensor_parallel_size} if args.tensor_parallel_size > 1 else {})}
 
 
 def summarise(samples, run_medians=None) -> list[dict]:
@@ -236,7 +247,7 @@ def summarise(samples, run_medians=None) -> list[dict]:
                "ttft_ms": ttft}
         if run_medians is not None:
             row["ttft_ms_median_by_run"] = run_medians[(length, arm)]
-        for key in ("save_ms", "admit_ms", "read_ms", "h2d_ms", "after_ms", "bytes", "copies"):
+        for key in ("save_ms", "admit_ms", "read_ms", "h2d_ms", "after_ms", "bytes", "copies", "ranks"):
             present = [v[key] for v in values if v.get(key) is not None]
             if present:
                 row[f"{key}_median"] = statistics.median(present)
@@ -273,8 +284,9 @@ def main() -> None:
     parser.add_argument("--lengths", type=int, nargs="+", default=[1024, 2048, 4096, 8192, 16384])
     parser.add_argument("--reps", type=int, default=5)
     parser.add_argument("--seed", type=int, default=1)
-    parser.add_argument("--kv-cache-gib", type=int, default=6)
-    parser.add_argument("--pinned-gib", type=int, default=4)
+    parser.add_argument("--kv-cache-gib", type=int, default=6, help="per TP rank")
+    parser.add_argument("--pinned-gib", type=int, default=4, help="per TP rank")
+    parser.add_argument("--tensor-parallel-size", type=int, default=1)
     parser.add_argument("--max-num-batched-tokens", type=int, default=16384)
     parser.add_argument("--cudagraph-mode", default=None, help="default: vLLM's own CUDA graph mode")
     parser.add_argument("--batch-invariant", action=argparse.BooleanOptionalAction, default=False)
