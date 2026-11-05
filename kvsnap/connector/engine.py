@@ -139,7 +139,8 @@ def create_async_llm(store_path, *, model="Qwen/Qwen3-1.7B", revision="70d244cc"
                      max_model_len=32768, block_size=16, kv_cache_memory_bytes=8 * 1024**3,
                      pinned_pool_bytes=4 * 1024**3, disk_capacity_bytes=200 * 1024**3,
                      max_num_batched_tokens=16384, cudagraph_mode=None, connector=True,
-                     async_load=True, host_tier_bytes=None, enable_prefix_caching=False, engine_args=None):
+                     async_load=True, host_tier_bytes=None, enable_prefix_caching=False, tensor_parallel_size=1,
+                     engine_args=None):
     """Build the in-process engine the gateway drives.
 
     ``connector=False`` builds the identical engine without the kvsnap connector,
@@ -148,7 +149,8 @@ def create_async_llm(store_path, *, model="Qwen/Qwen3-1.7B", revision="70d244cc"
     calling this for bit-exact comparisons against recompute. ``engine_args``
     adds or overrides vLLM engine arguments, for example vLLM's own CPU
     offloading (``kv_offloading_size``) on an engine built with
-    ``connector=False``.
+    ``connector=False``. At ``tensor_parallel_size`` > 1,
+    ``kv_cache_memory_bytes`` and ``pinned_pool_bytes`` are per rank.
     """
     os.environ.setdefault("KVSNAP_IO_BACKEND", "native")
     from vllm.engine.arg_utils import AsyncEngineArgs
@@ -166,7 +168,7 @@ def create_async_llm(store_path, *, model="Qwen/Qwen3-1.7B", revision="70d244cc"
         # A block that fails to load is recomputed rather than failing the request.
         kv_load_failure_policy="recompute")
     settings = dict(model=model, revision=revision, tokenizer_revision=tokenizer_revision or revision,
-                dtype="bfloat16", tensor_parallel_size=1,
+                dtype="bfloat16", tensor_parallel_size=tensor_parallel_size,
                 max_model_len=max_model_len, block_size=block_size,
                 kv_cache_memory_bytes=kv_cache_memory_bytes, async_scheduling=False,
                 # vLLM checks this before honouring the explicit KV size;

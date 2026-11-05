@@ -139,6 +139,17 @@ class KVIdentity:
                 raise ContractError(f"identity {key} must be a nonempty object")
             object.__setattr__(self, key, json.loads(canonical_json(value)))
         integer(self.position_encoding.get("max_model_len"), "max_model_len", 1)
+        # Each TP rank holds its own shard of the KV heads, so the TP size is
+        # part of what the KV means. It is absent at TP=1: identities and
+        # snapshots written before TP support stay valid and compare equal.
+        tp = self.model_shape.get("tensor_parallel_size", 1)
+        integer(tp, "tensor_parallel_size", 1)
+        if tp == 1:
+            self.model_shape.pop("tensor_parallel_size", None)
+
+    @property
+    def tensor_parallel_size(self) -> int:
+        return self.model_shape.get("tensor_parallel_size", 1)
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -184,6 +195,8 @@ class Segment:
     first_block: int
     nblocks: int
     crc32c: int
+    # The TP rank whose KV shard this is; block numbers count within the rank.
+    rank: int = 0
 
     def __post_init__(self) -> None:
         identifier(self.blob_id, "blob_id")
@@ -192,8 +205,23 @@ class Segment:
         integer(self.first_block, "first_block")
         integer(self.nblocks, "nblocks", 1)
         integer(self.crc32c, "crc32c")
+        integer(self.rank, "rank")
         if self.crc32c > 0xFFFFFFFF:
             raise ContractError("crc32c must fit uint32")
+
+    def to_dict(self) -> dict[str, Any]:
+        # Rank 0 is implicit, so a TP=1 manifest keeps its original form.
+        return {k: v for k, v in vars(self).items() if k != "rank" or v}
+
+
+def rank_segments(manifest: Mapping[str, Any], rank: int) -> list[dict[str, Any]]:
+    """The segments of one TP rank's shard, in block order."""
+    return [s for s in manifest["segments"] if s.get("rank", 0) == rank]
+
+
+def tensor_parallel_size(identity: Mapping[str, Any]) -> int:
+    """The TP size an identity dictionary was resolved for (1 when absent)."""
+    return identity.get("model_shape", {}).get("tensor_parallel_size", 1)
 
 
 @dataclass(frozen=True)
@@ -250,14 +278,29 @@ class SnapshotManifest:
         for expected_seq, output in enumerate(self.outputs, 1):
             if not isinstance(output, OutputToken) or output.seq != expected_seq:
                 raise ContractError("outputs must have contiguous sequence numbers starting at 1")
-        expected_block = 0
+        # One run of segments per TP rank, in rank order; each rank's blocks
+        # are numbered from 0 and must be contiguous.
+        tp = self.identity.tensor_parallel_size
+        covered, rank, expected_block = {}, 0, 0
         for segment in self.segments:
-            if not isinstance(segment, Segment) or segment.first_block != expected_block:
+            if not isinstance(segment, Segment):
+                raise ContractError("segments must cover contiguous non-overlapping blocks")
+            if segment.rank >= tp:
+                raise ContractError(f"segment for TP rank {segment.rank} in a TP={tp} snapshot")
+            if segment.rank != rank:
+                if segment.rank < rank:
+                    raise ContractError("segments must be grouped by TP rank, in rank order")
+                covered[rank], rank, expected_block = expected_block, segment.rank, 0
+            if segment.first_block != expected_block:
                 raise ContractError("segments must cover contiguous non-overlapping blocks")
             expected_block += segment.nblocks
+        covered[rank] = expected_block
         blocks = (self.num_kv_tokens + self.identity.block_size - 1) // self.identity.block_size
-        if self.state in (SnapshotState.HOST_VALID, SnapshotState.DURABLE) and expected_block != blocks:
-            raise ContractError("committed segments must cover exactly the KV token blocks")
+        if self.state in (SnapshotState.HOST_VALID, SnapshotState.DURABLE):
+            incomplete = [r for r in range(tp) if covered.get(r, 0) != blocks]
+            if incomplete:
+                raise ContractError("committed segments must cover exactly the KV token blocks"
+                                    + (f" on every TP rank; incomplete shards: {incomplete}" if tp > 1 else ""))
         if self.state == SnapshotState.HOST_VALID and self.durability != Durability.VOLATILE:
             raise ContractError("persistent snapshots cannot commit at HostValid")
 
@@ -271,7 +314,7 @@ class SnapshotManifest:
         result["token_ids"] = list(self.token_ids)
         result["pending_tokens"] = list(self.pending_tokens)
         result["outputs"] = [o.to_dict() for o in self.outputs]
-        result["segments"] = [dict(vars(s)) for s in self.segments]
+        result["segments"] = [s.to_dict() for s in self.segments]
         result["sampling"] = self.sampling.to_dict()
         return result
 

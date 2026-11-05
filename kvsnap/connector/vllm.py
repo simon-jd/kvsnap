@@ -1,9 +1,17 @@
 """KV connector that saves a finished turn's KV and restores it on the next turn.
 
-Out-of-tree ``KVConnectorBase_V1`` for exactly vLLM 0.31.0, TP=1, one
-full-attention KV group, synchronous scheduling. The scheduler side decides
-which blocks to save or load and owns the snapshot store; the worker side moves
-the bytes through the pinned-memory data plane.
+Out-of-tree ``KVConnectorBase_V1`` for exactly vLLM 0.31.0, one full-attention
+KV group, synchronous scheduling, any tensor-parallel size (no pipeline or data
+parallelism). The scheduler side decides which blocks to save or load and owns
+the snapshot store; the worker side moves the bytes through the pinned-memory
+data plane.
+
+* Tensor parallelism: each TP rank's worker saves and restores its own shard
+  of the KV heads, under the one snapshot name. The scheduler commits a
+  snapshot only once every rank has prepared its shard, and releases a load's
+  lease only once every rank has finished reading. The TP size is part of the
+  KV identity and every segment names its rank, so a restore at another TP
+  size, or of a snapshot with a shard missing, is a miss, never a load.
 
 * Save: ``request_finished`` turns the settled turn into a manifest and asks vLLM
   to keep the blocks. ``wait_for_save`` hands the save to a background job that
@@ -45,7 +53,7 @@ from kvsnap.connector.volatile import VolatileOwner, VolatileClient
 from kvsnap.connector.telemetry import EventRecorder
 from kvsnap.connector.protocol import finish_manifest, matched_tokens
 from kvsnap.connector.identity import runtime_identity
-from kvsnap.models import ContractError, KVIdentity
+from kvsnap.models import ContractError, KVIdentity, rank_segments
 from kvsnap.store import SnapshotStore, GenerationConflict, CorruptSnapshotError
 from kvsnap.store.crc32c import crc32c
 from kvsnap.store.store import BlobWriter, StoreError
@@ -86,20 +94,31 @@ class KvsnapMetadata(KVConnectorMetadata):
 
 @dataclass
 class KvsnapWorkerMetadata(KVConnectorWorkerMetadata):
+    # TP=1: request id -> the worker's preparation.
     prepared: dict = field(default_factory=dict)
     errors: dict = field(default_factory=dict)
     loaded_leases: list[str] = field(default_factory=list)
     invalid_snapshots: list[str] = field(default_factory=list)
     failed_loads: list[str] = field(default_factory=list)
+    # TP>1: request id -> {rank: that rank's preparation of its KV shard}.
+    shards: dict = field(default_factory=dict)
 
     def aggregate(self, other):
+        # vLLM merges the metadata of every TP rank's worker once per step.
         if set(self.prepared) & set(other.prepared):
-            raise RuntimeError("kvsnap supports TP=1 only")
+            raise RuntimeError("two workers prepared one request without TP ranks")
+        shards = {request_id: dict(ranks) for request_id, ranks in self.shards.items()}
+        for request_id, ranks in other.shards.items():
+            mine = shards.setdefault(request_id, {})
+            if set(mine) & set(ranks):
+                raise RuntimeError(f"TP rank reported twice for request {request_id}")
+            mine.update(ranks)
         return KvsnapWorkerMetadata(self.prepared | other.prepared,
                                  self.errors | other.errors,
                                  self.loaded_leases + other.loaded_leases,
                                  self.invalid_snapshots + other.invalid_snapshots,
-                                 self.failed_loads + other.failed_loads)
+                                 self.failed_loads + other.failed_loads,
+                                 shards)
 
 
 def _completed(fn, *args):
@@ -113,11 +132,16 @@ def _completed(fn, *args):
 
 
 class KvsnapConnector(KVConnectorBase_V1):
+    # This worker's TP rank (set when its KV caches are registered) and the TP size.
+    rank, tp_size = 0, 1
+
     def __init__(self, vllm_config, role, kv_cache_config):
         if vllm.__version__ != "0.31.0":
             raise RuntimeError("kvsnap requires vLLM 0.31.0")
-        if vllm_config.parallel_config.tensor_parallel_size != 1:
-            raise ValueError("kvsnap requires TP=1")
+        parallel = vllm_config.parallel_config
+        if getattr(parallel, "pipeline_parallel_size", 1) != 1 or getattr(parallel, "data_parallel_size", 1) != 1:
+            raise ValueError("kvsnap supports tensor parallelism only: pipeline and data parallel sizes must be 1")
+        self.tp_size = parallel.tensor_parallel_size
         if len(kv_cache_config.kv_cache_groups) != 1:
             raise ValueError("kvsnap requires one full-attention KV group")
         if getattr(vllm_config, "speculative_config", None):
@@ -164,6 +188,8 @@ class KvsnapConnector(KVConnectorBase_V1):
         # push work until its commit has finished.
         self.committer = ThreadPoolExecutor(max_workers=1, thread_name_prefix="kvsnap-commit")
         self.committing = set()
+        self.shards = {}         # request id -> {rank: preparation} until every TP rank has reported
+        self.lease_reports = {}  # lease id -> TP ranks that finished reading under it
         # Worker side.
         self.dataplane = self.volatile = None
         self.save_jobs = {}    # request id -> (Future of prepared record, D2H-fenced Event)
@@ -194,17 +220,24 @@ class KvsnapConnector(KVConnectorBase_V1):
     def _instruction(request):
         return (request.kv_transfer_params or {}).get("kvsnap")
 
+    def _rank_fields(self):
+        return {"rank": self.rank} if self.tp_size > 1 else {}
+
     def register_kv_caches(self, kv_caches):
+        if self.tp_size > 1:
+            from vllm.distributed.parallel_state import get_tensor_model_parallel_rank
+            self.rank = get_tensor_model_parallel_rank()
         self.dataplane = TorchBlockDataPlane(kv_caches, self.block_size, self.capacity)
         self.dataplane.warm_up()       # compile the restore kernel now, not on the first restore
         self.volatile = VolatileOwner(self.root, self.capacity)
-        if self.runtime_id:
+        # Every rank's layout is the same shape; rank 0 publishes it once.
+        if self.runtime_id and self.rank == 0:
             from kvsnap.connector.runtime import publish_runtime_identity
             layout = json.dumps(self.dataplane.layers, sort_keys=True, separators=(",", ":"))
             publish_runtime_identity(self.root, self.runtime_id,
                                      runtime_identity(self._vllm_config, layout))
         self._event("cache_registered", layout=self.dataplane.layers, block_bytes=self.dataplane.block_bytes,
-                    pinned_capacity_bytes=self.capacity, async_load=self.async_load)
+                    pinned_capacity_bytes=self.capacity, async_load=self.async_load, **self._rank_fields())
 
     # ---- scheduler side --------------------------------------------------
 
@@ -264,7 +297,8 @@ class KvsnapConnector(KVConnectorBase_V1):
                     generation=op["generation"], source_generation=manifest["generation"],
                     external_num_tokens=num_external_tokens, local_num_tokens=local,
                     block_ids=selected[first:], lease_id=transfer.lease_id, error=transfer.error,
-                    bytes=sum(s["length"] for s in manifest["segments"][first:count]))
+                    bytes=sum(s["length"] for rank in range(self.tp_size)
+                              for s in rank_segments(manifest, rank)[first:count]))
         self.loads.append(transfer)
         if self.async_load:
             self.parked.add(request.request_id)
@@ -291,8 +325,10 @@ class KvsnapConnector(KVConnectorBase_V1):
             raise ContractError("scheduler provided too few computed blocks")
         evicting = time.monotonic_ns()
         if manifest["durability"] == "volatile":
+            # Every TP rank holds count blocks of its own shard, in its own pinned pool.
             block_bytes = sum(layer["bytes"] for layer in json.loads(manifest["identity"]["kv_layout"]))
-            for snapshot_id in self.store.make_room_volatile(count * block_bytes, self.host_tier_bytes):
+            for snapshot_id in self.store.make_room_volatile(count * block_bytes * self.tp_size,
+                                                             self.host_tier_bytes * self.tp_size):
                 self._event("host_tier_evicted", snapshot_id=snapshot_id, request_id=request.request_id)
         transfer = Transfer(request.request_id, list(block_ids[:count]), manifest)
         now = time.monotonic_ns()
@@ -341,7 +377,17 @@ class KvsnapConnector(KVConnectorBase_V1):
         meta = connector_output.kv_connector_worker_meta
         if meta is None:
             return
-        for request_id, prepared in meta.prepared.items():
+        ready = list(meta.prepared.items())
+        for request_id, ranks in meta.shards.items():
+            if request_id not in self.saving:
+                continue      # its save already failed on another rank
+            parts = self.shards.setdefault(request_id, {})
+            parts.update(ranks)
+            # A TP snapshot is committed with every rank's shard, or not at all.
+            if len(parts) == self.tp_size:
+                del self.shards[request_id]
+                ready.append((request_id, [parts[rank] for rank in range(self.tp_size)]))
+        for request_id, prepared in ready:
             transfer = self.saving.pop(request_id, None)
             if transfer is None:
                 continue
@@ -349,13 +395,19 @@ class KvsnapConnector(KVConnectorBase_V1):
             # on this thread it stalled the whole batch for that engine step.
             self.committing.add(self.committer.submit(self._commit, transfer, prepared))
         for request_id, error in meta.errors.items():
+            self.shards.pop(request_id, None)
             transfer = self.saving.pop(request_id, None)
             if transfer is not None:
                 self._save_failed(transfer.manifest["snapshot_id"], request_id, error)
-        for snapshot_id in meta.invalid_snapshots:
+        for snapshot_id in dict.fromkeys(meta.invalid_snapshots):
             self.store.invalidate_snapshot(snapshot_id, "worker could not validate snapshot before H2D")
         self.failed_loads.update(meta.failed_loads)
         for lease in meta.loaded_leases:
+            # Every rank reads its shard under the one lease: keep it until the last is done.
+            reports = self.lease_reports.pop(lease, 0) + 1
+            if reports < self.tp_size:
+                self.lease_reports[lease] = reports
+                continue
             self.store.release_lease(lease)
             self._event("load_lease_released", lease_id=lease)
 
@@ -387,6 +439,14 @@ class KvsnapConnector(KVConnectorBase_V1):
         actual = json.dumps(self.dataplane.layers, sort_keys=True, separators=(",", ":"))
         if manifest["identity"]["kv_layout"] != actual:
             raise ContractError("actual registered KV layout differs from snapshot identity")
+
+    def _shard(self, transfer):
+        """This rank's segments of a snapshot; a missing or partial shard is an error before any copy."""
+        segments = rank_segments(transfer.manifest, self.rank)
+        if len(segments) != len(transfer.block_ids):
+            raise ContractError(f"snapshot {transfer.manifest['snapshot_id']} has {len(segments)} of "
+                                f"{len(transfer.block_ids)} blocks for TP rank {self.rank}")
+        return segments
 
     def bind_connector_metadata(self, connector_metadata):
         super().bind_connector_metadata(connector_metadata)
@@ -425,7 +485,7 @@ class KvsnapConnector(KVConnectorBase_V1):
         self._check_layout(transfer.manifest)
         first, size = transfer.skip_blocks, self.dataplane.block_bytes
         targets = transfer.block_ids[first:]
-        segments = transfer.manifest["segments"][first:len(transfer.block_ids)]
+        segments = self._shard(transfer)[first:]
         with ExitStack() as stack:
             if transfer.manifest["durability"] == "volatile":
                 sources = self._volatile_sources(transfer, segments, stack)
@@ -436,7 +496,7 @@ class KvsnapConnector(KVConnectorBase_V1):
                 self.writer.read_prepared_into(segments, staged.pointer, size, first_block=first)
                 sources = [(staged, i * size) for i in range(len(targets))]
             self._event("h2d_started", transfer=transfer, lease_id=transfer.lease_id, block_ids=targets,
-                        skip_blocks=first, bytes=size * len(targets))
+                        skip_blocks=first, bytes=size * len(targets), **self._rank_fields())
             ready.synchronize()
             ready_ns = time.monotonic_ns()
             try:
@@ -445,7 +505,8 @@ class KvsnapConnector(KVConnectorBase_V1):
                 # Not swallowed: _finish_load and get_finished re-raise DMAUnknown.
                 raise DMAUnknown("kvsnap H2D completion could not be proven") from exc
         self._event("h2d_completed", transfer=transfer, lease_id=transfer.lease_id, block_ids=targets,
-                    skip_blocks=first, bytes=size * len(targets), copies=copies, ready_ns=ready_ns)
+                    skip_blocks=first, bytes=size * len(targets), copies=copies, ready_ns=ready_ns,
+                    **self._rank_fields())
         return copies
 
     def _volatile_sources(self, transfer, segments, stack):
@@ -568,7 +629,10 @@ class KvsnapConnector(KVConnectorBase_V1):
                 continue
             del self.save_jobs[request_id]
             try:
-                self.worker_meta.prepared[request_id] = future.result()
+                if self.tp_size > 1:
+                    self.worker_meta.shards[request_id] = {self.rank: future.result()}
+                else:
+                    self.worker_meta.prepared[request_id] = future.result()
             except DMAUnknown:
                 raise
             except Exception as exc:

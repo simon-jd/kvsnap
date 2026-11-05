@@ -16,9 +16,11 @@ def runtime_identity(config, kv_layout):
         model_id=model.model, model_revision=model.revision,
         tokenizer_revision=model.tokenizer_revision, kv_dtype=dtype,
         block_size=cache.block_size, kv_layout=kv_layout,
+        # kv_heads is per rank; KVIdentity drops tensor_parallel_size at TP=1.
         model_shape={"layers": model.get_num_layers(config.parallel_config),
                      "kv_heads": model.get_num_kv_heads(config.parallel_config),
-                     "head_size": model.get_head_size()},
+                     "head_size": model.get_head_size(),
+                     "tensor_parallel_size": getattr(config.parallel_config, "tensor_parallel_size", 1)},
         position_encoding={"max_model_len": model.max_model_len,
                            "hf_config_sha256": hashlib.sha256(canonical_json(hf.to_dict()).encode()).hexdigest()},
         vllm_version="0.31.0",

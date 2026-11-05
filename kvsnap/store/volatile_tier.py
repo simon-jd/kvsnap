@@ -68,38 +68,48 @@ class VolatileTier:
                     pass
         return live
 
-    def _commit_volatile_prepared(self, body, record, expected_generation):
+    def _commit_volatile_prepared(self, body, records, expected_generation):
+        """Publish host-memory preparations: one per TP rank, in rank order."""
         from kvsnap.connector.volatile import VolatileClient
-        ident = record.get("preparation_id", "")
-        if len(ident) != 32 or any(c not in "0123456789abcdef" for c in ident):
-            raise ValueError("invalid preparation ID")
+        for record in records:
+            ident = record.get("preparation_id", "")
+            if len(ident) != 32 or any(c not in "0123456789abcdef" for c in ident):
+                raise ValueError("invalid preparation ID")
+            if record.get("durability") != "volatile" or "locations" not in record:
+                raise StoreError("every rank's preparation must be a host-memory one")
         with self._lock, self._blob_lock:
             self._check_owner()
-            path = self.prepared_dir / (ident + ".json")
-            if json.loads(path.read_text()) != record or record["expires_at"] <= time.time():
-                raise StoreError("volatile preparation differs from intent or expired")
-            if (body["durability"] != "volatile" or body["session_id"] != record["session_id"] or
-                    body["generation"] != record["generation"]):
-                raise GenerationConflict("volatile preparation identity or generation mismatch")
+            paths, segments, all_locations = [], [], {}
+            for rank, record in enumerate(records):
+                path = self.prepared_dir / (record["preparation_id"] + ".json")
+                if json.loads(path.read_text()) != record or record["expires_at"] <= time.time():
+                    raise StoreError("volatile preparation differs from intent or expired")
+                if (body["durability"] != "volatile" or body["session_id"] != record["session_id"] or
+                        body["generation"] != record["generation"]):
+                    raise GenerationConflict("volatile preparation identity or generation mismatch")
+                if {segment["blob_id"] for segment in record["segments"]} != set(record["locations"]):
+                    raise CorruptSnapshotError("volatile location set differs from manifest")
+                segments += [dict(segment, rank=rank) if rank else segment for segment in record["segments"]]
+                # Equal blob ids hold equal bytes, whichever rank's owner keeps them.
+                all_locations.update(record["locations"])
+                paths.append(path)
             if expected_generation is not None and body["generation"] != expected_generation:
                 raise GenerationConflict("manifest generation differs from expected generation")
-            body["segments"], body["state"] = record["segments"], "HostValid"
+            body["segments"], body["state"] = segments, "HostValid"
+            # Validation checks that every rank's shard covers the KV blocks.
             expected = self._validate_manifest(body)
-            if len(body["segments"]) != expected:
+            if any(len(record["segments"]) != expected for record in records):
                 raise CorruptSnapshotError("volatile preparation does not cover KV blocks")
-            keys = {segment["blob_id"] for segment in body["segments"]}
-            if keys != set(record["locations"]):
-                raise CorruptSnapshotError("volatile location set differs from manifest")
             # The worker hashed each block in place right after its D2H fence
             # and wrote the digests into the intent. Here the owner only has to
             # confirm, in one round trip, that it still holds every handle at
             # the recorded length; no payload crosses the socket.
             for segment in body["segments"]:
-                location = record["locations"][segment["blob_id"]]
+                location = all_locations[segment["blob_id"]]
                 if segment["offset"] != 0 or segment["length"] != location["length"]:
                     raise CorruptSnapshotError("volatile segment length differs from its allocation")
             owners = {}
-            for key, location in record["locations"].items():
+            for key, location in all_locations.items():
                 owners.setdefault(location["owner"]["owner_id"], (location["owner"], {}))[1][key] = location
             for owner, locations in owners.values():
                 VolatileClient(self.root, owner).check(locations)
@@ -126,7 +136,7 @@ class VolatileTier:
                 # Keep a live canonical allocation when another worker
                 # prepares the same bytes; never move existing roots to an
                 # unnecessary duplicate owner that might die independently.
-                locations = dict(record["locations"])
+                locations = dict(all_locations)
                 locations.update(self._live_volatile_locations(list(locations)))
                 segments = {segment["blob_id"]: segment for segment in body["segments"]}
                 self.db.executemany("INSERT INTO volatile_locations VALUES(?,?) ON CONFLICT(blob_id) DO UPDATE SET location_json=excluded.location_json",
@@ -140,7 +150,8 @@ class VolatileTier:
             # No directory fsync: if a crash brings the intent back, it is an
             # expired temporary root that collection reclaims, and the host
             # memory it described is gone with the process anyway.
-            path.unlink(missing_ok=True)
+            for path in paths:
+                path.unlink(missing_ok=True)
             self._hit("after_manifest_commit")
             self._hit("before_gpu_release")
             return json.loads(serialized)

@@ -25,6 +25,7 @@ from .blobs import BlobFiles
 from .common import (COMMITTED, DISK_USAGE, FAILPOINTS, HEADER, MAGIC, CapacityError, CorruptSnapshotError,
                      GenerationConflict, StoreError, _dict, _json, _shallow)
 from .crc32c import crc32c
+from kvsnap.models import rank_segments, tensor_parallel_size
 from .maintenance import Maintenance
 from .volatile_tier import VolatileTier
 
@@ -298,6 +299,9 @@ class SnapshotStore(VolatileTier, Maintenance, BlobFiles):
         """
         body = _dict(manifest)
         expected = self._validate_manifest(body)
+        if tensor_parallel_size(body["identity"]) != 1:
+            raise StoreError("commit takes one rank's blocks: a TP>1 snapshot is committed from one "
+                             "preparation per rank (commit_prepared)")
         payload_list = [bytes(block) for block in blocks]
         if len(payload_list) != expected or any(not block for block in payload_list):
             raise ValueError(f"expected {expected} nonempty blocks, got {len(payload_list)}")
@@ -412,13 +416,17 @@ class SnapshotStore(VolatileTier, Maintenance, BlobFiles):
 
     def _validate_payloads(self, body):
         expected = self._validate_manifest(body)
+        tp = tensor_parallel_size(body["identity"])
         segments = body.get("segments", [])
-        if len(segments) != expected:
-            raise CorruptSnapshotError("manifest does not cover every KV block")
+        if len(segments) != expected * tp:
+            raise CorruptSnapshotError("manifest does not cover every KV block"
+                                       + (f" of all {tp} TP ranks" if tp > 1 else ""))
+        for rank in range(tp):
+            for index, segment in enumerate(rank_segments(body, rank)):
+                if segment["first_block"] != index or segment["nblocks"] != 1:
+                    raise CorruptSnapshotError("invalid or overlapping block mapping")
         result = []
-        for index, segment in enumerate(segments):
-            if segment["first_block"] != index or segment["nblocks"] != 1:
-                raise CorruptSnapshotError("invalid or overlapping block mapping")
+        for segment in segments:
             data = (self._read_volatile_blob(segment["blob_id"]) if body["durability"] == "volatile"
                     else self._read_blob(segment["blob_id"], disk_only=True))
             offset, length = segment["offset"], segment["length"]
@@ -481,43 +489,59 @@ class SnapshotStore(VolatileTier, Maintenance, BlobFiles):
             return record
 
     def commit_prepared(self, manifest, prepared, expected_generation=None):
-        """Scheduler-only atomic publication of previously prepared worker bytes."""
+        """Scheduler-only atomic publication of previously prepared worker bytes.
+
+        ``prepared`` is one worker's preparation, or at TP>1 a list with one
+        per rank, in rank order: the snapshot is published with every rank's
+        shard or not at all.
+        """
         # Shallow copies suffice: validation rebuilds every nested value, and
         # nothing below mutates the caller's lists. This runs on the scheduler
         # thread, and a deep copy of a manifest holding every session token
         # cost milliseconds per turn.
         body = _shallow(manifest)
         expected_blocks = self._validate_manifest(body)
-        record = _shallow(prepared)
-        if record.get("durability") == "volatile" and "locations" in record:
-            return self._commit_volatile_prepared(body, record, expected_generation)
-        preparation_id = record.get("preparation_id", "")
-        if len(preparation_id) != 32 or any(c not in "0123456789abcdef" for c in preparation_id):
-            raise ValueError("invalid preparation ID")
+        records = [_shallow(record) for record in (prepared if isinstance(prepared, (list, tuple)) else [prepared])]
+        tp = tensor_parallel_size(body["identity"])
+        if len(records) != tp:
+            raise StoreError(f"a TP={tp} snapshot needs one preparation per rank, got {len(records)}")
+        if records[0].get("durability") == "volatile" and "locations" in records[0]:
+            return self._commit_volatile_prepared(body, records, expected_generation)
+        for record in records:
+            preparation_id = record.get("preparation_id", "")
+            if len(preparation_id) != 32 or any(c not in "0123456789abcdef" for c in preparation_id):
+                raise ValueError("invalid preparation ID")
         with self._lock, self._blob_lock:
             self._check_owner()
-            # Use the on-disk intent as authority, not untrusted worker metadata.
-            path = self.prepared_dir / (preparation_id + ".json")
-            saved = json.loads(path.read_text())
-            if saved != record or record["expires_at"] <= time.time():
-                raise StoreError("preparation differs from intent or expired")
-            if record["durability"] != body["durability"]:
-                raise StoreError("preparation durability mismatch")
-            body["segments"] = record["segments"]
-            if len(body["segments"]) != expected_blocks:
-                raise ValueError("prepared blocks do not cover the KV prefix")
+            paths, segments = [], []
+            for rank, record in enumerate(records):
+                # Use the on-disk intent as authority, not untrusted worker metadata.
+                path = self.prepared_dir / (record["preparation_id"] + ".json")
+                saved = json.loads(path.read_text())
+                if saved != record or record["expires_at"] <= time.time():
+                    raise StoreError("preparation differs from intent or expired")
+                if record["durability"] != body["durability"]:
+                    raise StoreError("preparation durability mismatch")
+                if len(record["segments"]) != expected_blocks:
+                    raise ValueError("prepared blocks do not cover the KV prefix"
+                                     + (f" on TP rank {rank}" if tp > 1 else ""))
+                for index, segment in enumerate(record["segments"]):
+                    if segment["first_block"] != index or segment["nblocks"] != 1:
+                        raise CorruptSnapshotError("invalid or overlapping block mapping")
+                    segments.append(dict(segment, rank=rank) if rank else segment)
+                paths.append(path)
+            body["segments"] = segments
             if expected_generation is not None and body["generation"] != expected_generation:
                 raise GenerationConflict("manifest generation differs from expected generation")
             # The worker wrote and fdatasynced every blob before reporting the
             # preparation, so this runs on the scheduler thread without reading
             # payloads: check each blob's header against the intent, then publish.
             entries = {}
-            for index, segment in enumerate(body["segments"]):
-                if segment["first_block"] != index or segment["nblocks"] != 1:
-                    raise CorruptSnapshotError("invalid or overlapping block mapping")
+            for segment in segments:
                 entries[segment["blob_id"]] = self._blob_header(segment["blob_id"], segment)
             result = self._publish(body, entries)
-            path.unlink(missing_ok=True)
+            for path in paths:
+                path.unlink(missing_ok=True)
             self._sync_directory(self.prepared_dir)
             return result
 
