@@ -421,7 +421,10 @@ class KvsnapConnector(KVConnectorBase_V1):
         except (StoreError, ContractError, ValueError) as exc:
             self._save_failed(transfer.manifest["snapshot_id"], transfer.request_id, f"commit failed: {exc}")
             return
-        self._event("manifest_committed", transfer=transfer, preparation_id=prepared["preparation_id"],
+        # One preparation at TP=1, a list with one per rank at TP>1.
+        preparation = ([part["preparation_id"] for part in prepared] if isinstance(prepared, list)
+                       else prepared["preparation_id"])
+        self._event("manifest_committed", transfer=transfer, preparation_id=preparation,
                     generation=transfer.manifest["generation"], duration_ns=time.monotonic_ns() - committing)
 
     def has_pending_push_work(self):

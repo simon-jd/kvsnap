@@ -2,12 +2,17 @@
 
 vLLM and CUDA are stubbed as in test_failure_policy.
 """
+from contextlib import contextmanager
+import ctypes
+import tempfile
 from types import SimpleNamespace
 import unittest
 from unittest.mock import Mock, patch
 
 from test_failure_policy import connector as make_connector, import_connector, meta
 from kvsnap.connector.identity import runtime_identity
+from kvsnap.models import KVIdentity, rank_segments
+from kvsnap.store import BlobWriter, SnapshotStore
 
 
 def connector(module, rank=0):
@@ -54,12 +59,18 @@ class TwoRankSchedulerTests(unittest.TestCase):
 
     def test_a_snapshot_is_committed_only_once_every_rank_has_prepared_its_shard(self):
         c = self.saving()
-        c.update_connector_output(meta(self.module, shards={"request": {1: "p1"}}))
+        c._event = Mock()
+        p0, p1 = {"preparation_id": "p0"}, {"preparation_id": "p1"}
+        c.update_connector_output(meta(self.module, shards={"request": {1: p1}}))
         c.store.commit_prepared.assert_not_called()
-        c.update_connector_output(meta(self.module, shards={"request": {0: "p0"}}))
+        c.update_connector_output(meta(self.module, shards={"request": {0: p0}}))
         c.store.commit_prepared.assert_called_once()
-        self.assertEqual(c.store.commit_prepared.call_args.args[1], ["p0", "p1"])
+        self.assertEqual(c.store.commit_prepared.call_args.args[1], [p0, p1])
         self.assertEqual((c.saving, c.shards), ({}, {}))
+        c.update_connector_output(meta(self.module))     # a failed commit job would raise here
+        self.assertEqual(c.committing, set())
+        event, = [e for e in c._event.call_args_list if e.args[0] == "manifest_committed"]
+        self.assertEqual(event.kwargs["preparation_id"], ["p0", "p1"])
 
     def test_one_ranks_failed_save_fails_the_snapshot_and_its_other_shard_is_dropped(self):
         c = self.saving()
@@ -152,6 +163,103 @@ class TwoRankWorkerTests(unittest.TestCase):
         result = worker.build_connector_worker_meta()
         self.assertEqual((result.prepared, result.shards), ({}, {"request": {1: {"preparation_id": "p",
                                                                                  "segments": []}}}))
+
+
+class Pinned:
+    """A CPU stand-in for a pinned allocation: real memory at a real address."""
+    def __init__(self, size):
+        self.size, self.memory = size, ctypes.create_string_buffer(size)
+        self.pointer = ctypes.addressof(self.memory)
+
+    def read_range(self, offset, size):
+        return ctypes.string_at(self.pointer + offset, size)
+
+    def close(self):
+        pass
+
+
+class TwoRankRoundTripTests(unittest.TestCase):
+    """Save, commit, match and restore across a scheduler and two rank workers on one real store."""
+    BLOCK = 4
+
+    @classmethod
+    def setUpClass(cls):
+        cls.module = import_connector()
+
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.store = SnapshotStore(self.temp.name)
+        self.addCleanup(self.temp.cleanup)
+        self.addCleanup(self.store.close)
+        self.identity = KVIdentity("model", "rev", "tok", "bf16", 1, "layout",
+                                   {"layers": 1, "kv_heads": 4, "head_size": 1, "tensor_parallel_size": 2},
+                                   {"max_model_len": 64}).to_dict()
+        self.scheduler = connector(self.module)
+        self.scheduler.store = self.store
+        self.scheduler._event = Mock()
+        self.workers = [connector(self.module, rank) for rank in (0, 1)]
+        for worker in self.workers:
+            worker.writer = BlobWriter(self.temp.name, io_backend="python")
+            worker.dataplane.block_bytes = self.BLOCK
+            worker.dataplane.pool.reserve.side_effect = Pinned
+            worker.dataplane.save_gather.side_effect = self.gather(worker.rank)
+
+            @contextmanager
+            def staging(nblocks):
+                yield Pinned(self.BLOCK * nblocks)
+            worker.dataplane.staging.side_effect = staging
+
+    def gather(self, rank):
+        def copy(block_ids, targets, num_tokens):
+            for block, (allocation, offset) in zip(block_ids, targets):
+                ctypes.memmove(allocation.pointer + offset, bytes([rank, block, 7, 7]), self.BLOCK)
+        return copy
+
+    def step(self, meta_for_workers, finished=()):
+        metas = []
+        for worker in self.workers:
+            worker.bind_connector_metadata(meta_for_workers)
+            worker.wait_for_save()
+            worker.start_load_kv(None)
+            worker.get_finished(set(finished))
+            metas.append(worker.build_connector_worker_meta())
+        self.scheduler.update_connector_output(SimpleNamespace(kv_connector_worker_meta=metas[0].aggregate(metas[1])))
+        self.scheduler.update_connector_output(SimpleNamespace(kv_connector_worker_meta=None))  # surfaces commit errors
+        return metas
+
+    def request(self, request_id, op, tokens):
+        return SimpleNamespace(request_id=request_id, kv_transfer_params={"kvsnap": op}, prompt_token_ids=tokens,
+                               all_token_ids=tokens, num_computed_tokens=2, output_token_ids=[tokens[-1]],
+                               num_output_placeholders=0, status=SimpleNamespace(name="FINISHED_LENGTH_CAPPED"))
+
+    def test_each_rank_restores_the_shard_it_saved(self):
+        save = {"op": "save", "snapshot_id": "snap", "session_id": "session", "generation": 1,
+                "identity": self.identity, "seed": 0, "sampling": {"temperature": 0.0},
+                "durability": "durable", "output_seq_start": 0, "outputs": [], "remaining_max_tokens": 4}
+        self.assertEqual(self.scheduler.request_finished(self.request("turn1", save, [10, 11, 12]), [5, 6])[0], True)
+        self.step(self.scheduler.build_connector_meta(SimpleNamespace(total_num_scheduled_tokens=0,
+                                                                      num_scheduled_tokens={})), {"turn1"})
+        manifest = self.store.get_manifest("snap")
+        self.assertEqual(manifest["state"], "Durable")
+        for rank in (0, 1):
+            blocks = self.workers[rank].writer.read_prepared_blocks(rank_segments(manifest, rank))
+            self.assertEqual(blocks, [bytes([rank, 5, 7, 7]), bytes([rank, 6, 7, 7])])
+
+        resume = self.request("turn2", {"resume_snapshot_id": "snap", "identity": self.identity, "generation": 2},
+                              [10, 11, 12, 13])
+        self.assertEqual(self.scheduler.get_num_new_matched_tokens(resume, 0), (2, True))
+        self.scheduler.update_state_after_alloc(resume, SimpleNamespace(get_block_ids=lambda: ([8, 9, 10],)), 2)
+        lease = self.scheduler.loads[0].lease_id
+        loaded = {}
+        for worker in self.workers:
+            worker.dataplane.load_scatter.side_effect = (
+                lambda targets, sources, progress=None, rank=worker.rank: loaded.setdefault(
+                    rank, [a.read_range(offset, self.BLOCK) for a, offset in sources]) and 1)
+        metas = self.step(self.scheduler.build_connector_meta(SimpleNamespace(total_num_scheduled_tokens=0,
+                                                                              num_scheduled_tokens={})))
+        self.assertEqual(loaded, {rank: [bytes([rank, 5, 7, 7]), bytes([rank, 6, 7, 7])] for rank in (0, 1)})
+        self.assertEqual([m.loaded_leases for m in metas], [[lease], [lease]])
+        self.assertEqual(self.store.db.execute("SELECT count(*) FROM leases").fetchone()[0], 0)
 
 
 if __name__ == "__main__":
